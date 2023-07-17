@@ -1,0 +1,4 @@
+*out/
+*src/
+*.vscode
+*.vs
