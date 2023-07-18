@@ -14,7 +14,13 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/src/glfw-3.3.8)
 
 find_package(Vulkan REQUIRED)
 
-add_executable(engine main.cpp) 
+add_executable(engine
+    main.cpp
+    windowManager.cpp
+    windowManager.hpp
+    app.cpp
+    app.hpp
+    ) 
 
 target_link_libraries(engine glfw)
 target_link_libraries(engine Vulkan::Vulkan)
