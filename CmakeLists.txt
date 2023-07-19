@@ -9,18 +9,25 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
+set(SOURCES 
+    main.cpp
+    windowManager.cpp
+    windowManager.hpp
+    app.cpp
+    app.hpp
+    pipeline.cpp
+    pipeline.hpp
+)
+
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/src/glfw-3.3.8)
 
 find_package(Vulkan REQUIRED)
 
 add_executable(engine
-    main.cpp
-    windowManager.cpp
-    windowManager.hpp
-    app.cpp
-    app.hpp
+    ${SOURCES}
     ) 
+
 
 target_link_libraries(engine glfw)
 target_link_libraries(engine Vulkan::Vulkan)

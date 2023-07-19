@@ -1,6 +1,7 @@
 #pragma once
 
 #include "windowManager.hpp"
+#include "pipeline.hpp"
 
 namespace engine {
     class app {
@@ -11,5 +12,6 @@ namespace engine {
             void run();
         private:
             Window window{WIDTH, HEIGHT, "Hello there"};
+            Pipeline Pipeline{"../../shaders/simple.vert.spv" , "../../shaders/simple.frag.spv"};
     };
 }
