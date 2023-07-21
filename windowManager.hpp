@@ -15,6 +15,8 @@ namespace engine{
                 return glfwWindowShouldClose(window);
             }
 
+            void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
+
         private:
 
             void initWindow();

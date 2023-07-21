@@ -2,6 +2,7 @@
 
 #include "windowManager.hpp"
 #include "pipeline.hpp"
+#include "deviceManager.hpp"
 
 namespace engine {
     class app {
@@ -12,6 +13,7 @@ namespace engine {
             void run();
         private:
             Window window{WIDTH, HEIGHT, "Hello there"};
-            Pipeline Pipeline{"../../shaders/simple.vert.spv" , "../../shaders/simple.frag.spv"};
+            Device Device{window};
+            Pipeline Pipeline{Device, "../../shaders/simple.vert.spv" , "../../shaders/simple.frag.spv", Pipeline::defaultPipelineConifInfo(WIDTH, HEIGHT)};
     };
 }

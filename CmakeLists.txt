@@ -17,6 +17,8 @@ set(SOURCES
     app.hpp
     pipeline.cpp
     pipeline.hpp
+    deviceManager.cpp
+    deviceManager.hpp
 )
 
 
