@@ -7,7 +7,7 @@
 
 namespace engine {
     
-    Pipeline::Pipeline(engine::Device& device, const std::string& vertFilepath, const std::string& fragFilepath, const pipelineConfigInfo& configInfo) : Device{device} {
+    Pipeline::Pipeline(engine::Device& device, const std::string& vertFilepath, const std::string& fragFilepath, const PipelineConfigInfo& configInfo) : Device{device} {
         createGraphicspipeline(vertFilepath, fragFilepath, configInfo);
     }
 
@@ -35,12 +35,12 @@ namespace engine {
         return buffer;
     }
 
-    void Pipeline::createGraphicspipeline(const std::string& vertFilePath, const std::string& fragFilepath, const pipelineConfigInfo& configInfo) {
-        auto vertCode = readFile(vertFilePath);
-        auto fragCode = readFile(fragFilepath);
-
+    void Pipeline::createGraphicspipeline(const std::string& vertFilePath, const std::string& fragFilepath, const PipelineConfigInfo& configInfo) {
         assert(configInfo.pipelineLayout != VK_NULL_HANDLE && "Cannot create graphics pipeline :: no pipeline layout");
         assert(configInfo.renderPass != VK_NULL_HANDLE && "Cannot create graphics pipeline :: no render pass");
+        
+        auto vertCode = readFile(vertFilePath);
+        auto fragCode = readFile(fragFilepath);
 
         createShaderModule(vertCode, &vertShaderModule);
         createShaderModule(fragCode, &fragShaderModule);
@@ -79,7 +79,7 @@ namespace engine {
         pipelineInfo.pViewportState = &configInfo.viewportInfo;
         pipelineInfo.pRasterizationState = &configInfo.rasterizationInfo;
         pipelineInfo.pMultisampleState = &configInfo.multisampleInfo;
-        pipelineInfo.pColorBlendState = &configInfo.colorBlendInfo;
+        pipelineInfo.pColorBlendState = &configInfo.colorBlendInfo; //my error
         pipelineInfo.pDepthStencilState = &configInfo.depthStencilInfo;
         pipelineInfo.pDynamicState = nullptr;
 
@@ -107,8 +107,7 @@ namespace engine {
         }
     }
 
-    pipelineConfigInfo Pipeline::defaultPipelineConifInfo(uint32_t width, uint32_t height) {
-        pipelineConfigInfo configInfo{};
+    void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo, uint32_t width, uint32_t height) {
 
         //copied from https://pastebin.com/EmsJWHzb
 
@@ -152,17 +151,16 @@ namespace engine {
         configInfo.multisampleInfo.alphaToCoverageEnable = VK_FALSE;  // Optional
         configInfo.multisampleInfo.alphaToOneEnable = VK_FALSE;       // Optional
 
-        
         configInfo.colorBlendAttachment.colorWriteMask =
             VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
             VK_COLOR_COMPONENT_A_BIT;
-        configInfo.colorBlendAttachment.blendEnable = VK_FALSE;
-        configInfo.colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
-        configInfo.colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
-        configInfo.colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;              // Optional
-        configInfo.colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
-        configInfo.colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
-        configInfo.colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;              // Optional
+            configInfo.colorBlendAttachment.blendEnable = VK_FALSE;
+        // configInfo.colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
+        // configInfo.colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
+        // configInfo.colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;              // Optional
+        // configInfo.colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
+        // configInfo.colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
+        // configInfo.colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;              // Optional
         
         configInfo.colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
         configInfo.colorBlendInfo.logicOpEnable = VK_FALSE;
@@ -184,7 +182,9 @@ namespace engine {
         configInfo.depthStencilInfo.stencilTestEnable = VK_FALSE;
         configInfo.depthStencilInfo.front = {};  // Optional
         configInfo.depthStencilInfo.back = {};   // Optional
+    }
 
-        return configInfo;
+    void Pipeline::bind(VkCommandBuffer commandBuffer) {
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
     }
 }

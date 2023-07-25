@@ -7,7 +7,12 @@
 
 namespace engine{
 
-    struct pipelineConfigInfo {
+    struct PipelineConfigInfo {
+        PipelineConfigInfo() = default;
+
+        PipelineConfigInfo(const PipelineConfigInfo&) = delete;
+        PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
+
         VkViewport viewport;
         VkRect2D scissor;
         VkPipelineViewportStateCreateInfo viewportInfo;
@@ -24,18 +29,20 @@ namespace engine{
 
     class Pipeline {
         public:
-            Pipeline(Device& device, const std::string& vertFilepath, const std::string& fragFilepath, const pipelineConfigInfo& configInfo);
+            Pipeline(Device& device, const std::string& vertFilepath, const std::string& fragFilepath, const PipelineConfigInfo& configInfo);
             ~Pipeline();
 
             Pipeline(const Pipeline&) = delete;
             void operator=(const Pipeline&) = delete;
 
-            static pipelineConfigInfo defaultPipelineConifInfo(uint32_t width, uint32_t height);
+            static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo, uint32_t width, uint32_t height);
+
+            void bind(VkCommandBuffer commandBuffer);
 
         private:
             static std::vector<char> readFile(const std::string& filePath);
 
-            void createGraphicspipeline(const std::string& vertFilepath, const std::string& fragFilepath, const pipelineConfigInfo& configInfo); 
+            void createGraphicspipeline(const std::string& vertFilepath, const std::string& fragFilepath, const PipelineConfigInfo& configInfo); 
 
             void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
 

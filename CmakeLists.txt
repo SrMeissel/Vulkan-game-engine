@@ -19,6 +19,8 @@ set(SOURCES
     pipeline.hpp
     deviceManager.cpp
     deviceManager.hpp
+    swapchainManager.cpp
+    swapchainManager.hpp
 )
 
 
