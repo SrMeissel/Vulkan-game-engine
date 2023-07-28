@@ -21,6 +21,8 @@ set(SOURCES
     deviceManager.hpp
     swapchainManager.cpp
     swapchainManager.hpp
+    modelManager.cpp
+    modelManager.hpp
 )
 
 
