@@ -24,10 +24,28 @@ namespace engine {
         vkDeviceWaitIdle(Device.device());
     }
 
+    void app::sierpinski(std::vector<Model::Vertex> &verticies, glm::vec2 left, glm::vec2 right, glm::vec2 top, int iterations) {
+        if(iterations <= 0) {
+            verticies.push_back({left});
+            verticies.push_back({right});
+            verticies.push_back({top});
+        }
+        else {
+            auto leftTop = 0.5f*(left + top);
+            auto leftRight = 0.5f*(left + right);
+            auto rightTop = 0.5f*(right + top);
+
+            sierpinski(verticies, left, leftRight, leftTop, iterations-1);
+            sierpinski(verticies, leftRight, right, rightTop, iterations-1);
+            sierpinski(verticies, leftTop, rightTop, top, iterations-1);
+        }
+    }
+
     void app::loadModels() {
         std::vector<Model::Vertex> verticies {
-            {{0.0f, -0.5f}}, {{0.5f, 0.5f}}, {{-0.5f, 0.5f}}
+            //{{0.0f, -0.5f}}, {{0.5f, 0.5f}}, {{-0.5f, 0.5f}}
         };
+        sierpinski(verticies, {-0.5f, 0.5f}, {0.5f, 0.5f}, {0.0f, -0.5f}, 4);
         model = std::make_unique<Model>(Device, verticies);
     }
 
