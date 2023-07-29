@@ -24,11 +24,12 @@ namespace engine {
         vkDeviceWaitIdle(Device.device());
     }
 
+    //optional cool thing
     void app::sierpinski(std::vector<Model::Vertex> &verticies, glm::vec2 left, glm::vec2 right, glm::vec2 top, int iterations) {
         if(iterations <= 0) {
-            verticies.push_back({left});
-            verticies.push_back({right});
-            verticies.push_back({top});
+            verticies.push_back({{left}, {1.0f, 0.0f, 0.0f}});
+            verticies.push_back({{right}, {0.0f, 1.0f, 0.0f}});
+            verticies.push_back({{top}, {0.0f, 0.0f, 1.0f}});
         }
         else {
             auto leftTop = 0.5f*(left + top);
@@ -43,7 +44,7 @@ namespace engine {
 
     void app::loadModels() {
         std::vector<Model::Vertex> verticies {
-            //{{0.0f, -0.5f}}, {{0.5f, 0.5f}}, {{-0.5f, 0.5f}}
+            //{{0.0f, -0.5f},{1.0f, 0.0f, 0.0f}}, {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}}, {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
         };
         sierpinski(verticies, {-0.5f, 0.5f}, {0.5f, 0.5f}, {0.0f, -0.5f}, 4);
         model = std::make_unique<Model>(Device, verticies);
