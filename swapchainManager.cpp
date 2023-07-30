@@ -13,6 +13,15 @@ namespace engine {
 
 SwapChain::SwapChain(Device &deviceRef, VkExtent2D extent)
     : device{deviceRef}, windowExtent{extent} {
+  init();
+}
+SwapChain::SwapChain(Device &deviceRef, VkExtent2D extent, std::shared_ptr<SwapChain> previousSwapChain)
+    : device{deviceRef}, windowExtent{extent}, oldSwapChain{previousSwapChain} {
+  init();
+  oldSwapChain = nullptr;
+}
+
+void SwapChain::init() {
   createSwapChain();
   createImageViews();
   createRenderPass();
@@ -27,9 +36,9 @@ SwapChain::~SwapChain() {
   }
   swapChainImageViews.clear();
 
-  if (swapChain != nullptr) {
-    vkDestroySwapchainKHR(device.device(), swapChain, nullptr);
-    swapChain = nullptr;
+  if (swapchain != nullptr) {
+    vkDestroySwapchainKHR(device.device(), swapchain, nullptr);
+    swapchain = nullptr;
   }
 
   for (int i = 0; i < depthImages.size(); i++) {
@@ -62,7 +71,7 @@ VkResult SwapChain::acquireNextImage(uint32_t *imageIndex) {
 
   VkResult result = vkAcquireNextImageKHR(
       device.device(),
-      swapChain,
+      swapchain,
       std::numeric_limits<uint64_t>::max(),
       imageAvailableSemaphores[currentFrame],  // must be a not signaled semaphore
       VK_NULL_HANDLE,
@@ -106,7 +115,7 @@ VkResult SwapChain::submitCommandBuffers(
   presentInfo.waitSemaphoreCount = 1;
   presentInfo.pWaitSemaphores = signalSemaphores;
 
-  VkSwapchainKHR swapChains[] = {swapChain};
+  VkSwapchainKHR swapChains[] = {swapchain};
   presentInfo.swapchainCount = 1;
   presentInfo.pSwapchains = swapChains;
 
@@ -162,9 +171,9 @@ void SwapChain::createSwapChain() {
   createInfo.presentMode = presentMode;
   createInfo.clipped = VK_TRUE;
 
-  createInfo.oldSwapchain = VK_NULL_HANDLE;
+  createInfo.oldSwapchain = oldSwapChain == nullptr ? VK_NULL_HANDLE : oldSwapChain->swapchain;
 
-  if (vkCreateSwapchainKHR(device.device(), &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
+  if (vkCreateSwapchainKHR(device.device(), &createInfo, nullptr, &swapchain) != VK_SUCCESS) {
     throw std::runtime_error("failed to create swap chain!");
   }
 
@@ -172,9 +181,9 @@ void SwapChain::createSwapChain() {
   // allowed to create a swap chain with more. That's why we'll first query the final number of
   // images with vkGetSwapchainImagesKHR, then resize the container and finally call it again to
   // retrieve the handles.
-  vkGetSwapchainImagesKHR(device.device(), swapChain, &imageCount, nullptr);
+  vkGetSwapchainImagesKHR(device.device(), swapchain, &imageCount, nullptr);
   swapChainImages.resize(imageCount);
-  vkGetSwapchainImagesKHR(device.device(), swapChain, &imageCount, swapChainImages.data());
+  vkGetSwapchainImagesKHR(device.device(), swapchain, &imageCount, swapChainImages.data());
 
   swapChainImageFormat = surfaceFormat.format;
   swapChainExtent = extent;

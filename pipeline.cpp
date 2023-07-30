@@ -10,7 +10,7 @@
 namespace engine {
     
     Pipeline::Pipeline(engine::Device& device, const std::string& vertFilepath, const std::string& fragFilepath, const PipelineConfigInfo& configInfo) : Device{device} {
-        createGraphicspipeline(vertFilepath, fragFilepath, configInfo);
+        createGraphicsPipeline(vertFilepath, fragFilepath, configInfo);
     }
 
     Pipeline::~Pipeline() {
@@ -37,7 +37,7 @@ namespace engine {
         return buffer;
     }
 
-    void Pipeline::createGraphicspipeline(const std::string& vertFilePath, const std::string& fragFilepath, const PipelineConfigInfo& configInfo) {
+    void Pipeline::createGraphicsPipeline(const std::string& vertFilePath, const std::string& fragFilepath, const PipelineConfigInfo& configInfo) {
         assert(configInfo.pipelineLayout != VK_NULL_HANDLE && "Cannot create graphics pipeline :: no pipeline layout");
         assert(configInfo.renderPass != VK_NULL_HANDLE && "Cannot create graphics pipeline :: no render pass");
         
@@ -86,7 +86,7 @@ namespace engine {
         pipelineInfo.pMultisampleState = &configInfo.multisampleInfo;
         pipelineInfo.pColorBlendState = &configInfo.colorBlendInfo; //my error
         pipelineInfo.pDepthStencilState = &configInfo.depthStencilInfo;
-        pipelineInfo.pDynamicState = nullptr;
+        pipelineInfo.pDynamicState = &configInfo.dynamicStateInfo;
 
         pipelineInfo.layout = configInfo.pipelineLayout;
         pipelineInfo.renderPass = configInfo.renderPass;
@@ -112,7 +112,7 @@ namespace engine {
         }
     }
 
-    void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo, uint32_t width, uint32_t height) {
+    void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo) {
 
         //copied from https://pastebin.com/EmsJWHzb
 
@@ -120,21 +120,11 @@ namespace engine {
         configInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         configInfo.inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
 
-        configInfo.viewport.x = 0.0f;
-        configInfo.viewport.y = 0.0f;
-        configInfo.viewport.width = static_cast<float>(width);
-        configInfo.viewport.height = static_cast<float>(height);
-        configInfo.viewport.minDepth = 0.0f;
-        configInfo.viewport.maxDepth = 1.0f;
-
-        configInfo.scissor.offset = {0, 0};
-        configInfo.scissor.extent = {width, height};
-
         configInfo.viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         configInfo.viewportInfo.viewportCount = 1;
-        configInfo.viewportInfo.pViewports = &configInfo.viewport;
+        configInfo.viewportInfo.pViewports = nullptr;
         configInfo.viewportInfo.scissorCount = 1;
-        configInfo.viewportInfo.pScissors = &configInfo.scissor;
+        configInfo.viewportInfo.pScissors = nullptr;
 
         configInfo.rasterizationInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
         configInfo.rasterizationInfo.depthClampEnable = VK_FALSE;
@@ -187,6 +177,12 @@ namespace engine {
         configInfo.depthStencilInfo.stencilTestEnable = VK_FALSE;
         configInfo.depthStencilInfo.front = {};  // Optional
         configInfo.depthStencilInfo.back = {};   // Optional
+
+        configInfo.dynamicStateEnables = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+        configInfo.dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        configInfo.dynamicStateInfo.pDynamicStates = configInfo.dynamicStateEnables.data();
+        configInfo.dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
+        configInfo.dynamicStateInfo.flags = 0;
     }
 
     void Pipeline::bind(VkCommandBuffer commandBuffer) {
