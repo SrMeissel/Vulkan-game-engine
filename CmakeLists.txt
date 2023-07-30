@@ -23,6 +23,7 @@ set(SOURCES
     swapchainManager.hpp
     modelManager.cpp
     modelManager.hpp
+    gameObject.hpp
 )
 
 

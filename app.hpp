@@ -4,7 +4,7 @@
 #include "pipeline.hpp"
 #include "deviceManager.hpp"
 #include "swapchainManager.hpp"
-#include "modelManager.hpp"
+#include "gameObject.hpp"
 
 #include <memory>
 #include <vector>
@@ -24,7 +24,7 @@ namespace engine {
             void run();
         private:
             void sierpinski(std::vector<Model::Vertex> &verticies, glm::vec2 left, glm::vec2 right, glm::vec2 top, int iterations);
-            void loadModels();
+            void loadGameObjects();
             void createPipelineLayout();
             void createPipeline();
             void createCommandBuffers();
@@ -32,6 +32,7 @@ namespace engine {
             void drawFrame();
             void recreateSwapChain();
             void recordCommandBuffer(int imageIndex);
+            void renderGameObjects(VkCommandBuffer commandBuffer);
 
             Window window{WIDTH, HEIGHT, "Hello there"};
             Device device{window};
@@ -39,6 +40,6 @@ namespace engine {
             std::unique_ptr<Pipeline> pipeline;
             VkPipelineLayout pipelineLayout;
             std::vector<VkCommandBuffer> commandBuffers;
-            std::unique_ptr<Model> model;
+            std::vector<GameObject> gameObjects;
     };
 }
