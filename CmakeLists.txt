@@ -24,6 +24,10 @@ set(SOURCES
     modelManager.cpp
     modelManager.hpp
     gameObject.hpp
+    Renderer.hpp
+    Renderer.cpp
+    renderSystem.hpp
+    renderSystem.cpp
 )
 
 
