@@ -28,6 +28,8 @@ set(SOURCES
     Renderer.cpp
     renderSystem.hpp
     renderSystem.cpp
+    cameraManager.hpp
+    cameraManager.cpp
 )
 
 

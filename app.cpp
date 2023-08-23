@@ -1,5 +1,6 @@
 #include "app.hpp"
 #include "renderSystem.hpp"
+#include "cameraManager.hpp"
 
 #include <iostream>
 #include <stdexcept>
@@ -21,11 +22,17 @@ namespace engine {
 
     void app::run() {
         RenderSystem renderSystem{device, renderer.getRenderPass()};
+        CameraManager camera{};
+
         while(!window.shouldClose()){
             glfwPollEvents();
+            float aspect = renderer.getAspectRatio();
+            //camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 5);
+            camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 10.0f);
+
             if(auto commandBuffer = renderer.beginFrame()) {
                 renderer.beginSwapChainRenderPass(commandBuffer);
-                renderSystem.renderGameObjects(commandBuffer, gameObjects);
+                renderSystem.renderGameObjects(commandBuffer, gameObjects, camera);
                 renderer.endSwapChainRenderPass(commandBuffer);
                 renderer.endFrame();
             }
@@ -113,7 +120,7 @@ namespace engine {
         std::shared_ptr<Model> model = createCubeModel(device, {0.0f, 0.0f, 0.0f});
         auto cube = GameObject::createGameObject();
         cube.model = model;
-        cube.transform.translation = {0.0f, 0.0f, 0.5f};
+        cube.transform.translation = {0.0f, 0.0f, 2.5f};
         cube.transform.scale = {0.5, 0.5, 0.5};
         gameObjects.push_back(std::move(cube));
     }
