@@ -1,10 +1,12 @@
 #include "app.hpp"
 #include "renderSystem.hpp"
 #include "cameraManager.hpp"
+#include "keyboard_movement_controller.hpp"
 
 #include <iostream>
 #include <stdexcept>
 #include <array>
+#include <chrono>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -23,9 +25,24 @@ namespace engine {
     void app::run() {
         RenderSystem renderSystem{device, renderer.getRenderPass()};
         CameraManager camera{};
+        //camera.setViewDirection(glm::vec3(0.0f), glm::vec3(0.5f, 0.0f, 1.0f));
+        camera.setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
+
+        auto viewerObject = GameObject::createGameObject();
+        keyboardMovementController cameraController{};
+
+        auto currentTime = std::chrono::high_resolution_clock::now();
 
         while(!window.shouldClose()){
             glfwPollEvents();
+
+            auto newTime = std::chrono::high_resolution_clock::now();
+            float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime-currentTime).count();
+            currentTime = newTime;
+
+            cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerObject);
+            camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
+
             float aspect = renderer.getAspectRatio();
             //camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 5);
             camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 10.0f);
@@ -39,24 +56,6 @@ namespace engine {
         }
         vkDeviceWaitIdle(device.device());
     }
-
-    //optional cool thing
-    // void app::sierpinski(std::vector<Model::Vertex> &verticies, glm::vec2 left, glm::vec2 right, glm::vec2 top, int iterations) {
-    //     if(iterations <= 0) {
-    //         verticies.push_back({{left}, {1.0f, 0.0f, 0.0f}});
-    //         verticies.push_back({{right}, {0.0f, 1.0f, 0.0f}});
-    //         verticies.push_back({{top}, {0.0f, 0.0f, 1.0f}});
-    //     }
-    //     else {
-    //         auto leftTop = 0.5f*(left + top);
-    //         auto leftRight = 0.5f*(left + right);
-    //         auto rightTop = 0.5f*(right + top);
-
-    //         sierpinski(verticies, left, leftRight, leftTop, iterations-1);
-    //         sierpinski(verticies, leftRight, right, rightTop, iterations-1);
-    //         sierpinski(verticies, leftTop, rightTop, top, iterations-1);
-    //     }
-    // }
 
     std::unique_ptr<Model> createCubeModel(Device& device, glm::vec3 offset) {
     std::vector<Model::Vertex> vertices{

@@ -30,6 +30,8 @@ set(SOURCES
     renderSystem.cpp
     cameraManager.hpp
     cameraManager.cpp
+    keyboard_movement_controller.hpp
+    keyboard_movement_controller.cpp
 )
 
 
