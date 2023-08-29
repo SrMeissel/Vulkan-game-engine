@@ -58,10 +58,10 @@ namespace engine {
     }
 
     void app::loadGameObjects() {
-        std::shared_ptr<Model> model = Model::createModelFromFile(device, "C:/Users/Ethan Mizer/Documents/Projects/Vulkan-Engine/Vulkan-game-engine/models/smooth_vase.obj");
+        std::shared_ptr<Model> model = Model::createModelFromFile(device, "C:/Users/Ethan Mizer/Documents/Projects/Vulkan-Engine/Vulkan-game-engine/models/flat_vase.obj");
         auto cube = GameObject::createGameObject();
         cube.model = model;
-        cube.transform.translation = {0.0f, 0.0f, 2.5f};
+        cube.transform.translation = {0.0f, 0.5f, 2.5f};
         cube.transform.scale = {0.5, 0.5, 0.5};
         gameObjects.push_back(std::move(cube));
     }

@@ -1,5 +1,4 @@
-*out/
-*src/
+out/*
 *.vscode
 *.vs
 *.spv
