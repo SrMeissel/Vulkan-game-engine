@@ -22,7 +22,6 @@ namespace engine {
 
             void run();
         private:
-            void sierpinski(std::vector<Model::Vertex> &verticies, glm::vec2 left, glm::vec2 right, glm::vec2 top, int iterations);
             void loadGameObjects();
 
             Window window{WIDTH, HEIGHT, "Hello there"};

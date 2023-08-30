@@ -40,9 +40,13 @@ namespace engine {
             float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime-currentTime).count();
             currentTime = newTime;
 
+            //update camera
             cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerObject);
             camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
 
+            //rotate second game object
+            gameObjects[1].transform.rotation = glm::mod((gameObjects[1].transform.rotation + (0.1f*frameTime)), glm::two_pi<float>());
+            
             float aspect = renderer.getAspectRatio();
             //camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 5);
             camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 10.0f);
@@ -59,10 +63,19 @@ namespace engine {
 
     void app::loadGameObjects() {
         std::shared_ptr<Model> model = Model::createModelFromFile(device, "C:/Users/Ethan Mizer/Documents/Projects/Vulkan-Engine/Vulkan-game-engine/models/flat_vase.obj");
-        auto cube = GameObject::createGameObject();
-        cube.model = model;
-        cube.transform.translation = {0.0f, 0.5f, 2.5f};
-        cube.transform.scale = {0.5, 0.5, 0.5};
-        gameObjects.push_back(std::move(cube));
+        auto object = GameObject::createGameObject();
+        object.model = model;
+        object.transform.translation = {1.0f, 0.5f, 2.5f};
+        object.transform.scale = {1, 1, 1};
+        gameObjects.push_back(std::move(object));
+
+        //Second object
+        model = Model::createModelFromFile(device, "C:/Users/Ethan Mizer/Documents/Projects/Vulkan-Engine/Vulkan-game-engine/models/colored_cube.obj");
+        auto secondObject = GameObject::createGameObject();
+        secondObject.model = model;
+        secondObject.transform.translation = {-1.0f, 0.5f, 2.5f};
+        secondObject.transform.scale = {0.5, 0.5, 0.5};
+        gameObjects.push_back(std::move(secondObject));
+
     }
 }
