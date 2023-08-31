@@ -35,6 +35,7 @@ set(SOURCES
     keyboard_movement_controller.cpp
     bufferManager.hpp
     bufferManager.cpp
+    frameInfo.hpp
 )
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/src/glfw-3.3.8)

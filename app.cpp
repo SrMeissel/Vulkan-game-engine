@@ -2,6 +2,7 @@
 #include "renderSystem.hpp"
 #include "cameraManager.hpp"
 #include "keyboard_movement_controller.hpp"
+#include "bufferManager.hpp"
 
 #include <iostream>
 #include <stdexcept>
@@ -15,6 +16,11 @@
 
 namespace engine {
 
+    struct GlobalUbo {
+        glm::mat4 projectionView{1.0f};
+        glm::vec3 lightDirection = glm::normalize(glm::vec3{1.0f, 3.0f, -1.0f});
+    };
+
     app::app() {
         loadGameObjects();
     }
@@ -23,6 +29,13 @@ namespace engine {
     }
 
     void app::run() {
+
+        std::vector<std::unique_ptr<Buffer>> uboBuffers(SwapChain::MAX_FRAMES_IN_FLIGHT);
+        for(int i=0; i < uboBuffers.size(); i++) {
+            uboBuffers[i] = std::make_unique<Buffer>(device, sizeof(GlobalUbo), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+            uboBuffers[i]->map();
+        }
+
         RenderSystem renderSystem{device, renderer.getRenderPass()};
         CameraManager camera{};
         //camera.setViewDirection(glm::vec3(0.0f), glm::vec3(0.5f, 0.0f, 1.0f));
@@ -52,8 +65,21 @@ namespace engine {
             camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 10.0f);
 
             if(auto commandBuffer = renderer.beginFrame()) {
+                int frameIndex = renderer.getFrameIndex();
+                frameInfo frameInfo{
+                    frameIndex, frameTime, commandBuffer, camera
+                };
+
+                //update buffer
+                GlobalUbo ubo{};
+                ubo.projectionView = camera.getProjection() * camera.getView();
+                uboBuffers[frameIndex]->writeToBuffer(&ubo);
+                uboBuffers[frameIndex]->flush();
+
+
+                //render
                 renderer.beginSwapChainRenderPass(commandBuffer);
-                renderSystem.renderGameObjects(commandBuffer, gameObjects, camera);
+                renderSystem.renderGameObjects(frameInfo, gameObjects);
                 renderer.endSwapChainRenderPass(commandBuffer);
                 renderer.endFrame();
             }

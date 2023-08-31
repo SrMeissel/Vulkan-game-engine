@@ -4,6 +4,7 @@
 #include "deviceManager.hpp"
 #include "gameObject.hpp"
 #include "cameraManager.hpp"
+#include "frameInfo.hpp"
 
 #include <memory>
 #include <vector>
@@ -18,7 +19,7 @@ namespace engine {
             RenderSystem(const RenderSystem &) = delete;
             RenderSystem &operator=(const RenderSystem &) = delete;
 
-            void renderGameObjects(VkCommandBuffer commandBuffer, std::vector<GameObject> &GameObjects, const CameraManager& camera);
+            void renderGameObjects(frameInfo& frameInfo, std::vector<GameObject> &GameObjects);
 
         private:
             void createPipelineLayout();
