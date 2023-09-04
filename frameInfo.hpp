@@ -2,6 +2,7 @@
 
 #include "cameraManager.hpp"
 
+
 #include <vulkan/vulkan.h>
 
 namespace engine {
@@ -10,5 +11,6 @@ namespace engine {
         float frameTime;
         VkCommandBuffer commandBuffer;
         CameraManager& camera;
+        VkDescriptorSet globalDescriptorSet;
     };
 }

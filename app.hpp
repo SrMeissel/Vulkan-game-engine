@@ -4,6 +4,7 @@
 #include "deviceManager.hpp"
 #include "gameObject.hpp"
 #include "Renderer.hpp"
+#include "descriptorManager.hpp"
 
 #include <memory>
 #include <vector>
@@ -27,6 +28,8 @@ namespace engine {
             Window window{WIDTH, HEIGHT, "Hello there"};
             Device device{window};
             Renderer renderer{window, device};
+            
+            std::unique_ptr<DescriptorPool> globalPool;
             std::vector<GameObject> gameObjects;
 
     };

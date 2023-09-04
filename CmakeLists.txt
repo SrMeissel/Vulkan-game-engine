@@ -36,6 +36,8 @@ set(SOURCES
     bufferManager.hpp
     bufferManager.cpp
     frameInfo.hpp
+    descriptorManager.hpp
+    descriptorManager.cpp
 )
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/src/glfw-3.3.8)

@@ -18,10 +18,11 @@ namespace engine {
 
     struct GlobalUbo {
         glm::mat4 projectionView{1.0f};
-        glm::vec3 lightDirection = glm::normalize(glm::vec3{1.0f, 3.0f, -1.0f});
+        glm::vec3 lightDirection = glm::normalize(glm::vec3{1.0f, -3.0f, -1.0f});
     };
 
     app::app() {
+        globalPool = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT).build();
         loadGameObjects();
     }
     app::~app() {
@@ -36,7 +37,14 @@ namespace engine {
             uboBuffers[i]->map();
         }
 
-        RenderSystem renderSystem{device, renderer.getRenderPass()};
+        auto globalSetLayout = DescriptorSetLayout::Builder(device).addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT).build();
+        std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
+        for(int i=0; i < globalDescriptorSets.size(); i++){
+            auto bufferInfo = uboBuffers[i]->descriptorInfo();
+            DescriptorWriter(*globalSetLayout, *globalPool).writeBuffer(0, &bufferInfo).build(globalDescriptorSets[i]);
+        }
+
+        RenderSystem renderSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
         CameraManager camera{};
         //camera.setViewDirection(glm::vec3(0.0f), glm::vec3(0.5f, 0.0f, 1.0f));
         camera.setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
@@ -67,7 +75,7 @@ namespace engine {
             if(auto commandBuffer = renderer.beginFrame()) {
                 int frameIndex = renderer.getFrameIndex();
                 frameInfo frameInfo{
-                    frameIndex, frameTime, commandBuffer, camera
+                    frameIndex, frameTime, commandBuffer, camera, globalDescriptorSets[frameIndex]
                 };
 
                 //update buffer
