@@ -18,7 +18,12 @@ namespace engine {
 
     struct GlobalUbo {
         glm::mat4 projectionView{1.0f};
-        glm::vec3 lightDirection = glm::normalize(glm::vec3{1.0f, -3.0f, -1.0f});
+        //glm::vec3 lightDirection = glm::normalize(glm::vec3{1.0f, -3.0f, -1.0f});
+
+        glm::vec4 ambientColor{1.0f, 1.0f, 1.0f, 0.02f};
+
+        glm::vec3 lightPosition{-1.0f}; 
+        alignas(16) glm::vec4 lightColor{0.25f,1.0f,0.25f,5.0f};
     };
 
     app::app() {
@@ -48,6 +53,7 @@ namespace engine {
         CameraManager camera{};
         //camera.setViewDirection(glm::vec3(0.0f), glm::vec3(0.5f, 0.0f, 1.0f));
         camera.setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
+        float orbitSpeed = 1;
 
         auto viewerObject = GameObject::createGameObject();
         keyboardMovementController cameraController{};
@@ -78,9 +84,15 @@ namespace engine {
                     frameIndex, frameTime, commandBuffer, camera, globalDescriptorSets[frameIndex]
                 };
 
+
+
+
                 //update buffer
                 GlobalUbo ubo{};
                 ubo.projectionView = camera.getProjection() * camera.getView();
+                orbitSpeed = glm::mod(orbitSpeed+(1.0f*frameTime), glm::two_pi<float>());
+                ubo.lightPosition.x = cos(orbitSpeed)*10;
+                ubo.lightPosition.z = sin(orbitSpeed)*10;
                 uboBuffers[frameIndex]->writeToBuffer(&ubo);
                 uboBuffers[frameIndex]->flush();
 
@@ -96,10 +108,11 @@ namespace engine {
     }
 
     void app::loadGameObjects() {
+        //looks like I can make these into another function! hahahahahahaha this is going quite splendid indeed!
         std::shared_ptr<Model> model = Model::createModelFromFile(device, "C:/Users/Ethan Mizer/Documents/Projects/Vulkan-Engine/Vulkan-game-engine/models/flat_vase.obj");
         auto object = GameObject::createGameObject();
         object.model = model;
-        object.transform.translation = {1.0f, 0.5f, 2.5f};
+        object.transform.translation = {0.0f, 0.5f, 0.0f};
         object.transform.scale = {1, 1, 1};
         gameObjects.push_back(std::move(object));
 
@@ -107,9 +120,17 @@ namespace engine {
         model = Model::createModelFromFile(device, "C:/Users/Ethan Mizer/Documents/Projects/Vulkan-Engine/Vulkan-game-engine/models/colored_cube.obj");
         auto secondObject = GameObject::createGameObject();
         secondObject.model = model;
-        secondObject.transform.translation = {-1.0f, 0.5f, 2.5f};
+        secondObject.transform.translation = {-1.0f, -0.5f, 2.5f};
         secondObject.transform.scale = {0.5, 0.5, 0.5};
         gameObjects.push_back(std::move(secondObject));
+
+        //floor
+        model = Model::createModelFromFile(device, "C:/Users/Ethan Mizer/Documents/Projects/Vulkan-Engine/Vulkan-game-engine/models/quad.obj");
+        auto floor = GameObject::createGameObject();
+        floor.model = model;
+        floor.transform.translation = {0.0f, 0.5f, 0.0f};
+        floor.transform.scale = {3.0, 1.0, 3.0};
+        gameObjects.push_back(std::move(floor));
 
     }
 }
