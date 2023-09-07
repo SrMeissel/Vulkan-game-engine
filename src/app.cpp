@@ -1,8 +1,10 @@
 #include "app.hpp"
-#include "systems/renderSystem.hpp"
 #include "cameraManager.hpp"
 #include "keyboard_movement_controller.hpp"
 #include "bufferManager.hpp"
+#include "systems/renderSystem.hpp"
+#include "systems/pointLightSystem.hpp"
+
 
 #include <iostream>
 #include <stdexcept>
@@ -51,6 +53,7 @@ namespace engine {
         }
 
         RenderSystem renderSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
+        PointLightSystem pointLightSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
         CameraManager camera{};
         //camera.setViewDirection(glm::vec3(0.0f), glm::vec3(0.5f, 0.0f, 1.0f));
         camera.setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
@@ -102,6 +105,7 @@ namespace engine {
                 //render
                 renderer.beginSwapChainRenderPass(commandBuffer);
                 renderSystem.renderGameObjects(frameInfo);
+                pointLightSystem.render(frameInfo);
                 renderer.endSwapChainRenderPass(commandBuffer);
                 renderer.endFrame();
             }
