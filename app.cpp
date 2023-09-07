@@ -23,7 +23,7 @@ namespace engine {
         glm::vec4 ambientColor{1.0f, 1.0f, 1.0f, 0.02f};
 
         glm::vec3 lightPosition{-1.0f}; 
-        alignas(16) glm::vec4 lightColor{0.25f,1.0f,0.25f,5.0f};
+        alignas(16) glm::vec4 lightColor{1.0f,0.96f,0.71f,5.0f};
     };
 
     app::app() {
@@ -42,7 +42,7 @@ namespace engine {
             uboBuffers[i]->map();
         }
 
-        auto globalSetLayout = DescriptorSetLayout::Builder(device).addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT).build();
+        auto globalSetLayout = DescriptorSetLayout::Builder(device).addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS).build();
         std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
         for(int i=0; i < globalDescriptorSets.size(); i++){
             auto bufferInfo = uboBuffers[i]->descriptorInfo();
