@@ -3,6 +3,7 @@
 #include "modelManager.hpp"
 
 #include <memory>
+#include <unordered_map>
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace engine {
@@ -23,7 +24,10 @@ namespace engine {
 
     class GameObject {
         public:
+            GameObject();
+
             using id_t = unsigned int;
+            using map = std::unordered_map<id_t, GameObject>;
 
             static GameObject createGameObject() {
                 static id_t currentId = 0;

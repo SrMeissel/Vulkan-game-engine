@@ -9,45 +9,20 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
-set(SOURCES 
-    main.cpp
-    windowManager.cpp
-    windowManager.hpp
-    app.cpp
-    app.hpp
-    pipeline.cpp
-    pipeline.hpp
-    deviceManager.cpp
-    deviceManager.hpp
-    swapchainManager.cpp
-    swapchainManager.hpp
-    modelManager.cpp
-    modelManager.hpp
-    gameObject.hpp
-    gameObject.cpp
-    Renderer.hpp
-    Renderer.cpp
-    renderSystem.hpp
-    renderSystem.cpp
-    cameraManager.hpp
-    cameraManager.cpp
-    keyboard_movement_controller.hpp
-    keyboard_movement_controller.cpp
-    bufferManager.hpp
-    bufferManager.cpp
-    frameInfo.hpp
-    descriptorManager.hpp
-    descriptorManager.cpp
-)
+file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp ${PROJECT_SOURCE_DIR}/*.hpp)
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/src/glfw-3.3.8)
-add_subdirectory(${CMAKE_SOURCE_DIR}/src/tinyobjloader-release)
+add_subdirectory(${CMAKE_SOURCE_DIR}/libs/glfw-3.3.8)
+add_subdirectory(${CMAKE_SOURCE_DIR}/libs/tinyobjloader-release)
 
 find_package(Vulkan REQUIRED)
 
 add_executable(engine
     ${SOURCES}
     ) 
+
+target_include_directories(engine PUBLIC
+    ${PROJECT_SOURCE_DIR}/src    
+)
 
 target_link_libraries(engine glfw)
 target_link_libraries(engine tinyobjloader)

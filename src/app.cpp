@@ -1,5 +1,5 @@
 #include "app.hpp"
-#include "renderSystem.hpp"
+#include "systems/renderSystem.hpp"
 #include "cameraManager.hpp"
 #include "keyboard_movement_controller.hpp"
 #include "bufferManager.hpp"
@@ -17,13 +17,14 @@
 namespace engine {
 
     struct GlobalUbo {
-        glm::mat4 projectionView{1.0f};
+        glm::mat4 projection{1.0f};
+        glm::mat4 view{1.0f};
         //glm::vec3 lightDirection = glm::normalize(glm::vec3{1.0f, -3.0f, -1.0f});
 
         glm::vec4 ambientColor{1.0f, 1.0f, 1.0f, 0.02f};
 
         glm::vec3 lightPosition{-1.0f}; 
-        alignas(16) glm::vec4 lightColor{1.0f,0.96f,0.71f,5.0f};
+        alignas(16) glm::vec4 lightColor{1.0f,0.96f,0.71f,2.0f};
     };
 
     app::app() {
@@ -76,12 +77,12 @@ namespace engine {
             
             float aspect = renderer.getAspectRatio();
             //camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 5);
-            camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 10.0f);
+            camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 50.0f);
 
             if(auto commandBuffer = renderer.beginFrame()) {
                 int frameIndex = renderer.getFrameIndex();
                 frameInfo frameInfo{
-                    frameIndex, frameTime, commandBuffer, camera, globalDescriptorSets[frameIndex]
+                    frameIndex, frameTime, commandBuffer, camera, globalDescriptorSets[frameIndex], gameObjects
                 };
 
 
@@ -89,17 +90,18 @@ namespace engine {
 
                 //update buffer
                 GlobalUbo ubo{};
-                ubo.projectionView = camera.getProjection() * camera.getView();
+                ubo.projection = camera.getProjection();
+                ubo.view = camera.getView();
                 orbitSpeed = glm::mod(orbitSpeed+(1.0f*frameTime), glm::two_pi<float>());
-                ubo.lightPosition.x = cos(orbitSpeed)*10;
-                ubo.lightPosition.z = sin(orbitSpeed)*10;
+                ubo.lightPosition.x = cos(orbitSpeed)*2;
+                ubo.lightPosition.z = sin(orbitSpeed)*2;
                 uboBuffers[frameIndex]->writeToBuffer(&ubo);
                 uboBuffers[frameIndex]->flush();
 
 
                 //render
                 renderer.beginSwapChainRenderPass(commandBuffer);
-                renderSystem.renderGameObjects(frameInfo, gameObjects);
+                renderSystem.renderGameObjects(frameInfo);
                 renderer.endSwapChainRenderPass(commandBuffer);
                 renderer.endFrame();
             }
@@ -109,28 +111,28 @@ namespace engine {
 
     void app::loadGameObjects() {
         //looks like I can make these into another function! hahahahahahaha this is going quite splendid indeed!
-        std::shared_ptr<Model> model = Model::createModelFromFile(device, "C:/Users/Ethan Mizer/Documents/Projects/Vulkan-Engine/Vulkan-game-engine/models/flat_vase.obj");
+        std::shared_ptr<Model> model = Model::createModelFromFile(device, "models/flat_vase.obj");
         auto object = GameObject::createGameObject();
         object.model = model;
         object.transform.translation = {0.0f, 0.5f, 0.0f};
         object.transform.scale = {1, 1, 1};
-        gameObjects.push_back(std::move(object));
+        gameObjects.emplace(object.getId(), std::move(object));
 
         //Second object
-        model = Model::createModelFromFile(device, "C:/Users/Ethan Mizer/Documents/Projects/Vulkan-Engine/Vulkan-game-engine/models/colored_cube.obj");
+        model = Model::createModelFromFile(device, "models/colored_cube.obj");
         auto secondObject = GameObject::createGameObject();
         secondObject.model = model;
         secondObject.transform.translation = {-1.0f, -0.5f, 2.5f};
         secondObject.transform.scale = {0.5, 0.5, 0.5};
-        gameObjects.push_back(std::move(secondObject));
+        gameObjects.emplace(secondObject.getId(), std::move(secondObject));
 
         //floor
-        model = Model::createModelFromFile(device, "C:/Users/Ethan Mizer/Documents/Projects/Vulkan-Engine/Vulkan-game-engine/models/quad.obj");
+        model = Model::createModelFromFile(device, "models/quad.obj");
         auto floor = GameObject::createGameObject();
         floor.model = model;
         floor.transform.translation = {0.0f, 0.5f, 0.0f};
-        floor.transform.scale = {3.0, 1.0, 3.0};
-        gameObjects.push_back(std::move(floor));
+        floor.transform.scale = {5.0, 1.0, 5.0};
+        gameObjects.emplace(floor.getId(), std::move(floor));
 
     }
 }

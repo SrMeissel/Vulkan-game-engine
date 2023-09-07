@@ -11,6 +11,10 @@
 #include <cstring>
 #include <unordered_map>
 
+#ifndef ENGINE_DIR
+#define ENGINE_DIR "../../"
+#endif
+
 namespace std {
     template<>
     struct hash<engine::Model::Vertex> {
@@ -36,7 +40,7 @@ namespace engine {
 
     std::unique_ptr<Model> Model::createModelFromFile(Device& device, const std::string& filepath) {
         Builder builder{};
-        builder.loadModel(filepath);
+        builder.loadModel(ENGINE_DIR + filepath);
         std::cout << "Vertex Count: " << builder.vertices.size();
         return std::make_unique<Model>(device, builder);
     }
