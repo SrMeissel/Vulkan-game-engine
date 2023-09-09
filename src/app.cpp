@@ -18,17 +18,6 @@
 
 namespace engine {
 
-    struct GlobalUbo {
-        glm::mat4 projection{1.0f};
-        glm::mat4 view{1.0f};
-        //glm::vec3 lightDirection = glm::normalize(glm::vec3{1.0f, -3.0f, -1.0f});
-
-        glm::vec4 ambientColor{1.0f, 1.0f, 1.0f, 0.02f};
-
-        glm::vec3 lightPosition{-1.0f}; 
-        alignas(16) glm::vec4 lightColor{1.0f,0.96f,0.71f,2.0f};
-    };
-
     app::app() {
         globalPool = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT).build();
         loadGameObjects();
@@ -95,9 +84,12 @@ namespace engine {
                 GlobalUbo ubo{};
                 ubo.projection = camera.getProjection();
                 ubo.view = camera.getView();
-                orbitSpeed = glm::mod(orbitSpeed+(1.0f*frameTime), glm::two_pi<float>());
-                ubo.lightPosition.x = cos(orbitSpeed)*2;
-                ubo.lightPosition.z = sin(orbitSpeed)*2;
+
+                pointLightSystem.update(frameInfo, ubo);
+                // orbitSpeed = glm::mod(orbitSpeed+(1.0f*frameTime), glm::two_pi<float>());
+                // ubo.lightPosition.x = cos(orbitSpeed)*2;
+                // ubo.lightPosition.z = sin(orbitSpeed)*2;
+                // used to make orbiting light when the system was more primitive
                 uboBuffers[frameIndex]->writeToBuffer(&ubo);
                 uboBuffers[frameIndex]->flush();
 
@@ -138,5 +130,23 @@ namespace engine {
         floor.transform.scale = {5.0, 1.0, 5.0};
         gameObjects.emplace(floor.getId(), std::move(floor));
 
+        //tree
+        model = Model::createModelFromFile(device, "models/Lowpoly_tree_sample.obj");
+        auto tree = GameObject::createGameObject();
+        tree.model = model;
+        tree.transform.translation = {0.0f, 1.5f, 0.0f};
+        tree.transform.scale = {1, 1, 1};
+        gameObjects.emplace(tree.getId(), std::move(tree));
+           
+        // best light color {1.0f, 0.96f, 0.71f};
+        int lightNum = 3;
+        float radius = 3.0f;
+        for(int i=0; i <lightNum; i++){
+            auto pointLight = GameObject::makePointLight();
+            pointLight.color = {1.0f, 0.96f, 0.71f};
+            auto  rotateLight = glm::rotate(glm::mat4(1.0f), (i*glm::two_pi<float>()) / lightNum, {0.0f, -1.0f, 0.0f});
+            pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-radius, -1, -radius, 1.0f));
+            gameObjects.emplace(pointLight.getId(), std::move(pointLight));
+        }
     }
 }
