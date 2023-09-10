@@ -85,20 +85,19 @@ namespace engine {
                 ubo.projection = camera.getProjection();
                 ubo.view = camera.getView();
                 ubo.inverseView = camera.getInverseView();
-
                 pointLightSystem.update(frameInfo, ubo);
-                // orbitSpeed = glm::mod(orbitSpeed+(1.0f*frameTime), glm::two_pi<float>());
-                // ubo.lightPosition.x = cos(orbitSpeed)*2;
-                // ubo.lightPosition.z = sin(orbitSpeed)*2;
-                // used to make orbiting light when the system was more primitive
+
                 uboBuffers[frameIndex]->writeToBuffer(&ubo);
                 uboBuffers[frameIndex]->flush();
 
 
                 //render
                 renderer.beginSwapChainRenderPass(commandBuffer);
+
+                //order matters, the transparent pointLights need to be rendered first (Brendan tutorial 27)
                 renderSystem.renderGameObjects(frameInfo);
                 pointLightSystem.render(frameInfo);
+
                 renderer.endSwapChainRenderPass(commandBuffer);
                 renderer.endFrame();
             }

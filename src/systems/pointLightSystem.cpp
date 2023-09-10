@@ -3,6 +3,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <array>
+#include <map>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -50,6 +51,7 @@ namespace engine {
 
         PipelineConfigInfo pipelineConfig{};
         Pipeline::defaultPipelineConfigInfo(pipelineConfig);
+        Pipeline::enableAlphaBlending(pipelineConfig);
         pipelineConfig.attributeDescriptions.clear();
         pipelineConfig.bindingDescriptions.clear();
 
@@ -82,13 +84,23 @@ namespace engine {
     }
 
     void PointLightSystem::render(frameInfo& frameInfo) {
+        //sorting transparent lights
+        std::map<float, GameObject::id_t> sorted;
+        for(auto& kv : frameInfo.gameObjects) {
+            auto& obj = kv.second;
+            if(obj.pointLight==nullptr) continue;
+
+            auto offset = frameInfo.camera.getPosition() - obj.transform.translation;
+            float disSquared = glm::dot(offset, offset);
+            sorted[disSquared] = obj.getId();
+        }
+         
         pipeline->bind(frameInfo.commandBuffer);
 
         vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &frameInfo.globalDescriptorSet, 0, nullptr);
 
-        for(auto& kv: frameInfo.gameObjects){
-            auto& obj = kv.second;
-            if(obj.pointLight == nullptr) continue;
+        for(auto it = sorted.rbegin(); it != sorted.rend(); ++it){ 
+            auto& obj = frameInfo.gameObjects.at(it->second);
 
             pointLightPushConstants push{};
             push.position = glm::vec4(obj.transform.translation, 1.0f);
