@@ -84,6 +84,7 @@ namespace engine {
                 GlobalUbo ubo{};
                 ubo.projection = camera.getProjection();
                 ubo.view = camera.getView();
+                ubo.inverseView = camera.getInverseView();
 
                 pointLightSystem.update(frameInfo, ubo);
                 // orbitSpeed = glm::mod(orbitSpeed+(1.0f*frameTime), glm::two_pi<float>());
