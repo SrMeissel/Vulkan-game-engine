@@ -113,7 +113,7 @@ namespace engine {
         }
     }
 
-    void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo) {
+    void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo, engine::Device& device) {
 
         //copied from https://pastebin.com/EmsJWHzb
 
@@ -140,9 +140,9 @@ namespace engine {
         configInfo.rasterizationInfo.depthBiasSlopeFactor = 0.0f;     // Optional
 
         configInfo.multisampleInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-        configInfo.multisampleInfo.sampleShadingEnable = VK_FALSE;
-        configInfo.multisampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-        configInfo.multisampleInfo.minSampleShading = 1.0f;           // Optional
+        configInfo.multisampleInfo.sampleShadingEnable = VK_TRUE;
+        configInfo.multisampleInfo.rasterizationSamples = device.msaaSamples;
+        configInfo.multisampleInfo.minSampleShading = 0.2f;           // Optional
         configInfo.multisampleInfo.pSampleMask = nullptr;             // Optional
         configInfo.multisampleInfo.alphaToCoverageEnable = VK_FALSE;  // Optional
         configInfo.multisampleInfo.alphaToOneEnable = VK_FALSE;       // Optional

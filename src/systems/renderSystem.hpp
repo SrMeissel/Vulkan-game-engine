@@ -1,7 +1,7 @@
 #pragma once
 
-#include "pipeline.hpp"
-#include "deviceManager.hpp"
+#include "Pipeline/pipeline.hpp"
+#include "Pipeline/deviceManager.hpp"
 #include "gameObject.hpp"
 #include "cameraManager.hpp"
 #include "frameInfo.hpp"

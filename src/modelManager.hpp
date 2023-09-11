@@ -1,6 +1,6 @@
 #pragma once
 
-#include "deviceManager.hpp"
+#include "Pipeline/deviceManager.hpp"
 #include "bufferManager.hpp" 
 
 #define GLM_FORCE_RADIANS

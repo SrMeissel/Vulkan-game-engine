@@ -39,7 +39,7 @@ namespace engine{
             Pipeline(const Pipeline&) = delete;
             Pipeline& operator=(const Pipeline&) = delete;
 
-            static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
+            static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo, Device& device);
             static void enableAlphaBlending(PipelineConfigInfo& configInfo);
 
             void bind(VkCommandBuffer commandBuffer);

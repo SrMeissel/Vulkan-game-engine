@@ -50,7 +50,7 @@ namespace engine {
         assert(pipelineLayout != nullptr && "cannot create pipeline before pipeline layout!");
 
         PipelineConfigInfo pipelineConfig{};
-        Pipeline::defaultPipelineConfigInfo(pipelineConfig);
+        Pipeline::defaultPipelineConfigInfo(pipelineConfig, device);
         Pipeline::enableAlphaBlending(pipelineConfig);
         pipelineConfig.attributeDescriptions.clear();
         pipelineConfig.bindingDescriptions.clear();

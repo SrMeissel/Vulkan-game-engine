@@ -1,9 +1,9 @@
 #pragma once
 
-#include "windowManager.hpp"
-#include "deviceManager.hpp"
+#include "Pipeline/windowManager.hpp"
+#include "Pipeline/deviceManager.hpp"
 #include "gameObject.hpp"
-#include "Renderer.hpp"
+#include "Pipeline/Renderer.hpp"
 #include "descriptorManager.hpp"
 
 #include <memory>

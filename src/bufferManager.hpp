@@ -1,6 +1,6 @@
 #pragma once
  
-#include "deviceManager.hpp"
+#include "Pipeline/deviceManager.hpp"
  
 namespace engine {
  

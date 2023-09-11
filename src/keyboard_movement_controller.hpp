@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gameObject.hpp"
-#include "windowManager.hpp"
+#include "Pipeline/windowManager.hpp"
 
 namespace engine {
     class keyboardMovementController {

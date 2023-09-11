@@ -70,7 +70,10 @@ class Device {
       VkImage &image,
       VkDeviceMemory &imageMemory);
 
+  VkSampleCountFlagBits getMaxUsableSampleCount();
+
   VkPhysicalDeviceProperties properties;
+  VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 
  private:
   void createInstance();
