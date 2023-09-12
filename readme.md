@@ -4,3 +4,12 @@ learned of and am using https://www.learncpp.com/ aswell
 https://www.youtube.com/watch?v=aVwxzDHniEw&t=1226s
 
 MultiSampling anti-aliasing implemented from: https://vulkan-tutorial.com/Multisampling
+
+image decoding implemented from : https://vulkan-tutorial.com/Texture_mapping/Images
+
+Depends on:
+    stb - https://github.com/nothings/stb
+    glfw
+    glm
+    tinyobjloader
+    

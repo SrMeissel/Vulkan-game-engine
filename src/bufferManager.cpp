@@ -4,7 +4,7 @@
  * Initially based off VulkanBuffer by Sascha Willems -
  * https://github.com/SaschaWillems/Vulkan/blob/master/base/VulkanBuffer.h
  * 
- * further adapter from Brendan Galea at - https://www.youtube.com/watch?v=may_GMkfs5k&list=PL8327DO66nu9qYVKLDmdLW_84-yE4auCR&index=22
+ * further adaption from Brendan Galea at - https://www.youtube.com/watch?v=may_GMkfs5k&list=PL8327DO66nu9qYVKLDmdLW_84-yE4auCR&index=22
  */
  
 #include "bufferManager.hpp"
