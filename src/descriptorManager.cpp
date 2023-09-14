@@ -2,6 +2,7 @@
  
 // std
 #include <cassert>
+#include <iostream>
 #include <stdexcept>
  
 namespace engine {
@@ -173,6 +174,7 @@ DescriptorWriter &DescriptorWriter::writeImage(
   write.pImageInfo = imageInfo;
   write.descriptorCount = 1;
  
+  std::cout << "sampler descriptor writes added "<< "\n";
   writes.push_back(write);
   return *this;
 }
@@ -190,6 +192,7 @@ void DescriptorWriter::overwrite(VkDescriptorSet &set) {
   for (auto &write : writes) {
     write.dstSet = set;
   }
+  std::cout << "descriptor writes size " << writes.size() << "\n";
   vkUpdateDescriptorSets(pool.device.device(), writes.size(), writes.data(), 0, nullptr);
 }
  

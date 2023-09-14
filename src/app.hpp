@@ -6,6 +6,8 @@
 #include "Pipeline/Renderer.hpp"
 #include "descriptorManager.hpp"
 
+#include "textureManager.hpp"
+
 #include <memory>
 #include <vector>
 
@@ -28,6 +30,8 @@ namespace engine {
             Window window{WIDTH, HEIGHT, "Hello there"};
             Device device{window};
             Renderer renderer{window, device};
+
+            Texture texture{device};
             
             std::unique_ptr<DescriptorPool> globalPool;
             GameObject::map gameObjects;

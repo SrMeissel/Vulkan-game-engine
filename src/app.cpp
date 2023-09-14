@@ -19,7 +19,7 @@
 namespace engine {
 
     app::app() {
-        globalPool = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT).build();
+        globalPool = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT).build();
         loadGameObjects();
     }
     app::~app() {
@@ -34,11 +34,17 @@ namespace engine {
             uboBuffers[i]->map();
         }
 
-        auto globalSetLayout = DescriptorSetLayout::Builder(device).addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS).build();
+        auto globalSetLayout = DescriptorSetLayout::Builder(device).addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS).addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT).build();
         std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
         for(int i=0; i < globalDescriptorSets.size(); i++){
             auto bufferInfo = uboBuffers[i]->descriptorInfo();
-            DescriptorWriter(*globalSetLayout, *globalPool).writeBuffer(0, &bufferInfo).build(globalDescriptorSets[i]);
+            
+            VkDescriptorImageInfo imageInfo{};
+            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            imageInfo.imageView = texture.getTextureImageView();
+            imageInfo.sampler = texture.getTextureSampler();
+
+            DescriptorWriter(*globalSetLayout, *globalPool).writeBuffer(0, &bufferInfo).writeImage(1, &imageInfo).build(globalDescriptorSets[i]);
         }
 
         RenderSystem renderSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
@@ -73,12 +79,10 @@ namespace engine {
 
             if(auto commandBuffer = renderer.beginFrame()) {
                 int frameIndex = renderer.getFrameIndex();
+
                 frameInfo frameInfo{
                     frameIndex, frameTime, commandBuffer, camera, globalDescriptorSets[frameIndex], gameObjects
                 };
-
-
-
 
                 //update buffer
                 GlobalUbo ubo{};

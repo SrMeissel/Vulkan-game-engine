@@ -71,7 +71,9 @@ class Device {
       VkDeviceMemory &imageMemory);
 
   VkSampleCountFlagBits getMaxUsableSampleCount();
+  void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
+  VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
   VkPhysicalDeviceProperties properties;
   VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 
@@ -95,7 +97,6 @@ class Device {
 
   VkInstance instance;
   VkDebugUtilsMessengerEXT debugMessenger;
-  VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
   Window &window;
   VkCommandPool commandPool;
 
