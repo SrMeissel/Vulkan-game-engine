@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <array>
 #include <chrono>
+#include <String>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -20,6 +21,7 @@ namespace engine {
 
     app::app() {
         globalPool = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT).build();
+
         loadGameObjects();
     }
     app::~app() {
@@ -36,21 +38,26 @@ namespace engine {
 
         auto globalSetLayout = DescriptorSetLayout::Builder(device).addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS).addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT).build();
         std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
+
         for(int i=0; i < globalDescriptorSets.size(); i++){
+            DescriptorWriter writer(*globalSetLayout, *globalPool);
+
             auto bufferInfo = uboBuffers[i]->descriptorInfo();
+            writer.writeBuffer(0, &bufferInfo);
             
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             imageInfo.imageView = texture.getTextureImageView();
             imageInfo.sampler = texture.getTextureSampler();
-
-            DescriptorWriter(*globalSetLayout, *globalPool).writeBuffer(0, &bufferInfo).writeImage(1, &imageInfo).build(globalDescriptorSets[i]);
+                
+            writer.writeImage(1, &imageInfo);
+            writer.build(globalDescriptorSets[i]);
         }
 
         RenderSystem renderSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
         PointLightSystem pointLightSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
         CameraManager camera{};
-        //camera.setViewDirection(glm::vec3(0.0f), glm::vec3(0.5f, 0.0f, 1.0f));
+
         camera.setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
         float orbitSpeed = 1;
 
@@ -74,7 +81,6 @@ namespace engine {
             gameObjects[1].transform.rotation = glm::mod((gameObjects[1].transform.rotation + (0.1f*frameTime)), glm::two_pi<float>());
             
             float aspect = renderer.getAspectRatio();
-            //camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 5);
             camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 50.0f);
 
             if(auto commandBuffer = renderer.beginFrame()) {
@@ -109,38 +115,42 @@ namespace engine {
         vkDeviceWaitIdle(device.device());
     }
 
-    void app::loadGameObjects() {
-        //looks like I can make these into another function! hahahahahahaha this is going quite splendid indeed!
-        std::shared_ptr<Model> model = Model::createModelFromFile(device, "models/flat_vase.obj");
-        auto object = GameObject::createGameObject();
+    void app::initilizeObject(GameObject& object, glm::vec3 position, glm::vec3 scale, std::string modelFile, char * textureFile) {
+        std::shared_ptr<Model> model = Model::createModelFromFile(device, modelFile);
         object.model = model;
-        object.transform.translation = {0.0f, 0.5f, 0.0f};
-        object.transform.scale = {1, 1, 1};
+        object.transform.translation = position;
+        object.transform.scale = scale;
         gameObjects.emplace(object.getId(), std::move(object));
+    }
+
+    void app::loadGameObjects() {
+
+        glm::vec3 translation;
+        glm::vec3 scale; 
+
+        auto object = GameObject::createGameObject();
+        translation = {0.0f, 0.5f, 0.0f};
+        scale = {1, 1, 1};
+        initilizeObject(object, translation, scale, "models/flat_vase.obj");
 
         //Second object
-        model = Model::createModelFromFile(device, "models/colored_cube.obj");
         auto secondObject = GameObject::createGameObject();
-        secondObject.model = model;
-        secondObject.transform.translation = {-1.0f, -0.5f, 2.5f};
-        secondObject.transform.scale = {0.5, 0.5, 0.5};
-        gameObjects.emplace(secondObject.getId(), std::move(secondObject));
+        translation = {-1.0f, -0.5f, 2.5f};
+        scale = {0.5, 0.5, 0.5};
+        initilizeObject(secondObject, translation, scale, "models/colored_cube.obj");
 
         //floor
-        model = Model::createModelFromFile(device, "models/quad.obj");
         auto floor = GameObject::createGameObject();
-        floor.model = model;
-        floor.transform.translation = {0.0f, 0.5f, 0.0f};
-        floor.transform.scale = {5.0, 1.0, 5.0};
-        gameObjects.emplace(floor.getId(), std::move(floor));
+        translation = {0.0f, 0.5f, 0.0f};
+        scale = {5.0, 1.0, 5.0};
+        initilizeObject(floor, translation, scale, "models/quad.obj");
 
         //tree
-        model = Model::createModelFromFile(device, "models/Lowpoly_tree_sample.obj");
         auto tree = GameObject::createGameObject();
-        tree.model = model;
-        tree.transform.translation = {0.0f, 1.5f, 0.0f};
-        tree.transform.scale = {1, 1, 1};
-        gameObjects.emplace(tree.getId(), std::move(tree));
+        translation = {0.0f, 1.5f, 0.0f};
+        scale = {1, 1, 1};
+        initilizeObject(tree, translation, scale, "models/Lowpoly_tree_sample.obj");
+
            
         // best light color {1.0f, 0.96f, 0.71f};
         int lightNum = 3;

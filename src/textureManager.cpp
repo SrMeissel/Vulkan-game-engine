@@ -4,8 +4,8 @@
 #include <stdexcept>
 
 namespace engine{
-    Texture::Texture(Device& device) : device{device} {
-        createTextureImage();
+    Texture::Texture(Device& device, char * filePath) : device{device} {
+        createTextureImage(filePath);
         createTextureImageView();
         createTextureSampler();
     };
@@ -19,9 +19,9 @@ namespace engine{
         vkDestroyImageView(device.device(), textureImageView, nullptr);
     }
 
-    void Texture::createTextureImage() {
+    void Texture::createTextureImage(char * filePath) {
         int texWidth, texHeight, texChannels;
-        stbi_uc* pixels = stbi_load("../../textures/statue_texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+        stbi_uc* pixels = stbi_load(filePath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
         VkDeviceSize imageSize = texWidth * texHeight * 4;
 
         if (!pixels) {
