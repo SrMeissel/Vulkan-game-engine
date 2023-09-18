@@ -33,6 +33,7 @@ layout(set = 0, binding = 2) uniform texture2D textures[3];
 layout(push_constant) uniform Push {
     mat4 modelMatrix; // projection * view * model
     mat4 normalMatrix;
+    int textureIndex;
 } push;
 
 void main() {
@@ -66,5 +67,5 @@ void main() {
     }
 
     vec4 fragLight = vec4(diffuseLight * fragColor + specularLight * fragColor, 1.0);
-    outColor = texture(sampler2D(textures[2], texSampler), fragTexCoord) * fragLight;
+    outColor = texture(sampler2D(textures[push.textureIndex], texSampler), fragTexCoord) * fragLight;
 }
