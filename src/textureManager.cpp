@@ -4,22 +4,33 @@
 #include <stdexcept>
 
 namespace engine{
-    Texture::Texture(Device& device, char * filePath) : device{device} {
-        createTextureImage(filePath);
-        createTextureImageView();
+    TextureManager::TextureManager(Device& device) : device{device} {
+        //texture Sampler is image independant! yay
         createTextureSampler();
     };
 
-    Texture::~Texture() {
-        vkDestroyImageView(device.device(), textureImageView, nullptr);
+    TextureManager::~TextureManager() {
 
-        vkDestroyImage(device.device(), textureImage, nullptr);
         vkFreeMemory(device.device(), textureImageMemory, nullptr);
         vkDestroySampler(device.device(), textureSampler, nullptr);
-        vkDestroyImageView(device.device(), textureImageView, nullptr);
     }
 
-    void Texture::createTextureImage(char * filePath) {
+    //Texture not in class, still need to be cleaned up
+    //currently make copying to the array difficult
+    // Texture::Texture(Device &device) : device{device} {}
+
+    // Texture::~Texture(){
+    //     vkDestroyImageView(device.device(), imageView, nullptr);
+    //     vkDestroyImage(device.device(), image, nullptr);
+    // }
+    void TextureManager::destroyTexture(Texture texture) {
+        vkDestroyImageView(device.device(), texture.imageView, nullptr);
+        vkDestroyImage(device.device(), texture.image, nullptr);
+    }
+
+    VkImage TextureManager::createTextureImage(char * filePath) {
+        VkImage image;       
+
         int texWidth, texHeight, texChannels;
         stbi_uc* pixels = stbi_load(filePath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
         VkDeviceSize imageSize = texWidth * texHeight * 4;
@@ -34,16 +45,18 @@ namespace engine{
 
         stbi_image_free(pixels);
 
-        createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+        createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image, textureImageMemory);
     
-        device.transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        device.copyBufferToImage(stagingBuffer.getBuffer(), textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 1);
+        device.transitionImageLayout(image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        device.copyBufferToImage(stagingBuffer.getBuffer(), image, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 1);
     
-        device.transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    
+        device.transitionImageLayout(image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+        return image;
     }
 
-    void Texture::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
+    // not really needed.
+    void TextureManager::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
         VkImageCreateInfo imageInfo{};
         imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -61,10 +74,12 @@ namespace engine{
 
         device.createImageWithInfo(imageInfo, properties, image, imageMemory);
     }
-    void Texture::createTextureImageView() {
+    VkImageView TextureManager::createTextureImageView(VkImage image) {
+        VkImageView imageView;
+
         VkImageViewCreateInfo viewInfo{};
         viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        viewInfo.image = textureImage;
+        viewInfo.image = image;
         viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
         viewInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
         viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -73,11 +88,13 @@ namespace engine{
         viewInfo.subresourceRange.baseArrayLayer = 0;
         viewInfo.subresourceRange.layerCount = 1;
 
-        if (vkCreateImageView(device.device(), &viewInfo, nullptr, &textureImageView) != VK_SUCCESS) {
+        if (vkCreateImageView(device.device(), &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
             throw std::runtime_error("failed to create texture image view!");
         }
+        return imageView;
+
     }
-    void Texture::createTextureSampler() {
+    void TextureManager::createTextureSampler() {
         VkPhysicalDeviceProperties properties{};
         vkGetPhysicalDeviceProperties(device.physicalDevice, &properties);
 

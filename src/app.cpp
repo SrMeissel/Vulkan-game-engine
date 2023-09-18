@@ -20,12 +20,19 @@
 namespace engine {
 
     app::app() {
-        globalPool = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT).build();
+        globalPool = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
+        .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+        .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+        .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, SwapChain::MAX_FRAMES_IN_FLIGHT)
+        .build();
 
         loadGameObjects();
+        loadTextures();
     }
     app::~app() {
-        
+        for(int i=0; i < 3; i ++) {
+            textureManager.destroyTexture(loadedTextures[i]);
+        }
     }
 
     void app::run() {
@@ -36,21 +43,33 @@ namespace engine {
             uboBuffers[i]->map();
         }
 
-        auto globalSetLayout = DescriptorSetLayout::Builder(device).addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS).addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT).build();
-        std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
+        int textureAmount = sizeof(loadedTextures)/sizeof(Texture);
 
+        auto globalSetLayout = DescriptorSetLayout::Builder(device)
+        .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+        .addBinding(1, VK_DESCRIPTOR_TYPE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+        .addBinding(2, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT, textureAmount)
+        .build();
+
+        std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
         for(int i=0; i < globalDescriptorSets.size(); i++){
             DescriptorWriter writer(*globalSetLayout, *globalPool);
 
             auto bufferInfo = uboBuffers[i]->descriptorInfo();
             writer.writeBuffer(0, &bufferInfo);
-            
-            VkDescriptorImageInfo imageInfo{};
-            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = texture.getTextureImageView();
-            imageInfo.sampler = texture.getTextureSampler();
-                
-            writer.writeImage(1, &imageInfo);
+
+            VkDescriptorImageInfo samplerInfo;
+            samplerInfo.sampler = textureManager.getTextureSampler();
+            writer.writeImage(1, &samplerInfo, 1);
+
+            VkDescriptorImageInfo imageInfo[sizeof(loadedTextures)/sizeof(Texture)];
+            for(int j=0; j < textureAmount; j++){
+                imageInfo[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                imageInfo[j].imageView = loadedTextures[j].imageView;
+                imageInfo[j].sampler = textureManager.getTextureSampler();
+            }
+            writer.writeImages(2, imageInfo, sizeof(loadedTextures)/sizeof(Texture));
+
             writer.build(globalDescriptorSets[i]);
         }
 
@@ -115,11 +134,12 @@ namespace engine {
         vkDeviceWaitIdle(device.device());
     }
 
-    void app::initilizeObject(GameObject& object, glm::vec3 position, glm::vec3 scale, std::string modelFile, char * textureFile) {
+    void app::initilizeObject(GameObject& object, glm::vec3 position, glm::vec3 scale, std::string modelFile, int textureIndex) {
         std::shared_ptr<Model> model = Model::createModelFromFile(device, modelFile);
         object.model = model;
         object.transform.translation = position;
         object.transform.scale = scale;
+        object.textureIndex = textureIndex;
         gameObjects.emplace(object.getId(), std::move(object));
     }
 
@@ -137,13 +157,13 @@ namespace engine {
         auto secondObject = GameObject::createGameObject();
         translation = {-1.0f, -0.5f, 2.5f};
         scale = {0.5, 0.5, 0.5};
-        initilizeObject(secondObject, translation, scale, "models/colored_cube.obj");
+        initilizeObject(secondObject, translation, scale, "models/colored_cube.obj", 2);
 
         //floor
         auto floor = GameObject::createGameObject();
         translation = {0.0f, 0.5f, 0.0f};
         scale = {5.0, 1.0, 5.0};
-        initilizeObject(floor, translation, scale, "models/quad.obj");
+        initilizeObject(floor, translation, scale, "models/quad.obj", 1);
 
         //tree
         auto tree = GameObject::createGameObject();
@@ -162,5 +182,20 @@ namespace engine {
             pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-radius, -1, -radius, 1.0f));
             gameObjects.emplace(pointLight.getId(), std::move(pointLight));
         }
+    }
+
+    void app::loadTextures() {
+        Texture texture;
+        texture.image = textureManager.createTextureImage("../../textures/default_texture.jpg");
+        texture.imageView = textureManager.createTextureImageView(texture.image);
+        loadedTextures[0] = texture;
+
+        texture.image = textureManager.createTextureImage("../../textures/statue_texture.jpg");
+        texture.imageView = textureManager.createTextureImageView(texture.image);
+        loadedTextures[1] = texture;
+
+        texture.image = textureManager.createTextureImage("../../textures/bilboBaggins_texture.jpg");
+        texture.imageView = textureManager.createTextureImageView(texture.image);
+        loadedTextures[2] = texture;
     }
 }

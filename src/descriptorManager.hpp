@@ -89,7 +89,8 @@ namespace engine {
     DescriptorWriter(DescriptorSetLayout &setLayout, DescriptorPool &pool);
     
     DescriptorWriter &writeBuffer(uint32_t binding, VkDescriptorBufferInfo *bufferInfo);
-    DescriptorWriter &writeImage(uint32_t binding, VkDescriptorImageInfo *imageInfo);
+    DescriptorWriter &writeImage(uint32_t binding, VkDescriptorImageInfo *imageInfo, int count);
+    DescriptorWriter &writeImages(uint32_t binding, VkDescriptorImageInfo imageInfo[], int count);
     
     bool build(VkDescriptorSet &set);
     void overwrite(VkDescriptorSet &set);

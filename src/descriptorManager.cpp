@@ -158,7 +158,7 @@ DescriptorWriter &DescriptorWriter::writeBuffer(
 }
  
 DescriptorWriter &DescriptorWriter::writeImage(
-    uint32_t binding, VkDescriptorImageInfo *imageInfo) {
+    uint32_t binding, VkDescriptorImageInfo *imageInfo, int count) {
   assert(setLayout.bindings.count(binding) == 1 && "Layout does not contain specified binding");
  
   auto &bindingDescription = setLayout.bindings[binding];
@@ -172,7 +172,29 @@ DescriptorWriter &DescriptorWriter::writeImage(
   write.descriptorType = bindingDescription.descriptorType;
   write.dstBinding = binding;
   write.pImageInfo = imageInfo;
-  write.descriptorCount = 1;
+  write.descriptorCount = count;
+ 
+  std::cout << "sampler descriptor writes added "<< "\n";
+  writes.push_back(write);
+  return *this;
+}
+
+DescriptorWriter &DescriptorWriter::writeImages(
+    uint32_t binding, VkDescriptorImageInfo imageInfo[], int count) {
+  assert(setLayout.bindings.count(binding) == 1 && "Layout does not contain specified binding");
+ 
+  auto &bindingDescription = setLayout.bindings[binding];
+ 
+  // assert(
+  //     bindingDescription.descriptorCount == 1 &&
+  //     "Binding single descriptor info, but binding expects multiple");
+ 
+  VkWriteDescriptorSet write{};
+  write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+  write.descriptorType = bindingDescription.descriptorType;
+  write.dstBinding = binding;
+  write.pImageInfo = imageInfo;
+  write.descriptorCount = count;
  
   std::cout << "sampler descriptor writes added "<< "\n";
   writes.push_back(write);

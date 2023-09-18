@@ -112,6 +112,7 @@ namespace engine {
         attributeDescriptions.push_back({2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal)});
         attributeDescriptions.push_back({3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)});
 
+
         //expanded form of above lines
         // attributeDescriptions[0].binding = 0;
         // attributeDescriptions[0].location = 0;

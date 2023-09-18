@@ -9,33 +9,39 @@
 #include <memory>
 
 namespace engine{
+    struct Texture{
+        VkImageView imageView = nullptr;
+        VkImage image = nullptr;
+        //Device& device;
 
-    class Texture{
+    //Texture(Device &device);
+    //~Texture();
+    };  
+
+    class TextureManager{
         public:
-            Texture(Device& device, char* filePath);
-            ~Texture();
+            TextureManager(Device& device);
+            ~TextureManager();
 
-            Texture(const Texture &) = delete;
-            Texture& operator=(const Texture &) = delete;
+            TextureManager(const TextureManager &) = delete;
+            TextureManager& operator=(const TextureManager &) = delete;
 
-
-            VkImageView getTextureImageView() {return textureImageView; }
             VkSampler getTextureSampler() {return textureSampler; }
 
-        private:
-            std::unique_ptr<Texture> createTextureFromFile(Device& device, char filePath);
+            VkImage createTextureImage(char* filePath);
+            VkImageView createTextureImageView(VkImage image);
+            void destroyTexture(Texture texture);
 
-            void createTextureImage(char* filePath);
+        private:
+            std::unique_ptr<TextureManager> createTextureFromFile(Device& device, char filePath);
+
             void createTextureBuffer(VkDeviceSize imageSize, stbi_uc* pixels);
             void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
-            void createTextureImageView();
             void createTextureSampler();
 
             
             Device &device;
-            VkImage textureImage;
             VkDeviceMemory textureImageMemory;
-            VkImageView textureImageView;
             VkSampler textureSampler;
     };
 }

@@ -49,6 +49,7 @@ namespace engine {
 
         PipelineConfigInfo pipelineConfig{};
         Pipeline::defaultPipelineConfigInfo(pipelineConfig, device);
+        //pipelineConfig.attributeDescriptions.push_back({3, 0, VK_FORMAT_R8_UINT, offsetof(GameObject, textureIndex)});
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = pipelineLayout;
         pipeline = std::make_unique<Pipeline>(device, "../../shaders/simple.vert.spv", "../../shaders/simple.frag.spv", pipelineConfig);
