@@ -11,8 +11,7 @@ namespace engine{
 
     TextureManager::~TextureManager() {
 
-        vkFreeMemory(device.device(), textureImageMemory, nullptr);
-        vkDestroySampler(device.device(), textureSampler, nullptr);
+
     }
 
     //Texture not in class, still need to be cleaned up
