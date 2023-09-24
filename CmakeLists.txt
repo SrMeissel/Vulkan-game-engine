@@ -11,9 +11,12 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/libs/glfw-3.3.8)
 add_subdirectory(${CMAKE_SOURCE_DIR}/libs/tinyobjloader-release)
-add_subdirectory(${CMAKE_SOURCE_DIR}/libs/stb)
 
-file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp ${PROJECT_SOURCE_DIR}/*.hpp)
+file(GLOB_RECURSE SOURCES 
+${PROJECT_SOURCE_DIR}/src/*.cpp 
+${PROJECT_SOURCE_DIR}/*.hpp
+${PROJECT_SOURCE_SIR}/*.h
+)
 
 find_package(Vulkan REQUIRED)
 
@@ -29,7 +32,7 @@ target_link_libraries(engine glfw)
 target_link_libraries(engine tinyobjloader)
 target_link_libraries(engine Vulkan::Vulkan)
 
-# Build Shaders !!!
+# Build Shaders !!! doesnt work!
 find_program(GLSL_VALIDATOR glslangValidator HINTS
     ${Vulkan_GLSLANG_VALIDATOR_EXECUTABLE}
     $ENV{VULKAN_SDK}/bin/

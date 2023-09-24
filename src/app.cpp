@@ -151,19 +151,19 @@ namespace engine {
         auto object = GameObject::createGameObject();
         translation = {0.0f, 0.5f, 0.0f};
         scale = {1, 1, 1};
-        initilizeObject(object, translation, scale, "models/flat_vase.obj");
+        initilizeObject(object, translation, scale, "models/flat_vase.obj", 1);
 
         //Second object
         auto secondObject = GameObject::createGameObject();
         translation = {-1.0f, -0.5f, 2.5f};
         scale = {0.5, 0.5, 0.5};
-        initilizeObject(secondObject, translation, scale, "models/colored_cube.obj", 2);
+        initilizeObject(secondObject, translation, scale, "models/colored_cube.obj");
 
         //floor
         auto floor = GameObject::createGameObject();
         translation = {0.0f, 0.5f, 0.0f};
         scale = {5.0, 1.0, 5.0};
-        initilizeObject(floor, translation, scale, "models/quad.obj", 1);
+        initilizeObject(floor, translation, scale, "models/quad.obj", 2);
 
         //tree
         auto tree = GameObject::createGameObject();
@@ -190,11 +190,11 @@ namespace engine {
         texture.imageView = textureManager.createTextureImageView(texture.image);
         loadedTextures[0] = texture;
 
-        texture.image = textureManager.createTextureImage("../../textures/statue_texture.jpg");
+        texture.image = textureManager.createTextureImage("../../Experimental/Roma Imperiale Granite_whgneh2v/Albedo_8K__whgneh2v.jpg");
         texture.imageView = textureManager.createTextureImageView(texture.image);
         loadedTextures[1] = texture;
 
-        texture.image = textureManager.createTextureImage("../../textures/bilboBaggins_texture.jpg");
+        texture.image = textureManager.createTextureImage("../../Experimental/Mossy Ground_xiboab2r/Albedo_2K__xiboab2r.jpg");
         texture.imageView = textureManager.createTextureImageView(texture.image);
         loadedTextures[2] = texture;
     }
