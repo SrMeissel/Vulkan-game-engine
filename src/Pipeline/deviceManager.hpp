@@ -72,6 +72,16 @@ class Device {
 
   VkSampleCountFlagBits getMaxUsableSampleCount();
   void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+  void insertImageMemoryBarrier(
+			VkImage image,
+			VkAccessFlags srcAccessMask,
+			VkAccessFlags dstAccessMask,
+			VkImageLayout oldImageLayout,
+			VkImageLayout newImageLayout,
+			VkPipelineStageFlags srcStageMask,
+			VkPipelineStageFlags dstStageMask,
+			VkImageSubresourceRange subresourceRange);
+
 
   VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
   VkPhysicalDeviceProperties properties;

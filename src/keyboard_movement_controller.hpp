@@ -17,9 +17,12 @@ namespace engine {
                 int lookRight = GLFW_KEY_RIGHT;
                 int lookUp = GLFW_KEY_UP;
                 int lookDown = GLFW_KEY_DOWN;
+
+                int keyP = GLFW_KEY_P;
             };
 
             void moveInPlaneXZ(GLFWwindow* window, float dt, GameObject& gameObject);
+            
 
             keyMappings keys{};
             float moveSpeed{3.0f};

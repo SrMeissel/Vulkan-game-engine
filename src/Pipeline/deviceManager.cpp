@@ -549,6 +549,8 @@ VkSampleCountFlagBits Device::getMaxUsableSampleCount() {
   return VK_SAMPLE_COUNT_1_BIT;
 }
 
+
+// This function is abstracted too much, needs to be merged with next function below !!!
 void Device::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
     VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
@@ -598,5 +600,51 @@ void Device::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout
     endSingleTimeCommands(commandBuffer);
 }
 
+void Device::insertImageMemoryBarrier(
+			VkImage image,
+			VkAccessFlags srcAccessMask,
+			VkAccessFlags dstAccessMask,
+			VkImageLayout oldImageLayout,
+			VkImageLayout newImageLayout,
+			VkPipelineStageFlags srcStageMask,
+			VkPipelineStageFlags dstStageMask,
+			VkImageSubresourceRange subresourceRange)
+		{
+      VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+			VkImageMemoryBarrier barrier{};
+
+      barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+      barrier.oldLayout = oldImageLayout;
+      barrier.newLayout = newImageLayout;
+
+      barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+      barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+      barrier.image = image;
+      barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+      barrier.subresourceRange.baseMipLevel = 0;
+      barrier.subresourceRange.levelCount = 1;
+      barrier.subresourceRange.baseArrayLayer = 0;
+      barrier.subresourceRange.layerCount = 1;
+
+
+			barrier.srcAccessMask = srcAccessMask;
+			barrier.dstAccessMask = dstAccessMask;
+			barrier.oldLayout = oldImageLayout;
+			barrier.newLayout = newImageLayout;
+			barrier.image = image;
+			barrier.subresourceRange = subresourceRange;
+
+			vkCmdPipelineBarrier(
+				commandBuffer,
+				srcStageMask,
+				dstStageMask,
+				0,
+				0, nullptr,
+				0, nullptr,
+				1, &barrier);
+
+      endSingleTimeCommands(commandBuffer);
+		}
 
 }

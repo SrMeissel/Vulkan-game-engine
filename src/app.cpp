@@ -92,6 +92,8 @@ namespace engine {
             float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime-currentTime).count();
             currentTime = newTime;
 
+            //user input
+
             //update camera
             cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerObject);
             camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
@@ -128,6 +130,14 @@ namespace engine {
                 pointLightSystem.render(frameInfo);
 
                 renderer.endSwapChainRenderPass(commandBuffer);
+                
+                //take screenshot
+                int stateKeyP = glfwGetKey(window.getGLFWwindow(), GLFW_KEY_P);
+                if(stateKeyP == GLFW_PRESS) {
+                    
+                    screenshotTool.takeScreenshot(srcImage, "testScreenshot.jpg", device, window);
+                }
+
                 renderer.endFrame();
             }
         }

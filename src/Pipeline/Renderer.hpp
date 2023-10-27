@@ -19,6 +19,7 @@ namespace engine {
 
             VkRenderPass getRenderPass() const { return swapchain->getRenderPass();}
             float getAspectRatio() const {return swapchain->extentAspectRatio(); }
+            VkFramebuffer getFrameBuffer(int index) {return swapchain->getFrameBuffer(index);}
             bool isFrameInProgress() const { return isFrameStarted; }
 
 

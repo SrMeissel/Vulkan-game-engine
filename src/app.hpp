@@ -5,6 +5,7 @@
 #include "gameObject.hpp"
 #include "Pipeline/Renderer.hpp"
 #include "descriptorManager.hpp"
+#include "screenshotTool.cpp"
 
 #include "textureManager.hpp"
 
@@ -39,6 +40,7 @@ namespace engine {
             TextureManager textureManager{device}; 
             Texture loadedTextures[3];
 
+            ScreenshotTool screenshotTool;
 
     };
 }
