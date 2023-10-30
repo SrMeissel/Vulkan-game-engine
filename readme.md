@@ -19,7 +19,7 @@ https://vulkanppp.wordpress.com/2017/07/06/week-6-normal-mapping-specular-mappin
 
 uses a series of maps to apply different lighting across a texture
 
-![]("Experimental/Mossy_Ground_xiboab2r/preview.png")
+![](Experimental/Mossy_Ground_xiboab2r/preview.png)
 
 fun finds:
 https://www.youtube.com/watch?v=eED4bSkYCB8
