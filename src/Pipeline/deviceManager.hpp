@@ -73,6 +73,7 @@ class Device {
   VkSampleCountFlagBits getMaxUsableSampleCount();
   void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
   void insertImageMemoryBarrier(
+      VkCommandBuffer commandBuffer,
 			VkImage image,
 			VkAccessFlags srcAccessMask,
 			VkAccessFlags dstAccessMask,

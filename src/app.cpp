@@ -85,6 +85,7 @@ namespace engine {
 
         auto currentTime = std::chrono::high_resolution_clock::now();
 
+        bool screenshotSaved = false; // <=====
         while(!window.shouldClose()){
             glfwPollEvents();
 
@@ -93,6 +94,16 @@ namespace engine {
             currentTime = newTime;
 
             //user input
+
+                                                        //take screenshot
+                int stateKeyP = glfwGetKey(window.getGLFWwindow(), GLFW_KEY_P);
+                if(stateKeyP == GLFW_PRESS && screenshotSaved == false) {
+                    std::vector<VkImage> images = renderer.getSwapchainImages();
+                    VkImage srcImage = images[renderer.getCurrentImageIndex()]; 
+                    screenshotTool.takeScreenshot(srcImage, "testScreenshot.jpg", device, window.getExtent());
+                    std::cout << "holy shit";
+                    screenshotSaved = true;
+                }
 
             //update camera
             cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerObject);
@@ -103,6 +114,8 @@ namespace engine {
             
             float aspect = renderer.getAspectRatio();
             camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 50.0f);
+
+
 
             if(auto commandBuffer = renderer.beginFrame()) {
                 int frameIndex = renderer.getFrameIndex();
@@ -131,15 +144,9 @@ namespace engine {
 
                 renderer.endSwapChainRenderPass(commandBuffer);
                 
+
+
                 renderer.endFrame();
-            
-                //take screenshot
-                int stateKeyP = glfwGetKey(window.getGLFWwindow(), GLFW_KEY_P);
-                if(stateKeyP == GLFW_PRESS) {
-                    std::vector<VkImage> images = renderer.getSwapchainImages();
-                    VkImage srcImage = images[frameIndex]; 
-                    screenshotTool.takeScreenshot(srcImage, "testScreenshot.jpg", device, window);
-                }
             }
         }
         vkDeviceWaitIdle(device.device());

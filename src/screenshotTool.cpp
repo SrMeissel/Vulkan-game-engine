@@ -1,14 +1,14 @@
-#include "Pipeline/windowManager.hpp"
-#include "Pipeline/deviceManager.hpp"
-#include "Pipeline/Renderer.hpp"
+//#include "Pipeline/windowManager.hpp"
+//#include "Pipeline/deviceManager.hpp"
+//#include "Pipeline/Renderer.hpp"
 
-#define STB_IMAGE_WRITE_STATIC
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "../libs/stb/stb_image_write.h"
+ #define STB_IMAGE_WRITE_STATIC
+ #define STB_IMAGE_WRITE_IMPLEMENTATION
+ #include "../libs/stb/stb_image_write.h"
 
-#include <fstream>
-#include <String>
-#include <iostream>
+ #include <fstream>
+// #include <String>
+ #include <iostream>
 
 namespace engine {
     class ScreenshotTool {
@@ -19,13 +19,12 @@ namespace engine {
             //this is only for linear tiling, it is supprted for optimal tiling but i dont want to dive into something new right now
             //and no, I am not execty sure what it does (a boolean based combining or seperating function)
             
-            void ScreenshotTool::takeScreenshot(VkImage srcImage, char* fileName, Device &device, Window window){
+            void takeScreenshot(VkImage srcImage, char* fileName, Device &device, VkExtent2D extent){
                 bool supportsblit = false;
                 //check for blit support later
 
                 std::cout << "attempting to take screenshot \n";
                 VkImageCreateInfo captureImageInfo{};
-                VkExtent2D extent = window.getExtent();
 
                 captureImageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
                 captureImageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -59,9 +58,12 @@ namespace engine {
                 vkAllocateMemory(device.device(), &memAllocInfo, nullptr, &cptImageMemory);
                 vkBindImageMemory(device.device(), cptImage, cptImageMemory, 0);
 
+                VkCommandBuffer commandBuffer = device.beginSingleTimeCommands();
+
                 std::cout << "chanigng image layouts \n";
                 //changing image layouts 
                 device.insertImageMemoryBarrier(
+                commandBuffer,
                 cptImage,
                 0,
                 VK_ACCESS_TRANSFER_WRITE_BIT,
@@ -72,6 +74,7 @@ namespace engine {
                 VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
                 
                 device.insertImageMemoryBarrier(
+                commandBuffer,
                 srcImage,
                 VK_ACCESS_MEMORY_READ_BIT,
                 VK_ACCESS_TRANSFER_READ_BIT,
@@ -81,7 +84,6 @@ namespace engine {
                 VK_PIPELINE_STAGE_TRANSFER_BIT,
                 VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
 
-                VkCommandBuffer commandBuffer = device.beginSingleTimeCommands();
                 //where blit becomes required, blit can do format conversions
                 if(supportsblit){
                     VkOffset3D blitSize;
@@ -111,11 +113,11 @@ namespace engine {
                     imageCopyRegion.srcSubresource.layerCount = 1;
                     imageCopyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                     imageCopyRegion.dstSubresource.layerCount = 1;
-                    imageCopyRegion.extent.width = extent.width;
-                    imageCopyRegion.extent.height = extent.height;
+                    imageCopyRegion.extent.width = extent.width; // <=====
+                    imageCopyRegion.extent.height = extent.height; // <====
                     imageCopyRegion.extent.depth = 1;
 
-                    // Issue the copy command
+                    //Issue the copy command
                     vkCmdCopyImage(
                         commandBuffer,
                         srcImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
@@ -124,10 +126,9 @@ namespace engine {
                         &imageCopyRegion);
                 }
 
-                device.endSingleTimeCommands(commandBuffer);
-
                 //change image format again to write to file
                 device.insertImageMemoryBarrier(
+                commandBuffer,
                 cptImage,
                 VK_ACCESS_TRANSFER_WRITE_BIT,
                 VK_ACCESS_MEMORY_READ_BIT,
@@ -138,6 +139,7 @@ namespace engine {
                 VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
 
                 device.insertImageMemoryBarrier(
+                commandBuffer,
                 srcImage,
                 VK_ACCESS_TRANSFER_READ_BIT,
                 VK_ACCESS_MEMORY_READ_BIT,
@@ -147,6 +149,7 @@ namespace engine {
                 VK_PIPELINE_STAGE_TRANSFER_BIT,
                 VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
 
+                device.endSingleTimeCommands(commandBuffer);
 
                 std::cout << "extracting image data \n";
                 //get image layout
@@ -156,7 +159,7 @@ namespace engine {
 
                 const char* data;
                 vkMapMemory(device.device(), cptImageMemory, 0, VK_WHOLE_SIZE, 0, (void**)&data);
-                //data += subResourceLayout.offset;
+                data += subResourceLayout.offset;
 
                 //using stb to save as jpg not ppm because I can
 
@@ -172,8 +175,5 @@ namespace engine {
 		        vkFreeMemory(device.device(), cptImageMemory, nullptr);
 		        vkDestroyImage(device.device(), cptImage, nullptr);
             }
-
-        private:
-        
     };
 }

@@ -32,6 +32,7 @@ namespace engine {
                 assert(isFrameStarted && "Cannot get frame index while frame is not in progress!");
                 return currentFrameIndex;
             }
+            uint32_t getCurrentImageIndex() const {return currentImageIndex; }
 
             VkCommandBuffer beginFrame();
             void endFrame();
