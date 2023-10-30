@@ -17,9 +17,9 @@ namespace engine {
             Renderer(const Renderer &) = delete;
             Renderer &operator=(const Renderer &) = delete;
 
-            VkRenderPass getRenderPass() const { return swapchain->getRenderPass();}
+            VkRenderPass getRenderPass() const { return swapchain->getRenderPass(); }
             float getAspectRatio() const {return swapchain->extentAspectRatio(); }
-            VkFramebuffer getFrameBuffer(int index) {return swapchain->getFrameBuffer(index);}
+            std::vector<VkImage> getSwapchainImages() const {return swapchain->getImages(); }
             bool isFrameInProgress() const { return isFrameStarted; }
 
 

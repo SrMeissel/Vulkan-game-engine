@@ -121,7 +121,6 @@ namespace engine {
                 uboBuffers[frameIndex]->writeToBuffer(&ubo);
                 uboBuffers[frameIndex]->flush();
 
-
                 //render
                 renderer.beginSwapChainRenderPass(commandBuffer);
 
@@ -129,16 +128,18 @@ namespace engine {
                 renderSystem.renderGameObjects(frameInfo);
                 pointLightSystem.render(frameInfo);
 
+
                 renderer.endSwapChainRenderPass(commandBuffer);
                 
+                renderer.endFrame();
+            
                 //take screenshot
                 int stateKeyP = glfwGetKey(window.getGLFWwindow(), GLFW_KEY_P);
                 if(stateKeyP == GLFW_PRESS) {
-                    
+                    std::vector<VkImage> images = renderer.getSwapchainImages();
+                    VkImage srcImage = images[frameIndex]; 
                     screenshotTool.takeScreenshot(srcImage, "testScreenshot.jpg", device, window);
                 }
-
-                renderer.endFrame();
             }
         }
         vkDeviceWaitIdle(device.device());
@@ -204,7 +205,7 @@ namespace engine {
         texture.imageView = textureManager.createTextureImageView(texture.image);
         loadedTextures[1] = texture;
 
-        texture.image = textureManager.createTextureImage("../../Experimental/Mossy Ground_xiboab2r/Albedo_2K__xiboab2r.jpg");
+        texture.image = textureManager.createTextureImage("../../Experimental/Mossy_Ground_xiboab2r/Albedo_2K__xiboab2r.jpg");
         texture.imageView = textureManager.createTextureImageView(texture.image);
         loadedTextures[2] = texture;
     }
