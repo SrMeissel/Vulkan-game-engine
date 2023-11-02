@@ -37,6 +37,7 @@ namespace engine {
 
     void app::run() {
 
+        //initiliaze app ==================================================
         std::vector<std::unique_ptr<Buffer>> uboBuffers(SwapChain::MAX_FRAMES_IN_FLIGHT);
         for(int i=0; i < uboBuffers.size(); i++) {
             uboBuffers[i] = std::make_unique<Buffer>(device, sizeof(GlobalUbo), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
@@ -84,39 +85,49 @@ namespace engine {
         keyboardMovementController cameraController{};
 
         auto currentTime = std::chrono::high_resolution_clock::now();
-
         bool screenshotSaved = false; // <=====
         while(!window.shouldClose()){
             glfwPollEvents();
 
+            //get passed time
             auto newTime = std::chrono::high_resolution_clock::now();
             float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime-currentTime).count();
             currentTime = newTime;
 
-            //user input
+            //proccess user input =======================================================
 
-                                                        //take screenshot
-                int stateKeyP = glfwGetKey(window.getGLFWwindow(), GLFW_KEY_P);
-                if(stateKeyP == GLFW_PRESS && screenshotSaved == false) {
-                    std::vector<VkImage> images = renderer.getSwapchainImages();
-                    VkImage srcImage = images[renderer.getCurrentImageIndex()]; 
-                    screenshotTool.takeScreenshot(srcImage, "testScreenshot.jpg", device, window.getExtent());
-                    std::cout << "holy shit";
-                    screenshotSaved = true;
-                }
+            //take screenshot
+            int stateKeyP = glfwGetKey(window.getGLFWwindow(), GLFW_KEY_P);
+            if(stateKeyP == GLFW_PRESS && screenshotSaved == false) {
+                std::vector<VkImage> images = renderer.getSwapchainImages();
+                VkImage srcImage = images[renderer.getCurrentImageIndex()]; 
+                screenshotTool.takeScreenshot(srcImage, "testScreenshot.jpg", device, window.getExtent());
+                screenshotSaved = true;
+            }
 
             //update camera
             cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerObject);
-            camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
-
-            //rotate second game object
-            gameObjects[1].transform.rotation = glm::mod((gameObjects[1].transform.rotation + (0.1f*frameTime)), glm::two_pi<float>());
-            
+            camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);            
             float aspect = renderer.getAspectRatio();
             camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 50.0f);
 
 
+            //update objects ==========================================================
 
+            //update physics
+            for(auto& kv: gameObjects) {
+                auto& object = kv.second;
+                if(object.physics == nullptr) continue;
+                object.physics->updateDynamics(frameTime, object.transform);
+            }
+            
+            //rotate second game object Manually
+            //gameObjects[1].transform.rotation = glm::mod((gameObjects[1].transform.rotation + (0.1f*frameTime)), glm::two_pi<float>());
+
+            //rotate second game object with physics
+            gameObjects[1].physics->setRotationalAcceleration(glm::vec3{0.5f, 0.5f, 0.5f});
+
+            //new frame ready, runs every frame ===============================================
             if(auto commandBuffer = renderer.beginFrame()) {
                 int frameIndex = renderer.getFrameIndex();
 
@@ -141,11 +152,8 @@ namespace engine {
                 renderSystem.renderGameObjects(frameInfo);
                 pointLightSystem.render(frameInfo);
 
-
+                //finished and submit to presentation
                 renderer.endSwapChainRenderPass(commandBuffer);
-                
-
-
                 renderer.endFrame();
             }
         }
@@ -154,7 +162,9 @@ namespace engine {
 
     void app::initilizeObject(GameObject& object, glm::vec3 position, glm::vec3 scale, std::string modelFile, int textureIndex) {
         std::shared_ptr<Model> model = Model::createModelFromFile(device, modelFile);
-        object.model = model;
+        object.model = move(model);
+        std::shared_ptr<PhysicsComponent> physics = std::make_unique<PhysicsComponent>(object.transform); // <======== new
+        object.physics = move(physics);
         object.transform.translation = position;
         object.transform.scale = scale;
         object.textureIndex = textureIndex;

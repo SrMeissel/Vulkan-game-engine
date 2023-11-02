@@ -14,6 +14,10 @@ textures are currently binded in an array
 
 There exists a way to implement textrures without binding which seems more flexible.
 
+Screenshots impletmented from :
+https://github.com/SaschaWillems/Vulkan/blob/master/examples/screenshot/screenshot.cpp
+https://reference.torque3d.org/coding/file/swizzle_8h/
+
 PBR materials inspired from :
 https://vulkanppp.wordpress.com/2017/07/06/week-6-normal-mapping-specular-mapping-pipeline-refactoring/
 
@@ -45,3 +49,4 @@ Depends on:
     glm
     tinyobjloader
     
+This is becoming more and more useful: https://vulkan.gpuinfo.org/displayreport.php?id=25342#formats_optimal

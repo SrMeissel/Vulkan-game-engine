@@ -1,3 +1,5 @@
+#include "screenshotTool.hpp"
+
 //#include "Pipeline/windowManager.hpp"
 //#include "Pipeline/deviceManager.hpp"
 //#include "Pipeline/Renderer.hpp"
@@ -11,25 +13,21 @@
  #include <iostream>
 
 namespace engine {
-    class ScreenshotTool {
-        public:
-            
             //assumes blitting is supported
             //Turns out that was a bad idea my 1060 does not in fact support blitting https://vulkan.gpuinfo.org/displayreport.php?id=25309#formats
             //this is only for linear tiling, it is supprted for optimal tiling but i dont want to dive into something new right now
             //and no, I am not execty sure what it does (a boolean based combining or seperating function)
             
-            void takeScreenshot(VkImage srcImage, char* fileName, Device &device, VkExtent2D extent){
+            void ScreenshotTool::takeScreenshot(VkImage srcImage, char* fileName, Device &device, VkExtent2D extent){
                 bool supportsblit = false;
                 //check for blit support later
 
-                std::cout << "attempting to take screenshot \n";
                 VkImageCreateInfo captureImageInfo{};
 
                 captureImageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
                 captureImageInfo.imageType = VK_IMAGE_TYPE_2D;
                 // Note that vkCmdBlitImage (if supported) will also do format conversions if the swapchain color format would differ
-                captureImageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+                captureImageInfo.format = VK_FORMAT_R8G8B8A8_UNORM; // specifies a four-component, 32-bit unsigned normalized format that has an 8-bit R component in byte 0, an 8-bit G component in byte 1, an 8-bit B component in byte 2, and an 8-bit A component in byte 3.
                 captureImageInfo.extent.width = extent.width;
                 captureImageInfo.extent.height = extent.height;
                 captureImageInfo.extent.depth = 1;
@@ -42,11 +40,9 @@ namespace engine {
 
                 VkImage cptImage;
 
-                std::cout << "creating image \n";
                 vkCreateImage(device.device(), &captureImageInfo, nullptr, &cptImage);
 
-                std::cout << "creating image memory \n";
-                //create memory ???
+                //create memory
                 VkMemoryRequirements memRequirements;
                 VkMemoryAllocateInfo memAllocInfo{};
                 VkDeviceMemory cptImageMemory;
@@ -60,8 +56,7 @@ namespace engine {
 
                 VkCommandBuffer commandBuffer = device.beginSingleTimeCommands();
 
-                std::cout << "chanigng image layouts \n";
-                //changing image layouts 
+                //changing image layouts back to original
                 device.insertImageMemoryBarrier(
                 commandBuffer,
                 cptImage,
@@ -113,8 +108,8 @@ namespace engine {
                     imageCopyRegion.srcSubresource.layerCount = 1;
                     imageCopyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                     imageCopyRegion.dstSubresource.layerCount = 1;
-                    imageCopyRegion.extent.width = extent.width; // <=====
-                    imageCopyRegion.extent.height = extent.height; // <====
+                    imageCopyRegion.extent.width = extent.width;
+                    imageCopyRegion.extent.height = extent.height;
                     imageCopyRegion.extent.depth = 1;
 
                     //Issue the copy command
@@ -151,29 +146,28 @@ namespace engine {
 
                 device.endSingleTimeCommands(commandBuffer);
 
-                std::cout << "extracting image data \n";
                 //get image layout
                 VkImageSubresource subResource { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0 };
                 VkSubresourceLayout subResourceLayout;
                 vkGetImageSubresourceLayout(device.device(), cptImage, &subResource, &subResourceLayout);
 
+                
+
                 const char* data;
                 vkMapMemory(device.device(), cptImageMemory, 0, VK_WHOLE_SIZE, 0, (void**)&data);
-                data += subResourceLayout.offset;
 
-                //using stb to save as jpg not ppm because I can
+                //using stb to save as jpg not ppm because I can    
+                // technically, I *could* go into the write_jpg function and replace dataR with dataB...
 
                 //https://stackoverflow.com/questions/56039401/stb-image-write-issue
 
-                std::cout << "writing to jpg \n";
-                if(stbi_write_jpg(fileName, extent.width, extent.height, 4, (void*)data, 100) == 0) {
-                    std::cout << "bad doo doo \n";
+
+                if(stbi_write_jpg(fileName, extent.width, extent.height, 4, (void*)data, 100) != 0) {
+                    std::cout << "Image successfully saved! \n";
                 }
-                std::cout << "Image successfully saved! \n";
 
                 vkUnmapMemory(device.device(), cptImageMemory);
 		        vkFreeMemory(device.device(), cptImageMemory, nullptr);
 		        vkDestroyImage(device.device(), cptImage, nullptr);
-            }
     };
 }

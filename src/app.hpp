@@ -5,7 +5,7 @@
 #include "gameObject.hpp"
 #include "Pipeline/Renderer.hpp"
 #include "descriptorManager.hpp"
-#include "screenshotTool.cpp"
+#include "screenshotTool.hpp"
 
 #include "textureManager.hpp"
 
