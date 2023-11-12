@@ -6,8 +6,8 @@
 #include "Pipeline/Renderer.hpp"
 #include "descriptorManager.hpp"
 #include "screenshotTool.hpp"
-
 #include "textureManager.hpp"
+#include "Components/Physics/PxSimulation.hpp"
 
 #include <memory>
 #include <vector>
@@ -33,6 +33,8 @@ namespace engine {
             Window window{WIDTH, HEIGHT, "Hello there"};
             Device device{window};
             Renderer renderer{window, device};
+            PhysicsSimulation physicsSimulation{};
+
 
             std::unique_ptr<DescriptorPool> globalPool;
             GameObject::map gameObjects;
@@ -41,6 +43,5 @@ namespace engine {
             Texture loadedTextures[3];
 
             ScreenshotTool screenshotTool;
-
     };
 }

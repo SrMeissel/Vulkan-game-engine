@@ -30,14 +30,15 @@ namespace engine {
         loadTextures();
     }
     app::~app() {
+        //this should probably be moved to texture deconstructor (Textures would have to be completely rearranged, do when looking into bindless textures)
         for(int i=0; i < 3; i ++) {
             textureManager.destroyTexture(loadedTextures[i]);
         }
     }
 
     void app::run() {
+        //initiliaze GPU memory objects ==================================================
 
-        //initiliaze app ==================================================
         std::vector<std::unique_ptr<Buffer>> uboBuffers(SwapChain::MAX_FRAMES_IN_FLIGHT);
         for(int i=0; i < uboBuffers.size(); i++) {
             uboBuffers[i] = std::make_unique<Buffer>(device, sizeof(GlobalUbo), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
@@ -74,15 +75,20 @@ namespace engine {
             writer.build(globalDescriptorSets[i]);
         }
 
+        //Initialize shader objects ======================================
+
         RenderSystem renderSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
         PointLightSystem pointLightSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
-        CameraManager camera{};
 
+        //Initialize Camera object ===================================
+
+        CameraManager camera{};
         camera.setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
         float orbitSpeed = 1;
-
         auto viewerObject = GameObject::createGameObject();
         keyboardMovementController cameraController{};
+
+        //Main system loop ============================================
 
         auto currentTime = std::chrono::high_resolution_clock::now();
         bool screenshotSaved = false; // <=====
@@ -93,6 +99,7 @@ namespace engine {
             auto newTime = std::chrono::high_resolution_clock::now();
             float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime-currentTime).count();
             currentTime = newTime;
+            //perhaps set upper limit to frameTime to limit edge cases
 
             //proccess user input =======================================================
 
@@ -105,7 +112,7 @@ namespace engine {
                 screenshotSaved = true;
             }
 
-            //update camera
+            //update camera from user input
             cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerObject);
             camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);            
             float aspect = renderer.getAspectRatio();
@@ -114,18 +121,19 @@ namespace engine {
 
             //update objects ==========================================================
 
-            //update physics
-            for(auto& kv: gameObjects) {
-                auto& object = kv.second;
-                if(object.physics == nullptr) continue;
-                object.physics->updateDynamics(frameTime, object.transform);
-            }
-            
+            physicsSimulation.update(frameTime);
+
             //rotate second game object Manually
             //gameObjects[1].transform.rotation = glm::mod((gameObjects[1].transform.rotation + (0.1f*frameTime)), glm::two_pi<float>());
 
             //rotate second game object with physics
-            gameObjects[1].physics->setRotationalAcceleration(glm::vec3{0.5f, 0.5f, 0.5f});
+            //gameObjects[1].physics->setRotationalAcceleration(glm::vec3{0.5f, 0.5f, 0.5f});
+
+            //bounce second game object with physics
+            // gameObjects[1].physics->setTranslationalAcceleration(glm::vec3{0.0f, 10.0f, 0.0f});
+            // if(gameObjects[1].transform.translation.y >= 0 ) {
+            //     gameObjects[1].physics->setTranslationalVelocity(glm::vec3{0.0f, -15.0f, 0.0f});
+            // }
 
             //new frame ready, runs every frame ===============================================
             if(auto commandBuffer = renderer.beginFrame()) {
@@ -135,7 +143,7 @@ namespace engine {
                     frameIndex, frameTime, commandBuffer, camera, globalDescriptorSets[frameIndex], gameObjects
                 };
 
-                //update buffer
+                //update graphics memory objects =====================================
                 GlobalUbo ubo{};
                 ubo.projection = camera.getProjection();
                 ubo.view = camera.getView();
@@ -145,7 +153,7 @@ namespace engine {
                 uboBuffers[frameIndex]->writeToBuffer(&ubo);
                 uboBuffers[frameIndex]->flush();
 
-                //render
+                //render =====================================================
                 renderer.beginSwapChainRenderPass(commandBuffer);
 
                 //order matters, the transparent pointLights need to be rendered first (Brendan tutorial 27)
@@ -163,8 +171,6 @@ namespace engine {
     void app::initilizeObject(GameObject& object, glm::vec3 position, glm::vec3 scale, std::string modelFile, int textureIndex) {
         std::shared_ptr<Model> model = Model::createModelFromFile(device, modelFile);
         object.model = move(model);
-        std::shared_ptr<PhysicsComponent> physics = std::make_unique<PhysicsComponent>(object.transform); // <======== new
-        object.physics = move(physics);
         object.transform.translation = position;
         object.transform.scale = scale;
         object.textureIndex = textureIndex;
@@ -185,7 +191,14 @@ namespace engine {
         auto secondObject = GameObject::createGameObject();
         translation = {-1.0f, -0.5f, 2.5f};
         scale = {0.5, 0.5, 0.5};
-        initilizeObject(secondObject, translation, scale, "models/colored_cube.obj");
+
+        //creates a physics sim object that have a 2 way reference with the game object
+        PhysicsObject physics;
+        std::shared_ptr<PhysicsObject> Physicsref(&physics);
+        physicsSimulation.addObject(physics);
+        object.physics = move(Physicsref);
+        
+        initilizeObject(secondObject, translation, scale, "models/sphere.obj");
 
         //floor
         auto floor = GameObject::createGameObject();

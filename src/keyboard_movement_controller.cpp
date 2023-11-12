@@ -19,7 +19,8 @@ namespace engine {
         gameObject.transform.rotation.y = glm::mod(gameObject.transform.rotation.y, glm::two_pi<float>());
 
         float yaw = gameObject.transform.rotation.y;
-        const glm::vec3 forwardDir{sin(yaw), 0.0f, cos(yaw)};
+        float pitch = gameObject.transform.rotation.x;
+        const glm::vec3 forwardDir{sin(yaw), -pitch, cos(yaw)};
         const glm::vec3 rightDir{forwardDir.z, 0.0f, -forwardDir.x};
         const glm::vec3 upDir{0.0f, -1.0f, 0.0f};
 

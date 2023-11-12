@@ -1,13 +1,14 @@
 #pragma once
 
 #include "modelManager.hpp"
-#include "Components/Physics/PhysicsComponent.hpp" 
+#include "Components/Physics/PxObject.hpp" 
 
 #include <memory>
 #include <unordered_map>
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace engine {
+    class PhysicsObject;
 
     struct PointLightComponent {
         float ligthIntensity = 1.0f; 
@@ -41,7 +42,7 @@ namespace engine {
             std::shared_ptr<Model> model{};
             int textureIndex = 0;
 
-            std::shared_ptr<PhysicsComponent> physics{};
+            std::shared_ptr<PhysicsObject> physics{};
             
             std::unique_ptr<PointLightComponent> pointLight = nullptr;
         

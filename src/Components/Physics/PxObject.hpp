@@ -1,8 +1,13 @@
 #pragma once
 
+//#include "collisionSolver.hpp"
+#include "../../gameObject.hpp"
+
 #include <glm/glm.hpp>
+#include <memory>
 
 namespace engine {
+    class GameObject;
     
     struct TransformComponent {
         glm::vec3 translation{};
@@ -18,20 +23,9 @@ namespace engine {
 
     };
 
-    class PhysicsComponent {
-        public:
-            PhysicsComponent(TransformComponent& transform);
-
-            void updateDynamics(float dt, TransformComponent& transform);
-
-
-            //too dangerous to use wihtout protection!
-            void setRotationalAcceleration(glm::vec3 newAr) {rotationalAcceleration = newAr; }
-            glm::vec3 getRotationalVelocity() {return rotationalVelocity; }
-
-        private:
+    struct DynamicsComponent {
             float mass = 1;
-            glm::vec3 COM; //center of mass (might need to be in transformComponent)
+            glm::vec3 COM;
 
             glm::vec3 translationalVelocity{0.0f};
             glm::vec3 translationalAcceleration{0.0f};
@@ -39,7 +33,24 @@ namespace engine {
             glm::vec3 rotationalVelocity{0.0f};
             glm::vec3 rotationalAcceleration{0.0f};
 
-            TransformComponent& transformer;
+            void updateDynamics(float dt, TransformComponent& transform);
+    };
 
+    struct CollisionMesh {
+        CollisionMesh(float r) {radius = r; }
+        float radius = 0;
+    };
+
+    class PhysicsObject {
+        public:
+            PhysicsObject();
+
+            std::shared_ptr<DynamicsComponent> Dynamics;
+            std::shared_ptr<CollisionMesh> collisionMesh;
+
+            //TransformComponent& transform;
+            std::shared_ptr<GameObject> gameObject;
+        private:
+            bool isSleep = false; // dont worry about it.
     };
 }

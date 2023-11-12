@@ -53,6 +53,7 @@ namespace engine {
         //pipelineConfig.attributeDescriptions.push_back({3, 0, VK_FORMAT_R8_UINT, offsetof(GameObject, textureIndex)});
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = pipelineLayout;
+        //pipelineConfig.rasterizationInfo.polygonMode = VK_POLYGON_MODE_LINE; // <===== hollow wireframes
         pipeline = std::make_unique<Pipeline>(device, "../../shaders/simple.vert.spv", "../../shaders/simple.frag.spv", pipelineConfig);
     }
 
