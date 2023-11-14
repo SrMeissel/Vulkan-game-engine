@@ -29,7 +29,7 @@ namespace engine {
             {
                 scale.z * (c2 * s1),
                 scale.z * (-s2),
-                scale.z * (c1 * c2),
+                scale.z * (c1 * c2), // <=== position 3,3
                 0.0f,
             },
             {translation.x, translation.y, translation.z, 1.0f}};

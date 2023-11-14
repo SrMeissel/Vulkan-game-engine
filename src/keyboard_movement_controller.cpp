@@ -20,7 +20,8 @@ namespace engine {
 
         float yaw = gameObject.transform.rotation.y;
         float pitch = gameObject.transform.rotation.x;
-        const glm::vec3 forwardDir{sin(yaw), -pitch, cos(yaw)};
+        const glm::vec3 forwardDir{sin(yaw), -tan(pitch), cos(yaw)};
+
         const glm::vec3 rightDir{forwardDir.z, 0.0f, -forwardDir.x};
         const glm::vec3 upDir{0.0f, -1.0f, 0.0f};
 

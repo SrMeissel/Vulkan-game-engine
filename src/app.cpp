@@ -117,9 +117,10 @@ namespace engine {
                 ray.posiiton = viewerObject.transform.translation;
                 float yaw = viewerObject.transform.rotation.y;
                 float pitch = viewerObject.transform.rotation.x;
-                ray.direction = {sin(yaw), -pitch, cos(yaw)};
+                ray.direction = {sin(yaw), -tan(pitch), cos(yaw)};
+                ray.direction = glm::normalize(ray.direction);
 
-                bool collision = physicsSimulation.sphereRayCollision(ray, *physicsSimulation.objects[0].collisionMesh.get());
+                physicsSimulation.sphereRayCollision(ray, *physicsSimulation.objects[0].collisionMesh.get());
             }
 
             //update camera from user input

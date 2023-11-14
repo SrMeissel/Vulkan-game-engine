@@ -12,16 +12,20 @@ namespace engine {
     };
 
     bool PhysicsSimulation::sphereRayCollision(Ray ray, CollisionMesh mesh) {
-        glm::vec3 direction = mesh.position - ray.posiiton;
+        glm::vec3 direction = (mesh.position - ray.posiiton);
         float projection = glm::dot(ray.direction, direction);
-        glm::vec3 closestPoint = ray.posiiton + (ray.direction*projection);
+        if(projection < 0.0f ) {
+            std::cout << "Tiss behind you! \n";
+            return false;
+        }
+        glm::vec3 closestPoint = ray.posiiton + (ray.direction * projection);
         //yay, I have now found the point along the ray that is closest to the origin of the sphere!
-        float distance = glm::abs(glm::distance(closestPoint, mesh.position));
+        float distance = glm::distance(closestPoint, mesh.position);
         if(distance < mesh.radius) {
             std::cout << "COLIISION DETECTED!!!!! \n";
             return true;
         } else {
-            std::cout << "DID NOT COLLIDE!!!! \n";
+            std::cout << "DID NOT COLLIDE! \n";
             return false;
         }
     };

@@ -14,7 +14,7 @@ namespace engine {
 
     PhysicsObject::PhysicsObject(TransformComponent& transform, unsigned int iD) : transformComponent{transform} {
         Dynamics = std::make_shared<DynamicsComponent>();
-        collisionMesh = std::make_shared<CollisionMesh>(1.0f, transform);
+        collisionMesh = std::make_shared<CollisionMesh>(0.5f, transform);
         gameObjectID = iD;
         
     }
