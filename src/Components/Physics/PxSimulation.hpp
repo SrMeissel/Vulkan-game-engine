@@ -9,10 +9,11 @@ namespace engine {
         public:
             void update(float timeStep);
 
-            void addObject(PhysicsObject object) {objects.push_back(object); }
-        private:
+            bool sphereRayCollision(Ray ray, CollisionMesh mesh);
 
-        std::vector<PhysicsObject> objects;
+            //void addObject(PhysicsObject& object) {objects.push_back(std::move(object)); }
+            std::vector<PhysicsObject> objects;
+        private:
 
     };
 }

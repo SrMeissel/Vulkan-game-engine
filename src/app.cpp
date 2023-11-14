@@ -112,6 +112,16 @@ namespace engine {
                 screenshotSaved = true;
             }
 
+            if(glfwGetKey(window.getGLFWwindow(), GLFW_KEY_SPACE) == GLFW_PRESS) {
+                Ray ray;
+                ray.posiiton = viewerObject.transform.translation;
+                float yaw = viewerObject.transform.rotation.y;
+                float pitch = viewerObject.transform.rotation.x;
+                ray.direction = {sin(yaw), -pitch, cos(yaw)};
+
+                bool collision = physicsSimulation.sphereRayCollision(ray, *physicsSimulation.objects[0].collisionMesh.get());
+            }
+
             //update camera from user input
             cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerObject);
             camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);            
@@ -122,18 +132,6 @@ namespace engine {
             //update objects ==========================================================
 
             physicsSimulation.update(frameTime);
-
-            //rotate second game object Manually
-            //gameObjects[1].transform.rotation = glm::mod((gameObjects[1].transform.rotation + (0.1f*frameTime)), glm::two_pi<float>());
-
-            //rotate second game object with physics
-            //gameObjects[1].physics->setRotationalAcceleration(glm::vec3{0.5f, 0.5f, 0.5f});
-
-            //bounce second game object with physics
-            // gameObjects[1].physics->setTranslationalAcceleration(glm::vec3{0.0f, 10.0f, 0.0f});
-            // if(gameObjects[1].transform.translation.y >= 0 ) {
-            //     gameObjects[1].physics->setTranslationalVelocity(glm::vec3{0.0f, -15.0f, 0.0f});
-            // }
 
             //new frame ready, runs every frame ===============================================
             if(auto commandBuffer = renderer.beginFrame()) {
@@ -182,7 +180,7 @@ namespace engine {
         glm::vec3 translation;
         glm::vec3 scale; 
 
-        auto object = GameObject::createGameObject();
+        auto object = GameObject::createGameObject(); 
         translation = {0.0f, 0.5f, 0.0f};
         scale = {1, 1, 1};
         initilizeObject(object, translation, scale, "models/flat_vase.obj", 1);
@@ -191,14 +189,10 @@ namespace engine {
         auto secondObject = GameObject::createGameObject();
         translation = {-1.0f, -0.5f, 2.5f};
         scale = {0.5, 0.5, 0.5};
-
-        //creates a physics sim object that have a 2 way reference with the game object
-        PhysicsObject physics;
-        std::shared_ptr<PhysicsObject> Physicsref(&physics);
-        physicsSimulation.addObject(physics);
-        object.physics = move(Physicsref);
-        
         initilizeObject(secondObject, translation, scale, "models/sphere.obj");
+        //creates a physics sim object
+        PhysicsObject physics(gameObjects[1].transform, gameObjects[1].getId());
+        physicsSimulation.objects.emplace_back(std::move(physics));
 
         //floor
         auto floor = GameObject::createGameObject();

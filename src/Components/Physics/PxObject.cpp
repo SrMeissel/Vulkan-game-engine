@@ -4,16 +4,18 @@
 #include <iostream>
 
 namespace engine {
-    void DynamicsComponent::updateDynamics(float dt, TransformComponent& transform) {
+    void DynamicsComponent::updateDynamics(float dt, PhysicsObject& object) {
         translationalVelocity += translationalAcceleration * dt;
         rotationalVelocity += rotationalAcceleration * dt;
 
-        transform.translation += translationalVelocity * dt;
-        transform.rotation += rotationalVelocity * dt;
+        object.transformComponent.translation += translationalVelocity * dt;
+        object.transformComponent.rotation += rotationalVelocity * dt;
     }
 
-    PhysicsObject::PhysicsObject() {
+    PhysicsObject::PhysicsObject(TransformComponent& transform, unsigned int iD) : transformComponent{transform} {
         Dynamics = std::make_shared<DynamicsComponent>();
-        collisionMesh = std::make_shared<CollisionMesh>(1.0f);
+        collisionMesh = std::make_shared<CollisionMesh>(1.0f, transform);
+        gameObjectID = iD;
+        
     }
 }
