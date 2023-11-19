@@ -10,7 +10,7 @@ https://www.youtube.com/watch?v=lbaHrocxQdM
 
 textures are currently binded in an array
 
-![](ScreenShots/BindedTextures.JPG)
+![](Images/ScreenShots/BindedTextures.JPG)
 
 There exists a way to implement textrures without binding which seems more flexible.
 PBR materials inspired from :
@@ -27,11 +27,23 @@ https://reference.torque3d.org/coding/file/swizzle_8h/
 physics inspired from:
 https://www.realtimerendering.com/intersections.html
 https://www.youtube.com/watch?v=eED4bSkYCB8&t=62s
-I discovered Nvidia Physx, but I dont think I can implement it without completely transitioning to visual studiom and I dont want to do that.
+I discovered Nvidia Physx, but I dont think I can implement it without completely transitioning to visual studio and I dont want to do that.
 However I think I can use it's documentation to help me out:
 https://gameworksdocs.nvidia.com/PhysX/4.0/documentation/PhysXGuide/Manual/Index.html
 http://blog.virtualmethodstudio.com/2017/11/physics-101-3-solvers/
 
+I'm taking a break from physics to do clouds
+
+Atmosphere and clouds:
+https://www.youtube.com/watch?v=8OrvIQUFptA
+horizon: zero dawn has a lot of info 
+https://www.youtube.com/watch?v=ToCozpl1sYY
+wtf is 'dithering'
+wtf is a kilometer
+https://sebh.github.io/publications/egsr2020.pdf
+http://evasion.imag.fr/~Antoine.Bouthors/research/phd/ 
+https://github.com/sebh/UnrealEngineSkyAtmosphere
+https://advances.realtimerendering.com/s2019/index.htm
 
 fun finds:
 https://www.youtube.com/watch?v=eED4bSkYCB8

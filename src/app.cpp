@@ -99,6 +99,8 @@ namespace engine {
             auto newTime = std::chrono::high_resolution_clock::now();
             float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime-currentTime).count();
             currentTime = newTime;
+
+            std::cout << 1.0f/frameTime << "\n";
             //perhaps set upper limit to frameTime to limit edge cases
 
             //proccess user input =======================================================
@@ -112,6 +114,7 @@ namespace engine {
                 screenshotSaved = true;
             }
 
+            //shoot ray forward from camera!
             if(glfwGetKey(window.getGLFWwindow(), GLFW_KEY_SPACE) == GLFW_PRESS) {
                 Ray ray;
                 ray.posiiton = viewerObject.transform.translation;
@@ -198,7 +201,7 @@ namespace engine {
         //floor
         auto floor = GameObject::createGameObject();
         translation = {0.0f, 0.5f, 0.0f};
-        scale = {5.0, 1.0, 5.0};
+        scale = {50.0, 1.0, 50.0};
         initilizeObject(floor, translation, scale, "models/quad.obj", 2);
 
         //tree
