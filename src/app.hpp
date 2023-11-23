@@ -35,8 +35,8 @@ namespace engine {
             Renderer renderer{window, device};
             PhysicsSimulation physicsSimulation{};
 
-
             std::unique_ptr<DescriptorPool> globalPool;
+            
             GameObject::map gameObjects;
 
             TextureManager textureManager{device}; 

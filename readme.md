@@ -34,6 +34,8 @@ http://blog.virtualmethodstudio.com/2017/11/physics-101-3-solvers/
 
 I'm taking a break from physics to do clouds
 
+Turns out, I could/should set up an arbitrary amount of discriptor sets based on how frequently they change. eg. per camera, per object, per frame
+
 Atmosphere and clouds:
 https://www.youtube.com/watch?v=8OrvIQUFptA
 horizon: zero dawn has a lot of info 

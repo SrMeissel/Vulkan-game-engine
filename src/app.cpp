@@ -40,6 +40,7 @@ namespace engine {
         //initiliaze GPU memory objects ==================================================
         DescriptorPool::Builder globalPoolBuilder = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
 
+        //init UBO
         globalPoolBuilder.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT);
         globalPool = globalPoolBuilder.build();
         std::vector<std::unique_ptr<Buffer>> uboBuffers(SwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -48,6 +49,9 @@ namespace engine {
             uboBuffers[i]->map();
         }
 
+        //I have committed to BANISHING the global sets!
+        //not entirely, the global UBO is pretty important and makes sense to keep.
+        //Textures are currently handled in the "simple" system, their sets should be defined there. Each object getting a unique set.
         globalPoolBuilder.addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, SwapChain::MAX_FRAMES_IN_FLIGHT);
         globalPool = globalPoolBuilder.build();
         int textureAmount = sizeof(loadedTextures)/sizeof(Texture);
@@ -64,6 +68,8 @@ namespace engine {
             auto bufferInfo = uboBuffers[i]->descriptorInfo();
             writer.writeBuffer(0, &bufferInfo);
 
+
+            //fist order of buisness is to move the sampler and image to its own descriptor set. within the "simple system"
             VkDescriptorImageInfo samplerInfo;
             samplerInfo.sampler = textureManager.getTextureSampler();
             writer.writeImage(1, &samplerInfo, 1);

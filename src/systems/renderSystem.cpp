@@ -33,6 +33,7 @@ namespace engine {
         pushConstantRange.size = sizeof(SimplePushConstantData);
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout};
+        //can I just attach more sets to the end of this?
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -50,7 +51,7 @@ namespace engine {
 
         PipelineConfigInfo pipelineConfig{};
         Pipeline::defaultPipelineConfigInfo(pipelineConfig, device);
-        //pipelineConfig.attributeDescriptions.push_back({3, 0, VK_FORMAT_R8_UINT, offsetof(GameObject, textureIndex)});
+        //pipelineConfig.attributeDescriptions.push_back({3, 0, VK_FORMAT_R8_UINT, offsetof(GameObject, textureIndex)}); // <=== i have no clue
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = pipelineLayout;
         //pipelineConfig.rasterizationInfo.polygonMode = VK_POLYGON_MODE_LINE; // <===== hollow wireframes

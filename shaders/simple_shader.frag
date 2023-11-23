@@ -25,6 +25,7 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
     int numLights;
 } ubo;
 
+//trying to make this 'set = 1'
 layout(set = 0, binding = 1) uniform sampler texSampler;
 
 layout(set = 0, binding = 2) uniform texture2D textures[3];
