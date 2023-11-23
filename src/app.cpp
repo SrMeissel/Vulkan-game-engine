@@ -20,11 +20,11 @@
 namespace engine {
 
     app::app() {
-        globalPool = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
-        .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
-        .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT)
-        .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, SwapChain::MAX_FRAMES_IN_FLIGHT)
-        .build();
+        // globalPool = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
+        // .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+        // .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+        // .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, SwapChain::MAX_FRAMES_IN_FLIGHT)
+        // .build();
 
         loadGameObjects();
         loadTextures();
@@ -38,15 +38,19 @@ namespace engine {
 
     void app::run() {
         //initiliaze GPU memory objects ==================================================
+        DescriptorPool::Builder globalPoolBuilder = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
 
+        globalPoolBuilder.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT);
+        globalPool = globalPoolBuilder.build();
         std::vector<std::unique_ptr<Buffer>> uboBuffers(SwapChain::MAX_FRAMES_IN_FLIGHT);
         for(int i=0; i < uboBuffers.size(); i++) {
             uboBuffers[i] = std::make_unique<Buffer>(device, sizeof(GlobalUbo), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
             uboBuffers[i]->map();
         }
 
+        globalPoolBuilder.addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, SwapChain::MAX_FRAMES_IN_FLIGHT);
+        globalPool = globalPoolBuilder.build();
         int textureAmount = sizeof(loadedTextures)/sizeof(Texture);
-
         auto globalSetLayout = DescriptorSetLayout::Builder(device)
         .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
         .addBinding(1, VK_DESCRIPTOR_TYPE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -100,8 +104,8 @@ namespace engine {
             float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime-currentTime).count();
             currentTime = newTime;
 
-            std::cout << 1.0f/frameTime << "\n";
-            //perhaps set upper limit to frameTime to limit edge cases
+            //std::cout << 1.0f/frameTime << "\n";
+            //perhaps set upper limit to frameTime so the program doesnt combust at low fps 
 
             //proccess user input =======================================================
 
