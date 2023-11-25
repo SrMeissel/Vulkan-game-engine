@@ -1,7 +1,7 @@
 #pragma once
 
-#include "modelManager.hpp"
-#include "textureManager.hpp"
+#include "Components/modelManager.hpp"
+#include "Components/textureManager.hpp"
 //#include "Components/Physics/PxObject.hpp" 
 
 #include <memory>

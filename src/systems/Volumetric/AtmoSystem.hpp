@@ -12,21 +12,20 @@
 #include <vector>
 
 namespace engine {
-    class RenderSystem {
+    class AtmoSystem {
         public:
 
-            RenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
-            ~RenderSystem();
+            AtmoSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
+            ~AtmoSystem();
 
-            RenderSystem(const RenderSystem &) = delete;
-            RenderSystem &operator=(const RenderSystem &) = delete;
+            AtmoSystem(const AtmoSystem &) = delete;
+            AtmoSystem &operator=(const AtmoSystem &) = delete;
 
             void renderGameObjects(frameInfo& frameInfo);
 
         private:
             void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
             void createPipeline(VkRenderPass renderPass);
-            void createTextureMemoryObjects(frameInfo& frameInfo, Texture& texture);
 
             Device &device;
             std::unique_ptr<Pipeline> pipeline;

@@ -32,3 +32,7 @@ Multiple Scattering 32^2
 
 Use in raymarching fragment shader referencing LUTS
 Reference the depth buffer to figure out distances between steps
+
+
+My first step will be simply to march along a ray from the camera to depth value adding to the value.
+https://blog.demofox.org/2020/05/10/ray-marching-fog-with-blue-noise/

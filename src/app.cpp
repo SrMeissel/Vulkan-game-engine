@@ -175,7 +175,7 @@ namespace engine {
         auto secondObject = GameObject::createGameObject();
         translation = {-1.0f, -0.5f, 2.5f};
         scale = {0.5, 0.5, 0.5};
-        initilizeObject(secondObject, translation, scale, "models/sphere.obj", "../../textures/default_texture.jpg");
+        initilizeObject(secondObject, translation, scale, "models/sphere.obj", "../../Experimental/Roma Imperiale Granite_whgneh2v/Albedo_8K__whgneh2v.jpg");
         //creates a physics sim object
         PhysicsObject physics(gameObjects[1].transform, gameObjects[1].getId());
         physicsSimulation.objects.emplace_back(std::move(physics));

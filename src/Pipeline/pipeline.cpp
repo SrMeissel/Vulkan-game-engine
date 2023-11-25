@@ -1,6 +1,6 @@
 #include "pipeline.hpp"
 
-#include "modelManager.hpp"
+#include "Components/modelManager.hpp"
 
 #include <fstream>
 #include <stdexcept>

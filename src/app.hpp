@@ -6,7 +6,7 @@
 #include "Pipeline/Renderer.hpp"
 #include "descriptorManager.hpp"
 #include "screenshotTool.hpp"
-#include "textureManager.hpp"
+#include "Components/textureManager.hpp"
 #include "Components/Physics/PxSimulation.hpp"
 
 #include <memory>

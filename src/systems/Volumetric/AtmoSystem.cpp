@@ -1,4 +1,4 @@
-#include "renderSystem.hpp"
+#include "AtmoSystem.hpp"
 
 #include <iostream>
 #include <stdexcept>
@@ -17,15 +17,15 @@ namespace engine {
         int textureIndex;
     };
 
-    RenderSystem::RenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout) : device{device} {
+    AtmoSystem::AtmoSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout) : device{device} {
         createPipelineLayout(globalSetLayout);
         createPipeline(renderPass);
     }
-    RenderSystem::~RenderSystem() {
+    AtmoSystem::~AtmoSystem() {
         vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr);
     }
 
-    void RenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout) {
+    void AtmoSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout) {
 
         VkPushConstantRange pushConstantRange {};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -52,7 +52,7 @@ namespace engine {
         }
     }
 
-    void RenderSystem::createPipeline(VkRenderPass renderPass) {
+    void AtmoSystem::createPipeline(VkRenderPass renderPass) {
         assert(pipelineLayout != nullptr && "cannot create pipeline before pipeline layout!");
 
         PipelineConfigInfo pipelineConfig{};
@@ -63,7 +63,7 @@ namespace engine {
         pipeline = std::make_unique<Pipeline>(device, "../../shaders/simple.vert.spv", "../../shaders/simple.frag.spv", pipelineConfig);
     }
 
-    void RenderSystem::renderGameObjects(frameInfo& frameInfo) {
+    void AtmoSystem::renderGameObjects(frameInfo& frameInfo) {
         pipeline->bind(frameInfo.commandBuffer);
 
         vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &frameInfo.globalDescriptorSet, 0, nullptr);
@@ -77,9 +77,6 @@ namespace engine {
             if(obj.texture == nullptr)
             continue;
 
-            createTextureMemoryObjects(frameInfo, *obj.texture);
-
-
             SimplePushConstantData push{};
             push.modelMatrix = obj.transform.mat4();
             push.normalMatrix = obj.transform.normalMatrix();
@@ -90,35 +87,5 @@ namespace engine {
             obj.model->draw(frameInfo.commandBuffer);
         }
         //std::cout << "finished rendering objects" << "\n";
-    }
-
-    void RenderSystem::createTextureMemoryObjects(frameInfo& frameInfo, Texture& texture) {
-
-        //using its own pool to avoid fragmenting the global pool
-
-        std::shared_ptr<DescriptorPool> texturePool = DescriptorPool::Builder(device).setMaxSets(2)
-        .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1)
-        .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1)
-        .build();
-
-        //formatting all info
-        VkDescriptorImageInfo imageInfo;
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = texture.imageView;
-        imageInfo.sampler = texture.sampler;
-                
-        VkDescriptorImageInfo samplerInfo;
-        samplerInfo.sampler = texture.sampler;
-
-        //creating the set with writer abstraction
-        VkDescriptorSet descriptorSet;
-        DescriptorWriter writer(*textureSetLayout, *texturePool);
-        if(writer.writeImage(0, &samplerInfo, 1).writeImage(1,&imageInfo, 1).build(descriptorSet) == false)
-        std::cout << "\n failed to write set \n";
-
-        //std::cout << "attempting to bind textures" << "\n";
-        vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &descriptorSet, 0, nullptr);
-
-
     }
 }
