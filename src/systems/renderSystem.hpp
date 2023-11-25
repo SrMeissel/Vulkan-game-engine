@@ -5,6 +5,8 @@
 #include "gameObject.hpp"
 #include "cameraManager.hpp"
 #include "frameInfo.hpp"
+#include "descriptorManager.hpp"
+#include "textureManager.hpp"
 
 #include <memory>
 #include <vector>
@@ -24,9 +26,13 @@ namespace engine {
         private:
             void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
             void createPipeline(VkRenderPass renderPass);
+            void createTextureMemoryObjects(frameInfo& frameInfo, Texture& texture);
 
             Device &device;
             std::unique_ptr<Pipeline> pipeline;
             VkPipelineLayout pipelineLayout;
+
+            std::unique_ptr<DescriptorSetLayout> textureSetLayout;
+            std::shared_ptr<DescriptorPool> pool;
     };
 }

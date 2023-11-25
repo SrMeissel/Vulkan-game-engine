@@ -57,6 +57,10 @@ DescriptorSetLayout::~DescriptorSetLayout() {
 }
  
 // *************** Descriptor Pool Builder *********************
+
+//changing build to instead update a member variable reference to the pool, in an attempt to be able to pass and build the pool in other objects.
+// I dont think I actually have to do this as long as I init the system once before the main loop
+//nevermind the writer asks for the descriptor pool
  
 DescriptorPool::Builder &DescriptorPool::Builder::addPoolSize(
     VkDescriptorType descriptorType, uint32_t count) {
@@ -74,7 +78,7 @@ DescriptorPool::Builder &DescriptorPool::Builder::setMaxSets(uint32_t count) {
   return *this;
 }
  
-std::unique_ptr<DescriptorPool> DescriptorPool::Builder::build() const {
+std::unique_ptr<DescriptorPool> DescriptorPool::Builder::build() {
   return std::make_unique<DescriptorPool>(device, maxSets, poolFlags, poolSizes);
 }
  
@@ -114,8 +118,10 @@ bool DescriptorPool::allocateDescriptor(
   // Might want to create a "DescriptorPoolManager" class that handles this case, and builds
   // a new pool whenever an old pool fills up. But this is beyond our current scope
   if (vkAllocateDescriptorSets(device.device(), &allocInfo, &descriptor) != VK_SUCCESS) {
+    //std::cout << "descriptor allocation failed \n";
     return false;
   }
+  //std::cout << "descriptor allocation success! \n";
   return true;
 }
  
@@ -173,8 +179,7 @@ DescriptorWriter &DescriptorWriter::writeImage(
   write.dstBinding = binding;
   write.pImageInfo = imageInfo;
   write.descriptorCount = count;
- 
-  std::cout << "sampler descriptor writes added "<< "\n";
+
   writes.push_back(write);
   return *this;
 }
@@ -214,7 +219,7 @@ void DescriptorWriter::overwrite(VkDescriptorSet &set) {
   for (auto &write : writes) {
     write.dstSet = set;
   }
-  std::cout << "descriptor writes size " << writes.size() << "\n";
+  //std::cout << "descriptor writes size " << writes.size() << "\n";
   vkUpdateDescriptorSets(pool.device.device(), writes.size(), writes.data(), 0, nullptr);
 }
  

@@ -20,45 +20,26 @@
 namespace engine {
 
     app::app() {
-        // globalPool = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
-        // .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
-        // .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT)
-        // .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, SwapChain::MAX_FRAMES_IN_FLIGHT)
-        // .build();
-
         loadGameObjects();
-        loadTextures();
     }
     app::~app() {
-        //this should probably be moved to texture deconstructor (Textures would have to be completely rearranged, do when looking into bindless textures)
-        for(int i=0; i < 3; i ++) {
-            textureManager.destroyTexture(loadedTextures[i]);
-        }
+        
     }
 
     void app::run() {
         //initiliaze GPU memory objects ==================================================
-        DescriptorPool::Builder globalPoolBuilder = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
+
+        globalPool = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT).build();
 
         //init UBO
-        globalPoolBuilder.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT);
-        globalPool = globalPoolBuilder.build();
         std::vector<std::unique_ptr<Buffer>> uboBuffers(SwapChain::MAX_FRAMES_IN_FLIGHT);
         for(int i=0; i < uboBuffers.size(); i++) {
             uboBuffers[i] = std::make_unique<Buffer>(device, sizeof(GlobalUbo), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
             uboBuffers[i]->map();
         }
-
-        //I have committed to BANISHING the global sets!
-        //not entirely, the global UBO is pretty important and makes sense to keep.
-        //Textures are currently handled in the "simple" system, their sets should be defined there. Each object getting a unique set.
-        globalPoolBuilder.addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, SwapChain::MAX_FRAMES_IN_FLIGHT);
-        globalPool = globalPoolBuilder.build();
-        int textureAmount = sizeof(loadedTextures)/sizeof(Texture);
+        // add UBO to descriptor
         auto globalSetLayout = DescriptorSetLayout::Builder(device)
         .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-        .addBinding(1, VK_DESCRIPTOR_TYPE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-        .addBinding(2, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT, textureAmount)
         .build();
 
         std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -67,27 +48,14 @@ namespace engine {
 
             auto bufferInfo = uboBuffers[i]->descriptorInfo();
             writer.writeBuffer(0, &bufferInfo);
-
-
-            //fist order of buisness is to move the sampler and image to its own descriptor set. within the "simple system"
-            VkDescriptorImageInfo samplerInfo;
-            samplerInfo.sampler = textureManager.getTextureSampler();
-            writer.writeImage(1, &samplerInfo, 1);
-
-            VkDescriptorImageInfo imageInfo[sizeof(loadedTextures)/sizeof(Texture)];
-            for(int j=0; j < textureAmount; j++){
-                imageInfo[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                imageInfo[j].imageView = loadedTextures[j].imageView;
-                imageInfo[j].sampler = textureManager.getTextureSampler();
-            }
-            writer.writeImages(2, imageInfo, sizeof(loadedTextures)/sizeof(Texture));
-
             writer.build(globalDescriptorSets[i]);
         }
 
         //Initialize shader objects ======================================
 
         RenderSystem renderSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
+
+        // doesnt need descriptor objects.
         PointLightSystem pointLightSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
 
         //Initialize Camera object ===================================
@@ -102,6 +70,7 @@ namespace engine {
 
         auto currentTime = std::chrono::high_resolution_clock::now();
         bool screenshotSaved = false; // <=====
+        //int frames = 0; // <=== useful for debugging (add to while condition)
         while(!window.shouldClose()){
             glfwPollEvents();
 
@@ -180,12 +149,15 @@ namespace engine {
         vkDeviceWaitIdle(device.device());
     }
 
-    void app::initilizeObject(GameObject& object, glm::vec3 position, glm::vec3 scale, std::string modelFile, int textureIndex) {
+    void app::initilizeObject(GameObject& object, glm::vec3 position, glm::vec3 scale, std::string modelFile, char* textureFile) {
         std::shared_ptr<Model> model = Model::createModelFromFile(device, modelFile);
         object.model = move(model);
         object.transform.translation = position;
         object.transform.scale = scale;
-        object.textureIndex = textureIndex;
+
+        std::shared_ptr<Texture> texture = textureManager.createTextureFromFile(textureFile);
+        object.texture = move(texture);
+
         gameObjects.emplace(object.getId(), std::move(object));
     }
 
@@ -197,13 +169,13 @@ namespace engine {
         auto object = GameObject::createGameObject(); 
         translation = {0.0f, 0.5f, 0.0f};
         scale = {1, 1, 1};
-        initilizeObject(object, translation, scale, "models/flat_vase.obj", 1);
+        initilizeObject(object, translation, scale, "models/flat_vase.obj", "../../textures/default_texture.jpg");
 
         //Second object
         auto secondObject = GameObject::createGameObject();
         translation = {-1.0f, -0.5f, 2.5f};
         scale = {0.5, 0.5, 0.5};
-        initilizeObject(secondObject, translation, scale, "models/sphere.obj");
+        initilizeObject(secondObject, translation, scale, "models/sphere.obj", "../../textures/default_texture.jpg");
         //creates a physics sim object
         PhysicsObject physics(gameObjects[1].transform, gameObjects[1].getId());
         physicsSimulation.objects.emplace_back(std::move(physics));
@@ -212,13 +184,13 @@ namespace engine {
         auto floor = GameObject::createGameObject();
         translation = {0.0f, 0.5f, 0.0f};
         scale = {50.0, 1.0, 50.0};
-        initilizeObject(floor, translation, scale, "models/quad.obj", 2);
+        initilizeObject(floor, translation, scale, "models/quad.obj", "../../Experimental/Mossy_Ground_xiboab2r/Albedo_2K__xiboab2r.jpg");
 
         //tree
         auto tree = GameObject::createGameObject();
         translation = {0.0f, 1.5f, 0.0f};
         scale = {1, 1, 1};
-        initilizeObject(tree, translation, scale, "models/Lowpoly_tree_sample.obj");
+        initilizeObject(tree, translation, scale, "models/Lowpoly_tree_sample.obj", "../../textures/default_texture.jpg");
 
            
         // best light color {1.0f, 0.96f, 0.71f};
@@ -231,20 +203,5 @@ namespace engine {
             pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-radius, -1, -radius, 1.0f));
             gameObjects.emplace(pointLight.getId(), std::move(pointLight));
         }
-    }
-
-    void app::loadTextures() {
-        Texture texture;
-        texture.image = textureManager.createTextureImage("../../textures/default_texture.jpg");
-        texture.imageView = textureManager.createTextureImageView(texture.image);
-        loadedTextures[0] = texture;
-
-        texture.image = textureManager.createTextureImage("../../Experimental/Roma Imperiale Granite_whgneh2v/Albedo_8K__whgneh2v.jpg");
-        texture.imageView = textureManager.createTextureImageView(texture.image);
-        loadedTextures[1] = texture;
-
-        texture.image = textureManager.createTextureImage("../../Experimental/Mossy_Ground_xiboab2r/Albedo_2K__xiboab2r.jpg");
-        texture.imageView = textureManager.createTextureImageView(texture.image);
-        loadedTextures[2] = texture;
     }
 }

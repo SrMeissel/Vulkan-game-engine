@@ -41,7 +41,7 @@ namespace engine {
     std::unique_ptr<Model> Model::createModelFromFile(Device& device, const std::string& filepath) {
         Builder builder{};
         builder.loadModel(ENGINE_DIR + filepath);
-        std::cout << "Vertex Count: " << builder.vertices.size();
+        std::cout << "Vertex Count: " << builder.vertices.size() << "\n";
         return std::make_unique<Model>(device, builder);
     }
 

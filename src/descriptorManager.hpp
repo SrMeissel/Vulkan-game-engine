@@ -52,13 +52,15 @@ namespace engine {
         Builder &addPoolSize(VkDescriptorType descriptorType, uint32_t count);
         Builder &setPoolFlags(VkDescriptorPoolCreateFlags flags);
         Builder &setMaxSets(uint32_t count);
-        std::unique_ptr<DescriptorPool> build() const;
+        std::unique_ptr<DescriptorPool> build();
     
     private:
         Device &device;
         std::vector<VkDescriptorPoolSize> poolSizes{};
         uint32_t maxSets = 1000;
         VkDescriptorPoolCreateFlags poolFlags = 0;
+
+        std::shared_ptr<DescriptorPool> pool;
     };
     
     DescriptorPool(
@@ -66,6 +68,7 @@ namespace engine {
         uint32_t maxSets,
         VkDescriptorPoolCreateFlags poolFlags,
         const std::vector<VkDescriptorPoolSize> &poolSizes);
+    DescriptorPool(Device &device) : device{device} {}; // <==== empty constructor might be causing problems
     ~DescriptorPool();
     DescriptorPool(const DescriptorPool &) = delete;
     DescriptorPool &operator=(const DescriptorPool &) = delete;

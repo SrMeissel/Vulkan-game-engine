@@ -34,8 +34,6 @@ http://blog.virtualmethodstudio.com/2017/11/physics-101-3-solvers/
 
 I'm taking a break from physics to do clouds
 
-Turns out, I could/should set up an arbitrary amount of discriptor sets based on how frequently they change. eg. per camera, per object, per frame
-
 Atmosphere and clouds:
 https://www.youtube.com/watch?v=8OrvIQUFptA
 horizon: zero dawn has a lot of info 
@@ -53,6 +51,21 @@ https://www.youtube.com/watch?v=ajv46BSqcK4
 https://www.youtube.com/watch?v=h7apO7q16V0
 https://www.khronos.org/collada/
 http://web.mit.edu/djwendel/www/weblogo/shapes/
+
+
+Turns out, I could/should set up an arbitrary amount of discriptor sets based on how frequently they change. eg. per camera, per object, per frame
+maybe not
+https://www.reddit.com/r/vulkan/comments/4gvmus/best_way_for_textures_in_shaders/
+first comment knows whats up ^
+https://stackoverflow.com/questions/42214710/vkallocatedescriptorsets-returns-vk-out-of-host-memory
+I think I am fragmenting my pool.
+I think that each update frequency might need its own pool.
+
+Still have to look into:
+Descriptor indexing
+Push descriptors
+bindless descriptors
+dynamic UBO's 
 
 
 TO DO:

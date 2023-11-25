@@ -2,29 +2,27 @@
 
 #include <../libs/stb/stb_image.h>
 #include <stdexcept>
+#include <iostream>
 
 namespace engine{
+
+    Texture::~Texture() {
+        //std::cout << "Texture Destroyed!!! \n";
+        vkDestroyImageView(device.device(), imageView, nullptr);
+        vkDestroyImage(device.device(), image, nullptr);
+    }
+
     TextureManager::TextureManager(Device& device) : device{device} {
         //texture Sampler is image independant! yay
         createTextureSampler();
     };
 
-    TextureManager::~TextureManager() {
+    std::unique_ptr<Texture> TextureManager::createTextureFromFile(char * filePath) {
+        VkImage image = createTextureImage(filePath);
+        VkImageView imageView = createTextureImageView(image);
+        VkSampler sampler = getTextureSampler();
 
-
-    }
-
-    //Texture not in class, still need to be cleaned up
-    //currently make copying to the array difficult
-    // Texture::Texture(Device &device) : device{device} {}
-
-    // Texture::~Texture(){
-    //     vkDestroyImageView(device.device(), imageView, nullptr);
-    //     vkDestroyImage(device.device(), image, nullptr);
-    // }
-    void TextureManager::destroyTexture(Texture texture) {
-        vkDestroyImageView(device.device(), texture.imageView, nullptr);
-        vkDestroyImage(device.device(), texture.image, nullptr);
+        return std::make_unique<Texture>(device, image, imageView, sampler);
     }
 
     VkImage TextureManager::createTextureImage(char * filePath) {

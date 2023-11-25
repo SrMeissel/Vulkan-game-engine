@@ -1,6 +1,7 @@
 #pragma once
 
 #include "modelManager.hpp"
+#include "textureManager.hpp"
 //#include "Components/Physics/PxObject.hpp" 
 
 #include <memory>
@@ -55,9 +56,8 @@ namespace engine {
 
             //optional components;
             std::shared_ptr<Model> model{};
-            int textureIndex = 0;
-
-            //std::shared_ptr<PhysicsObject> physics{};
+            std::shared_ptr<Texture> texture{};
+            int textureIndex = 0; // <==== old
             
             std::unique_ptr<PointLightComponent> pointLight = nullptr;
         

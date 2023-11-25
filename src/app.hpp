@@ -27,20 +27,18 @@ namespace engine {
             void run();
         private:
             void loadGameObjects();
-            void initilizeObject(GameObject& object, glm::vec3 position, glm::vec3 scale, std::string modelFile, int textureIndex = 0);
-            void loadTextures();
+            void initilizeObject(GameObject& object, glm::vec3 position, glm::vec3 scale, std::string modelFile, char* textureFile);
 
             Window window{WIDTH, HEIGHT, "Hello there"};
             Device device{window};
             Renderer renderer{window, device};
             PhysicsSimulation physicsSimulation{};
 
-            std::unique_ptr<DescriptorPool> globalPool;
+            std::shared_ptr<DescriptorPool> globalPool;
             
             GameObject::map gameObjects;
 
             TextureManager textureManager{device}; 
-            Texture loadedTextures[3];
 
             ScreenshotTool screenshotTool;
     };
