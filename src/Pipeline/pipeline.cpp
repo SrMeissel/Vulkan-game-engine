@@ -78,12 +78,17 @@ namespace engine {
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         pipelineInfo.stageCount = shaderStages.size();
         pipelineInfo.pStages = shaderStages.data();
+
         pipelineInfo.pVertexInputState = &vertexInputInfo;
+        // if(std::find(flags.begin(), flags.end(), VK_SHADER_STAGE_VERTEX_BIT) != flags.end()) {
+        // pipelineInfo.pVertexInputState = nullptr;
+        // }
+
         pipelineInfo.pInputAssemblyState = &configInfo.inputAssemblyInfo;
         pipelineInfo.pViewportState = &configInfo.viewportInfo;
         pipelineInfo.pRasterizationState = &configInfo.rasterizationInfo;
         pipelineInfo.pMultisampleState = &configInfo.multisampleInfo;
-        pipelineInfo.pColorBlendState = &configInfo.colorBlendInfo; //my error
+        pipelineInfo.pColorBlendState = &configInfo.colorBlendInfo;
         pipelineInfo.pDepthStencilState = &configInfo.depthStencilInfo;
         pipelineInfo.pDynamicState = &configInfo.dynamicStateInfo;
 

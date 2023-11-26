@@ -67,6 +67,9 @@ Push descriptors
 bindless descriptors
 dynamic UBO's 
 
+https://www.saschawillems.de/blog/2018/09/05/vulkan-conditional-rendering/
+https://www.saschawillems.de/blog/2016/08/13/vulkan-tutorial-on-rendering-a-fullscreen-quad-without-buffers/
+
 
 TO DO:
 shadows
@@ -85,3 +88,4 @@ Depends on:
     tinyobjloader
     
 This is becoming more and more useful: https://vulkan.gpuinfo.org/displayreport.php?id=25342#formats_optimal
+built in variables for frag shaders: https://www.khronos.org/opengl/wiki/Fragment_Shader

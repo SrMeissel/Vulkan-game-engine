@@ -4,6 +4,7 @@
 #include "bufferManager.hpp"
 #include "systems/renderSystem.hpp"
 #include "systems/pointLightSystem.hpp"
+#include "systems/Volumetric/AtmoSystem.hpp"
 
 
 #include <iostream>
@@ -57,6 +58,8 @@ namespace engine {
 
         // doesnt need descriptor objects.
         PointLightSystem pointLightSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
+
+        AtmoSystem atmoSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
 
         //Initialize Camera object ===================================
 
@@ -140,6 +143,8 @@ namespace engine {
                 //order matters, the transparent pointLights need to be rendered first (Brendan tutorial 27)
                 renderSystem.renderGameObjects(frameInfo);
                 pointLightSystem.render(frameInfo);
+
+                atmoSystem.renderGameObjects(frameInfo);
 
                 //finished and submit to presentation
                 renderer.endSwapChainRenderPass(commandBuffer);
