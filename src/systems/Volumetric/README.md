@@ -25,6 +25,8 @@ Create 4 LUT'S stored as image attachments in the render pass
 Luts created once at startup or when atmospheric conditions change
 Can be stored in participating media volume object.
 
+LUTS created using compute shader?
+
 Transmittance 256 x 64
 Sky-View 200 x 100
 Aerial Perspective 32^3 
@@ -36,3 +38,4 @@ Reference the depth buffer to figure out distances between steps
 
 My first step will be simply to march along a ray from the camera to depth value adding to the value.
 https://blog.demofox.org/2020/05/10/ray-marching-fog-with-blue-noise/
+https://stackoverflow.com/questions/14343991/how-to-calculate-camera-view-angle-per-fragment-in-fragment-shader-webgl-op

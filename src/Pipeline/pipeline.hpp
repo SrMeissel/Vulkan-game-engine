@@ -32,7 +32,7 @@ namespace engine{
 
     class Pipeline {
         public:
-            Pipeline(Device& device, const std::string& vertFilepath, const std::string& fragFilepath, const PipelineConfigInfo& configInfo);
+            Pipeline(Device& device, std::vector<std::string> files, std::vector<VkShaderStageFlagBits> flags, const PipelineConfigInfo& configInfo);
             ~Pipeline();
 
             Pipeline() = default;
@@ -47,13 +47,14 @@ namespace engine{
         private:
             static std::vector<char> readFile(const std::string& filePath);
 
-            void createGraphicsPipeline(const std::string& vertFilepath, const std::string& fragFilepath, const PipelineConfigInfo& configInfo); 
+            void createGraphicsPipeline(std::vector<std::string> files, std::vector<VkShaderStageFlagBits> flags, const PipelineConfigInfo& configInfo); 
 
             void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
 
             Device& Device;
             VkPipeline graphicsPipeline;
-            VkShaderModule vertShaderModule;
-            VkShaderModule fragShaderModule;
+            std::vector<VkShaderModule> modules{};
+            //VkShaderModule vertShaderModule;
+            //VkShaderModule fragShaderModule;
     };
 }

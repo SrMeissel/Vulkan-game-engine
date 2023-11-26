@@ -57,7 +57,11 @@ namespace engine {
 
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = pipelineLayout;
-        pipeline = std::make_unique<Pipeline>(device, "../../shaders/point_light.vert.spv", "../../shaders/point_light.frag.spv", pipelineConfig);
+
+        std::vector<std::string> files = {"../../shaders/point_light.vert.spv", "../../shaders/point_light.frag.spv"};
+        std::vector<VkShaderStageFlagBits> flags = { VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_FRAGMENT_BIT};
+        pipeline = std::make_unique<Pipeline>(device, files, flags, pipelineConfig);
+        //pipeline = std::make_unique<Pipeline>(device, "../../shaders/point_light.vert.spv", "../../shaders/point_light.frag.spv", pipelineConfig);
     }
 
     void PointLightSystem::update(frameInfo &frameInfo, GlobalUbo &ubo){

@@ -38,7 +38,7 @@ namespace engine {
         textureSetLayout = DescriptorSetLayout::Builder(device)
         .addBinding(0, VK_DESCRIPTOR_TYPE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
         .addBinding(1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
-        .build();
+        .build();   
         descriptorSetLayouts.push_back(textureSetLayout->getDescriptorSetLayout());
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
@@ -60,7 +60,7 @@ namespace engine {
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = pipelineLayout;
         //pipelineConfig.rasterizationInfo.polygonMode = VK_POLYGON_MODE_LINE; // <===== hollow wireframes
-        pipeline = std::make_unique<Pipeline>(device, "../../shaders/simple.vert.spv", "../../shaders/simple.frag.spv", pipelineConfig);
+        //pipeline = std::make_unique<Pipeline>(device, "../../shaders/simple.vert.spv", "../../shaders/simple.frag.spv", pipelineConfig);
     }
 
     void AtmoSystem::renderGameObjects(frameInfo& frameInfo) {

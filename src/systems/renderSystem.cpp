@@ -60,7 +60,10 @@ namespace engine {
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = pipelineLayout;
         //pipelineConfig.rasterizationInfo.polygonMode = VK_POLYGON_MODE_LINE; // <===== hollow wireframes
-        pipeline = std::make_unique<Pipeline>(device, "../../shaders/simple.vert.spv", "../../shaders/simple.frag.spv", pipelineConfig);
+        
+        std::vector<std::string> files = {"../../shaders/simple.vert.spv", "../../shaders/simple.frag.spv"};
+        std::vector<VkShaderStageFlagBits> flags = { VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_FRAGMENT_BIT};
+        pipeline = std::make_unique<Pipeline>(device, files, flags, pipelineConfig);
     }
 
     void RenderSystem::renderGameObjects(frameInfo& frameInfo) {
@@ -74,6 +77,7 @@ namespace engine {
             if(obj.model == nullptr)
             continue;
 
+            //dont know how to 
             if(obj.texture == nullptr)
             continue;
 
