@@ -58,6 +58,8 @@ namespace engine {
         PipelineConfigInfo pipelineConfig{};
         Pipeline::defaultPipelineConfigInfo(pipelineConfig, device);
         pipelineConfig.renderPass = renderPass;
+        pipelineConfig.subpass = 0;
+
         pipelineConfig.pipelineLayout = pipelineLayout;
         //pipelineConfig.rasterizationInfo.polygonMode = VK_POLYGON_MODE_LINE; // <===== hollow wireframes
         
@@ -93,7 +95,7 @@ namespace engine {
             obj.model->bind(frameInfo.commandBuffer);
             obj.model->draw(frameInfo.commandBuffer);
         }
-        //std::cout << "finished rendering objects" << "\n";
+        std::cout << "finished rendering objects" << "\n";
     }
 
     void RenderSystem::createTextureMemoryObjects(frameInfo& frameInfo, Texture& texture) {
@@ -117,6 +119,7 @@ namespace engine {
         //creating the set with writer abstraction
         VkDescriptorSet descriptorSet;
         DescriptorWriter writer(*textureSetLayout, *texturePool);
+        
         if(writer.writeImage(0, &samplerInfo, 1).writeImage(1,&imageInfo, 1).build(descriptorSet) == false)
         std::cout << "\n failed to write set \n";
 

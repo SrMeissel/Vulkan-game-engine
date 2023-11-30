@@ -56,6 +56,8 @@ namespace engine {
         pipelineConfig.bindingDescriptions.clear();
 
         pipelineConfig.renderPass = renderPass;
+        pipelineConfig.subpass = 0;
+
         pipelineConfig.pipelineLayout = pipelineLayout;
 
         std::vector<std::string> files = {"../../shaders/point_light.vert.spv", "../../shaders/point_light.frag.spv"};
@@ -114,5 +116,6 @@ namespace engine {
             vkCmdPushConstants(frameInfo.commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(pointLightPushConstants), &push);
             vkCmdDraw(frameInfo.commandBuffer, 6, 1, 0, 0);
         }
+        std::cout << "finished rendering lights" << "\n";
     }
 }

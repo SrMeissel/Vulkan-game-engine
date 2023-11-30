@@ -144,10 +144,14 @@ namespace engine {
                 renderSystem.renderGameObjects(frameInfo);
                 pointLightSystem.render(frameInfo);
 
-                atmoSystem.renderGameObjects(frameInfo);
+                //function is self explanitory
+                vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
+
+                atmoSystem.renderAtmosphere(frameInfo, renderer.getSwapchainDepthImageView(frameIndex));
 
                 //finished and submit to presentation
                 renderer.endSwapChainRenderPass(commandBuffer);
+                
                 renderer.endFrame();
             }
         }

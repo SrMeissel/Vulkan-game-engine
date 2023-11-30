@@ -21,7 +21,7 @@ namespace engine {
             AtmoSystem(const AtmoSystem &) = delete;
             AtmoSystem &operator=(const AtmoSystem &) = delete;
 
-            void renderGameObjects(frameInfo& frameInfo);
+            void renderAtmosphere(frameInfo& frameInfo, VkImageView depthImageView);
 
         private:
             void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
@@ -31,7 +31,7 @@ namespace engine {
             std::unique_ptr<Pipeline> pipeline;
             VkPipelineLayout pipelineLayout;
 
-            std::unique_ptr<DescriptorSetLayout> textureSetLayout;
+            std::unique_ptr<DescriptorSetLayout> inputSetLayout;
             std::shared_ptr<DescriptorPool> pool;
     };
 }

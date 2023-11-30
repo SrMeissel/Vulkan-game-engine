@@ -39,3 +39,6 @@ Reference the depth buffer to figure out distances between steps
 My first step will be simply to march along a ray from the camera to depth value adding to the value.
 https://blog.demofox.org/2020/05/10/ray-marching-fog-with-blue-noise/
 https://stackoverflow.com/questions/14343991/how-to-calculate-camera-view-angle-per-fragment-in-fragment-shader-webgl-op
+
+https://www.youtube.com/watch?v=UXD97l7ZT0w
+I did not expect this youtube video to reference the same paper I am trying to 

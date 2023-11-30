@@ -27,24 +27,18 @@ namespace engine {
 
     void AtmoSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout) {
 
-        // VkPushConstantRange pushConstantRange {};
-        // pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-        // pushConstantRange.offset = 0;
-        // pushConstantRange.size = sizeof(SimplePushConstantData);
 
-        // std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout};
-        // //can I just attach more sets to the end of this? imma try it
-        // //sampler and image set layout only needs to be done once
-        // textureSetLayout = DescriptorSetLayout::Builder(device)
-        // .addBinding(0, VK_DESCRIPTOR_TYPE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-        // .addBinding(1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
-        // .build();   
-        // descriptorSetLayouts.push_back(textureSetLayout->getDescriptorSetLayout());
+        std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
+
+        inputSetLayout = DescriptorSetLayout::Builder(device).addBinding(0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT).build();
+        //VkDescriptorSetLayout layout = inputSetLayout->getDescriptorSetLayout();
+
+        descriptorSetLayouts.push_back(inputSetLayout->getDescriptorSetLayout());
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = 0;
-        pipelineLayoutInfo.pSetLayouts = nullptr;
+        pipelineLayoutInfo.setLayoutCount = descriptorSetLayouts.size();
+        pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
         pipelineLayoutInfo.pushConstantRangeCount = 0;
         pipelineLayoutInfo.pPushConstantRanges = nullptr;
         if(vkCreatePipelineLayout(device.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
@@ -57,46 +51,48 @@ namespace engine {
 
         PipelineConfigInfo pipelineConfig{};
         Pipeline::defaultPipelineConfigInfo(pipelineConfig, device);
+        Pipeline::enableAlphaBlending(pipelineConfig);
+        pipelineConfig.attributeDescriptions.clear();
+        pipelineConfig.bindingDescriptions.clear();
+
+        pipelineConfig.depthStencilInfo.depthWriteEnable = VK_FALSE;
+        
         pipelineConfig.renderPass = renderPass;
+        pipelineConfig.subpass = 1;
+        
         pipelineConfig.pipelineLayout = pipelineLayout;
 
         pipelineConfig.rasterizationInfo.cullMode = VK_CULL_MODE_FRONT_BIT;
         pipelineConfig.rasterizationInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-
-        Pipeline::enableAlphaBlending(pipelineConfig);
-
-        //pipelineConfig.rasterizationInfo.polygonMode = VK_POLYGON_MODE_LINE; // <===== hollow wireframes
 
         std::vector<std::string> files = { "../../shaders/Volumetrics/FullscreenQuad.vert.spv", "../../shaders/Volumetrics/RayMarcher.frag.spv"};
         std::vector<VkShaderStageFlagBits> flags = {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT};
         pipeline = std::make_unique<Pipeline>(device, files, flags, pipelineConfig);
     }
 
-    void AtmoSystem::renderGameObjects(frameInfo& frameInfo) {
+    void AtmoSystem::renderAtmosphere(frameInfo& frameInfo, VkImageView depthImageView) {
         pipeline->bind(frameInfo.commandBuffer);
+
+        //bind depth descriptor stuff, same process as simple renderer
+        std::shared_ptr<DescriptorPool> texturePool = DescriptorPool::Builder(device).setMaxSets(1)
+        .addPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1)
+        .build();
+
+        VkDescriptorImageInfo imageInfo;
+        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo.imageView = depthImageView;
+        imageInfo.sampler = VK_NULL_HANDLE;
+
+        VkDescriptorSet descriptorSet;
+        DescriptorWriter writer(*inputSetLayout, *texturePool);
+        if(writer.writeImage(0, &imageInfo, 1).build(descriptorSet) != true){
+            std::cout << "\n this thing failed \n";
+        }
+
+        vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
 
         vkCmdDraw(frameInfo.commandBuffer, 3, 1, 0, 0);
 
-        // //vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &frameInfo.globalDescriptorSet, 0, nullptr);
-
-        // for(auto& kv: frameInfo.gameObjects) {
-
-        //     auto& obj = kv.second;
-        //     if(obj.model == nullptr)
-        //     continue;
-
-        //     if(obj.texture == nullptr)
-        //     continue;
-
-        //     // SimplePushConstantData push{};
-        //     // push.modelMatrix = obj.transform.mat4();
-        //     // push.normalMatrix = obj.transform.normalMatrix();
-        //     // push.textureIndex = obj.textureIndex;   
-
-        //     //vkCmdPushConstants(frameInfo.commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(SimplePushConstantData), &push);
-        //     obj.model->bind(frameInfo.commandBuffer);
-        //     obj.model->draw(frameInfo.commandBuffer);
-        // }
-        //std::cout << "finished rendering objects" << "\n";
+        std::cout << "finished rendering sky" << "\n";
     }
 }

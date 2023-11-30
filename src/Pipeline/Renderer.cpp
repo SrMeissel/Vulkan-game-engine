@@ -130,9 +130,8 @@ namespace engine {
         VkRect2D scissor{{0, 0}, swapchain->getSwapChainExtent()};
         vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-
     }
+    
     void Renderer::endSwapChainRenderPass(VkCommandBuffer commandBuffer) {
         assert(isFrameStarted && "cannot call endSwapChainRenderPass if no frame is in progress!");
         assert(commandBuffer == getCurrentCommandBuffer() && "Cannot end render pass on command buffer from a different frame");
