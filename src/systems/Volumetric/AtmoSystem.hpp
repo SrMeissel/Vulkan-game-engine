@@ -21,11 +21,13 @@ namespace engine {
             AtmoSystem(const AtmoSystem &) = delete;
             AtmoSystem &operator=(const AtmoSystem &) = delete;
 
-            void renderAtmosphere(frameInfo& frameInfo, VkImageView depthImageView);
+            void renderAtmosphere(frameInfo& frameInfo, VkImageView& depthImageView);
 
         private:
             void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
             void createPipeline(VkRenderPass renderPass);
+
+            void AtmoSystem::createMemoryObjects(frameInfo& frameInfo,VkImageView& depthImageView);
 
             Device &device;
             std::unique_ptr<Pipeline> pipeline;

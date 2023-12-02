@@ -95,7 +95,7 @@ namespace engine {
             obj.model->bind(frameInfo.commandBuffer);
             obj.model->draw(frameInfo.commandBuffer);
         }
-        std::cout << "finished rendering objects" << "\n";
+        //std::cout << "finished rendering objects" << "\n";
     }
 
     void RenderSystem::createTextureMemoryObjects(frameInfo& frameInfo, Texture& texture) {
@@ -103,8 +103,8 @@ namespace engine {
         //using its own pool to avoid fragmenting the global pool
 
         std::shared_ptr<DescriptorPool> texturePool = DescriptorPool::Builder(device).setMaxSets(2)
-        .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1)
-        .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1)
+        .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1)
+        .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLER, 1)
         .build();
 
         //formatting all info

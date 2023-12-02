@@ -240,7 +240,7 @@ void SwapChain::createRenderPass() {
   depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
   depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
   depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-  depthAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+  depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 
   VkAttachmentReference depthAttachmentRef{};
   depthAttachmentRef.attachment = 1;
@@ -279,7 +279,7 @@ void SwapChain::createRenderPass() {
   //thats exactly what I'm doing
   VkAttachmentReference inputReference = {};
   inputReference.attachment = 1;
-  inputReference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+  inputReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 
   std::array<VkSubpassDescription, 2> subpasses {};
   subpasses[0].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -298,22 +298,23 @@ void SwapChain::createRenderPass() {
   subpasses[1].inputAttachmentCount = 1; // <======
   subpasses[1].pInputAttachments = &inputReference; // <======
 
-  std::array<VkSubpassDependency, 3> dependency = {};
-  dependency[0].srcSubpass = 0;
-  dependency[0].dstSubpass = 0;
-  dependency[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-  dependency[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-  dependency[0].srcAccessMask = 0;
-  dependency[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-  dependency[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+  // std::array<VkSubpassDependency, 3> dependency = {};
+  // dependency[0].srcSubpass = 0;
+  // dependency[0].dstSubpass = 0;
+  // dependency[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+  // dependency[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+  // dependency[0].srcAccessMask = 0;
+  // dependency[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+  // dependency[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-  dependency[1].srcSubpass = 0;
-  dependency[1].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-  dependency[1].srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-  dependency[1].dstSubpass = 1;
-  dependency[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-  dependency[1].dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT | VK_ACCESS_SHADER_READ_BIT;
-  dependency[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+VkSubpassDependency dependency {};
+  dependency.srcSubpass = 0;
+  dependency.dstSubpass = 1;
+  dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+  dependency.dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+  dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+  dependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+  dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
   std::array<VkAttachmentDescription, 3> attachments = {colorAttachment, depthAttachment, colorAttachmentResolve};
   VkRenderPassCreateInfo renderPassInfo = {};
@@ -322,8 +323,8 @@ void SwapChain::createRenderPass() {
   renderPassInfo.pAttachments = attachments.data();
   renderPassInfo.subpassCount = 2;
   renderPassInfo.pSubpasses = subpasses.data();
-  renderPassInfo.dependencyCount = 2;
-  renderPassInfo.pDependencies = dependency.data();
+  renderPassInfo.dependencyCount = 1;
+  renderPassInfo.pDependencies = &dependency;  //.data();
 
   if (vkCreateRenderPass(device.device(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
     throw std::runtime_error("failed to create render pass!");

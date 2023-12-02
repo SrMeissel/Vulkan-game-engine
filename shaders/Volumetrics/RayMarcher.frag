@@ -7,6 +7,10 @@ layout (location = 0) out vec4 outColor;
 layout (input_attachment_index = 0, set = 0, binding = 0) uniform subpassInputMS inputDepth;
 
 void main() {
-    float depth = subpassLoad(inputDepth, 8).r;
-    outColor = vec4(0, 0.5, depth, 0.5);
+    //float depth = subpassLoad(inputDepth, 8).r;
+    //outColor = vec4(0, 0.05, depth*10, 0.5);
+
+    //outColor = vec4(0, 0, 0.5 , subpassLoad(inputDepth, 8).x + 0.1);
+
+
 }

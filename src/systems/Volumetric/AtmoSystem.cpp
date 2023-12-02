@@ -70,16 +70,24 @@ namespace engine {
         pipeline = std::make_unique<Pipeline>(device, files, flags, pipelineConfig);
     }
 
-    void AtmoSystem::renderAtmosphere(frameInfo& frameInfo, VkImageView depthImageView) {
+    void AtmoSystem::renderAtmosphere(frameInfo& frameInfo, VkImageView& depthImageView) {
         pipeline->bind(frameInfo.commandBuffer);
 
+        createMemoryObjects(frameInfo, depthImageView);
+
+        vkCmdDraw(frameInfo.commandBuffer, 3, 1, 0, 0);
+
+        //std::cout << "finished rendering sky" << "\n";
+    }
+
+    void AtmoSystem::createMemoryObjects(frameInfo& frameInfo, VkImageView& depthImageView) {
         //bind depth descriptor stuff, same process as simple renderer
         std::shared_ptr<DescriptorPool> texturePool = DescriptorPool::Builder(device).setMaxSets(1)
         .addPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1)
         .build();
 
         VkDescriptorImageInfo imageInfo;
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
         imageInfo.imageView = depthImageView;
         imageInfo.sampler = VK_NULL_HANDLE;
 
@@ -91,8 +99,5 @@ namespace engine {
 
         vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
 
-        vkCmdDraw(frameInfo.commandBuffer, 3, 1, 0, 0);
-
-        std::cout << "finished rendering sky" << "\n";
     }
 }
