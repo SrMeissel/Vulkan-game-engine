@@ -122,7 +122,8 @@ void Device::pickPhysicalDevice() {
   for (const auto &device : devices) {
     if (isDeviceSuitable(device)) {
       physicalDevice = device;
-      msaaSamples = getMaxUsableSampleCount();
+      //msaaSamples = getMaxUsableSampleCount();
+      msaaSamples = VK_SAMPLE_COUNT_1_BIT; // disabling msaa atm
       break;
     }
   }

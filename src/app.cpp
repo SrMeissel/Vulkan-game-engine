@@ -147,8 +147,11 @@ namespace engine {
                 //function is self explanitory
                 vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
 
-                atmoSystem.renderAtmosphere(frameInfo, renderer.getSwapchainDepthImageView(frameIndex));
-
+                atmoSystem.renderAtmosphere(frameInfo, renderer.getSwapchainDepthImageViews()[renderer.getCurrentImageIndex()]);
+                //std::cout << renderer.getFrameIndex() << " frame \n";
+                //std::cout << renderer.getCurrentImageIndex() << " image \n";
+                // these are different apparently >:(
+                     
                 //finished and submit to presentation
                 renderer.endSwapChainRenderPass(commandBuffer);
                 

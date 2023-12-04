@@ -20,7 +20,7 @@ namespace engine {
             VkRenderPass getRenderPass() const { return swapchain->getRenderPass(); }
             float getAspectRatio() const {return swapchain->extentAspectRatio(); }
             std::vector<VkImage> getSwapchainImages() const {return swapchain->getImages(); }
-            VkImageView& getSwapchainDepthImageView(int index) {return swapchain->getDepthImageView(index); }
+            std::vector<VkImageView> getSwapchainDepthImageViews() {return swapchain->getDepthImageViews(); }
             bool isFrameInProgress() const { return isFrameStarted; }
 
 
