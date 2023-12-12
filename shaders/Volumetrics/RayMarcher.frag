@@ -14,7 +14,7 @@ void main() {
     float depth = subpassLoad(inputDepth).r; // (inputDepth, 8)
     //outColor = vec4(0, 0.05, depth*10, 0.5);
 
-    outColor = vec4(1, 0, 0, 1-depth);
+    outColor = vec4(0, 0, 1, depth);
 
 
 }

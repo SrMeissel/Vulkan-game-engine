@@ -262,10 +262,6 @@ void SwapChain::createRenderPass() {
   colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
   colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-  VkAttachmentReference colorAttachmentResolveRef{};
-  colorAttachmentResolveRef.attachment = 2;
-  colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
   VkAttachmentReference colorAttachmentRef = {};
   colorAttachmentRef.attachment = 0;
   colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -274,12 +270,14 @@ void SwapChain::createRenderPass() {
   depthAttachmentRef.attachment = 1;
   depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-  //for future referenece, I am trying to make the depth buffer readable for the AtmoSystem. No clue if this is a legal setup
-  //may need to create multiple render passes
-  //thats exactly what I'm doing
+  //for second subpass
   VkAttachmentReference inputReference = {};
   inputReference.attachment = 1;
   inputReference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+  VkAttachmentReference colorAttachmentResolveRef{};
+  colorAttachmentResolveRef.attachment = 2;
+  colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
   std::array<VkSubpassDescription, 2> subpasses {};
   subpasses[0].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -287,16 +285,13 @@ void SwapChain::createRenderPass() {
   subpasses[0].pColorAttachments = &colorAttachmentResolveRef;
   subpasses[0].pDepthStencilAttachment = &depthAttachmentRef;
   // subpasses[0].pResolveAttachments = &colorAttachmentResolveRef;
-  // subpasses[0].inputAttachmentCount = 1; // <======
-  // subpasses[0].pInputAttachments = &inputReference; // <======
 
   subpasses[1].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
   subpasses[1].colorAttachmentCount = 1;
   subpasses[1].pColorAttachments = &colorAttachmentResolveRef;
-  //subpasses[1].pDepthStencilAttachment = &depthAttachmentRef;
   //subpasses[1].pResolveAttachments = &colorAttachmentResolveRef;
-  subpasses[1].inputAttachmentCount = 1; // <======
-  subpasses[1].pInputAttachments = &inputReference; // <======
+  subpasses[1].inputAttachmentCount = 1;
+  subpasses[1].pInputAttachments = &inputReference;
 
  std::array<VkSubpassDependency, 3> dependency = {};
 
@@ -321,7 +316,7 @@ void SwapChain::createRenderPass() {
   dependency[2].dstSubpass = 1;
   dependency[2].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
   dependency[2].dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
-  dependency[2].srcStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT; //VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+  dependency[2].srcStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
   dependency[2].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
   dependency[2].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 

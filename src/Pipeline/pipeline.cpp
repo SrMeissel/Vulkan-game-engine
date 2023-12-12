@@ -83,6 +83,7 @@ namespace engine {
         // if(std::find(flags.begin(), flags.end(), VK_SHADER_STAGE_VERTEX_BIT) != flags.end()) {
         // pipelineInfo.pVertexInputState = nullptr;
         // }
+        // i dont know what this is anymore
 
         pipelineInfo.pInputAssemblyState = &configInfo.inputAssemblyInfo;
         pipelineInfo.pViewportState = &configInfo.viewportInfo;

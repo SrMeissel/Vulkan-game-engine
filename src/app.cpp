@@ -6,7 +6,6 @@
 #include "systems/pointLightSystem.hpp"
 #include "systems/Volumetric/AtmoSystem.hpp"
 
-
 #include <iostream>
 #include <stdexcept>
 #include <array>
@@ -24,7 +23,7 @@ namespace engine {
         loadGameObjects();
     }
     app::~app() {
-        
+
     }
 
     void app::run() {
@@ -55,10 +54,7 @@ namespace engine {
         //Initialize shader objects ======================================
 
         RenderSystem renderSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
-
-        // doesnt need descriptor objects.
         PointLightSystem pointLightSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
-
         AtmoSystem atmoSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
 
         //Initialize Camera object ===================================
@@ -114,7 +110,6 @@ namespace engine {
             float aspect = renderer.getAspectRatio();
             camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 50.0f);
 
-
             //update objects ==========================================================
 
             physicsSimulation.update(frameTime);
@@ -147,10 +142,8 @@ namespace engine {
                 //function is self explanitory
                 vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
 
-                atmoSystem.renderAtmosphere(frameInfo, renderer.getSwapchainDepthImageViews()[renderer.getCurrentImageIndex()]);
-                //std::cout << renderer.getFrameIndex() << " frame \n";
-                //std::cout << renderer.getCurrentImageIndex() << " image \n";
-                // these are different apparently >:(
+                //atmoSystem.renderAtmosphere(frameInfo, renderer.getSwapchainDepthImageViews()[renderer.getCurrentImageIndex()]);
+                //this works, just not fcusing on it rn 
                      
                 //finished and submit to presentation
                 renderer.endSwapChainRenderPass(commandBuffer);
@@ -181,7 +174,7 @@ namespace engine {
         auto object = GameObject::createGameObject(); 
         translation = {0.0f, 0.5f, 0.0f};
         scale = {1, 1, 1};
-        initilizeObject(object, translation, scale, "models/flat_vase.obj", "../../textures/default_texture.jpg");
+        initilizeObject(object, translation, scale, "models/flat_vase.obj", "../../textures/default_texture.jpg");  
 
         //Second object
         auto secondObject = GameObject::createGameObject();
