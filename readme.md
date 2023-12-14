@@ -6,6 +6,7 @@ This engine has since surpassed it's scope.
 
 Intending to create a differed renderer with a universal ray marcher. The pipeline will be defined as follows:
 Objects -> Volumetrics -> Lighting -> Post-Proccessing -> UI
+ I'm thinking UI should actually be first, no?
 
 ## Features w/ Sources
 
@@ -88,6 +89,8 @@ Going to use imgui for tooling UI to make the traisition for hardcoded objects t
 - [ ] Sound
 - [ ] Physics
 I'm taking a break from physics to do clouds
+- [ ] Asset System
+- [ ] CVAR System
 
 ### Atmosphere and clouds
 
@@ -135,3 +138,4 @@ built in variables for frag shaders:
 - glfw - <https://github.com/glfw/glfw>
 - glm - <https://github.com/g-truc/glm>
 - tinyobjloader - <https://github.com/tinyobjloader/tinyobjloader>
+- imgui - <https://github.com/ocornut/imgui.git>

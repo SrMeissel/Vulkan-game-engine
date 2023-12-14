@@ -80,6 +80,8 @@ namespace engine {
     
     void resetPool();
     
+    VkDescriptorPool &getDescriptorPool() {return descriptorPool; }
+
     private:
     Device &device;
     VkDescriptorPool descriptorPool;

@@ -12,20 +12,36 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/libs/glfw-3.3.8)
 add_subdirectory(${CMAKE_SOURCE_DIR}/libs/tinyobjloader-release)
 
+find_package(Vulkan REQUIRED)
+
+# local source
 file(GLOB_RECURSE SOURCES 
 ${PROJECT_SOURCE_DIR}/src/*.cpp 
+# I dont think this does what I think it does...
 ${PROJECT_SOURCE_DIR}/*.hpp
 ${PROJECT_SOURCE_SIR}/*.h
 )
-
-find_package(Vulkan REQUIRED)
 
 add_executable(engine
     ${SOURCES}
     ) 
 
 target_include_directories(engine PUBLIC
-    ${PROJECT_SOURCE_DIR}/src    
+    ${PROJECT_SOURCE_DIR}/src  
+    # ${PROJECT_SOURCE_DIR}/libs/imgui  
+)
+
+target_sources(engine PRIVATE
+"${PROJECT_SOURCE_DIR}/libs/imgui/imgui.h"
+"${PROJECT_SOURCE_DIR}/libs/imgui/imgui.cpp"
+
+"${PROJECT_SOURCE_DIR}/libs/imgui/imgui_demo.cpp"
+"${PROJECT_SOURCE_DIR}/libs/imgui/imgui_draw.cpp"
+"${PROJECT_SOURCE_DIR}/libs/imgui/imgui_widgets.cpp"
+"${PROJECT_SOURCE_DIR}/libs/imgui/imgui_tables.cpp"
+
+"${PROJECT_SOURCE_DIR}/libs/imgui/imgui_impl_vulkan.cpp"
+"${PROJECT_SOURCE_DIR}/libs/imgui/imgui_impl_glfw.cpp"
 )
 
 target_link_libraries(engine glfw)

@@ -8,6 +8,7 @@
 #include "screenshotTool.hpp"
 #include "Components/textureManager.hpp"
 #include "Components/Physics/PxSimulation.hpp"
+#include "Tools/SceneEditor.hpp"
 
 #include <memory>
 #include <vector>
@@ -32,14 +33,15 @@ namespace engine {
             Window window{WIDTH, HEIGHT, "Hello there"};
             Device device{window};
             Renderer renderer{window, device};
+            SceneEditor SceneEditor{device, window.getGLFWwindow(), renderer.getRenderPass()};
+
             PhysicsSimulation physicsSimulation{};
+            TextureManager textureManager{device}; 
+            ScreenshotTool screenshotTool;
 
             std::shared_ptr<DescriptorPool> globalPool;
             
             GameObject::map gameObjects;
 
-            TextureManager textureManager{device}; 
-
-            ScreenshotTool screenshotTool;
     };
 }
