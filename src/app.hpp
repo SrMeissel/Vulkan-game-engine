@@ -29,11 +29,14 @@ namespace engine {
         private:
             void loadGameObjects();
             void initilizeObject(GameObject& object, glm::vec3 position, glm::vec3 scale, std::string modelFile, char* textureFile);
+            VkRenderPassCreateInfo* configureRenderPass();
+            VkFormat chooseSwapSurfaceFormat();
 
             Window window{WIDTH, HEIGHT, "Hello there"};
             Device device{window};
             Renderer renderer{window, device};
-            SceneEditor SceneEditor{device, window.getGLFWwindow(), renderer.getRenderPass()};
+
+            //SceneEditor SceneEditor{device, window.getGLFWwindow(), renderer.getRenderPass()};
 
             PhysicsSimulation physicsSimulation{};
             TextureManager textureManager{device}; 

@@ -76,6 +76,9 @@ Sources:
 - <https://www.saschawillems.de/blog/2018/09/05/vulkan-conditional-rendering/>
 - <https://www.saschawillems.de/blog/2016/08/13/vulkan-tutorial-on-rendering-a-fullscreen-quad-without-buffers/>
 
+- <https://vcpkg.io/en/>
+- <https://www.alexhyett.com/stack-vs-heap-memory/>
+
 ## Tasks
 
 TO DO:

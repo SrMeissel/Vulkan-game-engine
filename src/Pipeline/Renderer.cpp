@@ -8,14 +8,16 @@
 namespace engine {
 
     Renderer::Renderer(Window& window, Device& device) : window{window}, device{device} {
-        recreateSwapChain();
+        //recreateSwapChain();
         createCommandBuffers();
     }
     Renderer::~Renderer() {
+        delete renderPassInfo;
         freeCommandBuffers();
     }
 
     void Renderer::recreateSwapChain() {
+
         auto extent = window.getExtent();
         while(extent.width == 0 || extent.height == 0) {
             extent = window.getExtent();
@@ -24,16 +26,15 @@ namespace engine {
         vkDeviceWaitIdle(device.device());
 
         if(swapchain == nullptr) {
-            swapchain = std::make_unique<SwapChain>(device, extent);
+            swapchain = std::make_unique<SwapChain>(device, extent, renderPassInfo);
         } else {
             std::shared_ptr<SwapChain> oldSwapchain = std::move(swapchain);
-            swapchain = std::make_unique<SwapChain>(device, extent, oldSwapchain);
+            swapchain = std::make_unique<SwapChain>(device, extent, renderPassInfo,oldSwapchain);
             
             if(!oldSwapchain->compareSwapChain(*swapchain.get())){
                 throw std::runtime_error("Swapchain format has changed!");
             }
         }
-        //createPipeline();
     }
 
     void Renderer::createCommandBuffers() {

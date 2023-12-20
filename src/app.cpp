@@ -20,6 +20,7 @@
 namespace engine {
 
     app::app() {
+        renderer.setRenderPassInfo(configureRenderPass());
         loadGameObjects();
     }
     app::~app() {
@@ -209,4 +210,113 @@ namespace engine {
             gameObjects.emplace(pointLight.getId(), std::move(pointLight));
         }
     }
+
+    //this works, vkcreateRenderPass uses pointer. The static keywords are used to prevent the objects from deleteing because their referenced.
+    VkRenderPassCreateInfo* app::configureRenderPass() {
+
+        static std::array<VkAttachmentDescription, 3> attachments;
+        //colorAttachment
+            attachments[0].format = chooseSwapSurfaceFormat();
+            attachments[0].samples = device.msaaSamples;
+            attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachments[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        //depthAttachment
+            attachments[1].format = device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+            attachments[1].samples = device.msaaSamples;
+            attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+            attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachments[1].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        //colorAttachmentResolve
+            attachments[2].format = chooseSwapSurfaceFormat();
+            attachments[2].samples = VK_SAMPLE_COUNT_1_BIT;
+            attachments[2].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachments[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            attachments[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachments[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachments[2].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+        static VkAttachmentReference colorAttachmentRef = {};
+        colorAttachmentRef.attachment = 0;
+        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        static VkAttachmentReference depthAttachmentRef{};
+        depthAttachmentRef.attachment = 1;
+        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        //for second subpass
+        static VkAttachmentReference inputReference = {};
+        inputReference.attachment = 1;
+        inputReference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        static VkAttachmentReference colorAttachmentResolveRef{};
+        colorAttachmentResolveRef.attachment = 2;
+        colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        static std::array<VkSubpassDescription, 2> subpasses {};
+            subpasses[0].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+            subpasses[0].colorAttachmentCount = 1;
+            subpasses[0].pColorAttachments = &colorAttachmentResolveRef;
+            subpasses[0].pDepthStencilAttachment = &depthAttachmentRef;
+
+            subpasses[1].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+            subpasses[1].colorAttachmentCount = 1;
+            subpasses[1].pColorAttachments = &colorAttachmentResolveRef;
+            subpasses[1].inputAttachmentCount = 1;
+            subpasses[1].pInputAttachments = &inputReference;
+
+        static std::array<VkSubpassDependency, 3> dependency = {};
+            dependency[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+            dependency[0].dstSubpass = 0;
+            dependency[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+            dependency[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+            dependency[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+            dependency[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            dependency[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+            dependency[1].srcSubpass = 0;
+            dependency[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+            dependency[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            dependency[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+            dependency[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            dependency[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+            dependency[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+            dependency[2].srcSubpass = 0;
+            dependency[2].dstSubpass = 1;
+            dependency[2].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            dependency[2].dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+            dependency[2].srcStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+            dependency[2].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+            dependency[2].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+        VkRenderPassCreateInfo* renderPassInfo = new VkRenderPassCreateInfo();
+        renderPassInfo->sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        renderPassInfo->attachmentCount = static_cast<uint32_t>(attachments.size());
+        renderPassInfo->pAttachments = attachments.data();
+        renderPassInfo->subpassCount = 2;
+        renderPassInfo->pSubpasses = subpasses.data();
+        renderPassInfo->dependencyCount = 3;
+        renderPassInfo->pDependencies = dependency.data();
+
+        return renderPassInfo;
+    }
+
+    VkFormat app::chooseSwapSurfaceFormat() {
+        std::vector<VkSurfaceFormatKHR> availableFormats = device.getSwapChainSupport().formats;
+        for (const auto &availableFormat : availableFormats) {
+            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
+                availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+            return availableFormat.format;
+            }
+        }
+
+        return availableFormats[0].format;
+        }
 }

@@ -21,6 +21,7 @@ namespace engine {
             float getAspectRatio() const {return swapchain->extentAspectRatio(); }
             std::vector<VkImage> getSwapchainImages() const {return swapchain->getImages(); }
             std::vector<VkImageView> getSwapchainDepthImageViews() {return swapchain->getDepthImageViews(); }
+            void setRenderPassInfo(VkRenderPassCreateInfo* info) { renderPassInfo = info; recreateSwapChain(); } // if info changes, swapchian needs to be recreated.
             bool isFrameInProgress() const { return isFrameStarted; }
 
 
@@ -47,6 +48,7 @@ namespace engine {
 
             Window& window;
             Device& device;
+            VkRenderPassCreateInfo* renderPassInfo; // <==============
             std::unique_ptr<SwapChain> swapchain;
             std::vector<VkCommandBuffer> commandBuffers;
 
