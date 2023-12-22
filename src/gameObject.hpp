@@ -12,7 +12,7 @@ namespace engine {
     class PhysicsObject;
 
     struct PointLightComponent {
-        float ligthIntensity = 1.0f; 
+        float ligthIntensity = 3.0f; 
     };
 
         
@@ -42,7 +42,7 @@ namespace engine {
                 return GameObject{currentId++};
             }
 
-            static GameObject makePointLight(float intensity = 1.0f, float radius = 0.1f, glm::vec3 color = glm::vec3(1.0f));
+            static GameObject makePointLight(float intensity = 5.0f, float radius = 0.1f, glm::vec3 color = glm::vec3(1.0f));
 
             GameObject(const GameObject & ) = delete;
             GameObject &operator=(const GameObject &) = delete;

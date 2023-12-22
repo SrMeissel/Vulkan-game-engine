@@ -200,8 +200,8 @@ namespace engine {
 
            
         // best light color {1.0f, 0.96f, 0.71f};
-        int lightNum = 3;
-        float radius = 3.0f;
+        int lightNum = 1;
+        float radius = 2.5f;
         for(int i=0; i <lightNum; i++){
             auto pointLight = GameObject::makePointLight();
             pointLight.color = {1.0f, 0.96f, 0.71f};
@@ -214,34 +214,34 @@ namespace engine {
     //this works, vkcreateRenderPass uses pointer. The static keywords are used to prevent the objects from deleteing because their referenced.
     VkRenderPassCreateInfo* app::configureRenderPass() {
 
-        static std::array<VkAttachmentDescription, 3> attachments;
-        //colorAttachment
+        static std::array<VkAttachmentDescription, 2> attachments;
+        //colorAttachment (Attachment 0 must be swapchain image, this is constant every time)
             attachments[0].format = chooseSwapSurfaceFormat();
             attachments[0].samples = device.msaaSamples;
             attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            attachments[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
         //depthAttachment
             attachments[1].format = device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
             attachments[1].samples = device.msaaSamples;
             attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+            attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             attachments[1].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         //colorAttachmentResolve
-            attachments[2].format = chooseSwapSurfaceFormat();
-            attachments[2].samples = VK_SAMPLE_COUNT_1_BIT;
-            attachments[2].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachments[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            attachments[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachments[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachments[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            attachments[2].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+            // attachments[2].format = chooseSwapSurfaceFormat();
+            // attachments[2].samples = VK_SAMPLE_COUNT_1_BIT;
+            // attachments[2].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            // attachments[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            // attachments[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            // attachments[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            // attachments[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            // attachments[2].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
         static VkAttachmentReference colorAttachmentRef = {};
         colorAttachmentRef.attachment = 0;
@@ -255,19 +255,19 @@ namespace engine {
         inputReference.attachment = 1;
         inputReference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-        static VkAttachmentReference colorAttachmentResolveRef{};
-        colorAttachmentResolveRef.attachment = 2;
-        colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        // static VkAttachmentReference colorAttachmentResolveRef{};
+        // colorAttachmentResolveRef.attachment = 2;
+        // colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         static std::array<VkSubpassDescription, 2> subpasses {};
             subpasses[0].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
             subpasses[0].colorAttachmentCount = 1;
-            subpasses[0].pColorAttachments = &colorAttachmentResolveRef;
+            subpasses[0].pColorAttachments = &colorAttachmentRef;
             subpasses[0].pDepthStencilAttachment = &depthAttachmentRef;
 
             subpasses[1].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
             subpasses[1].colorAttachmentCount = 1;
-            subpasses[1].pColorAttachments = &colorAttachmentResolveRef;
+            subpasses[1].pColorAttachments = &colorAttachmentRef;
             subpasses[1].inputAttachmentCount = 1;
             subpasses[1].pInputAttachments = &inputReference;
 

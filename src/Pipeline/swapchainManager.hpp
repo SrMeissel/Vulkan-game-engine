@@ -57,6 +57,8 @@ class SwapChain {
   void createSyncObjects();
   VkFormat findDepthFormat();
 
+  void createImageResources(VkRenderPassCreateInfo* info);
+
   // Helper functions
   VkSurfaceFormatKHR chooseSwapSurfaceFormat(
       const std::vector<VkSurfaceFormatKHR> &availableFormats);
@@ -80,6 +82,9 @@ class SwapChain {
   VkImage colorImage;
   VkDeviceMemory colorImageMemory;
   VkImageView colorImageView;
+
+  std::vector<std::vector<VkImageView>> allAttachments; // <==============
+  std::vector<VkDeviceMemory> ImageMemory; // <===============
 
   Device &device;
   VkExtent2D windowExtent;

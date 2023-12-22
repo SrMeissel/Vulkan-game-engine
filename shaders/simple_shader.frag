@@ -8,7 +8,6 @@ layout (location = 2) in vec3 fragNormalWorld;
 layout(location = 3) in vec2 fragTexCoord;
 
 layout (location = 0) out vec4 outColor;
-//layout(location = 0) in vec3 fragColor;
 
 struct PointLight {
   vec4 position;
