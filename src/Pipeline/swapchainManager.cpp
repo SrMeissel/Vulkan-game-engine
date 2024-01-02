@@ -11,23 +11,21 @@
 
 namespace engine {
 
-SwapChain::SwapChain(Device &deviceRef, VkExtent2D extent, VkRenderPassCreateInfo* info)
+SwapChain::SwapChain(Device &deviceRef, VkExtent2D extent)
     : device{deviceRef}, windowExtent{extent} {
-  init(info);
+  init();
 }
-SwapChain::SwapChain(Device &deviceRef, VkExtent2D extent, VkRenderPassCreateInfo* info, std::shared_ptr<SwapChain> previousSwapChain)
+SwapChain::SwapChain(Device &deviceRef, VkExtent2D extent, std::shared_ptr<SwapChain> previousSwapChain)
     : device{deviceRef}, windowExtent{extent}, oldSwapChain{previousSwapChain} {
-  init(info);
+  init();
   oldSwapChain = nullptr;
 }
 
-void SwapChain::init(VkRenderPassCreateInfo* info) {
+void SwapChain::init() {
+  //createImageViews and createFrameBuffers can be combined. :)
   createSwapChain();
-  createImageResources(info);
   createImageViews();
-  createRenderPass(info);
-  // createColorResources();
-  // createDepthResources();
+  createRenderPass();
   createFramebuffers();
   createSyncObjects();
 }
@@ -114,6 +112,7 @@ VkResult SwapChain::submitCommandBuffers(
     throw std::runtime_error("failed to submit draw command buffer!");
   }
 
+  // presents image after commands are submitted =================
   VkPresentInfoKHR presentInfo = {};
   presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
@@ -194,7 +193,6 @@ void SwapChain::createSwapChain() {
   if (vkCreateSwapchainKHR(device.device(), &createInfo, nullptr, &swapchain) != VK_SUCCESS) {
     throw std::runtime_error("failed to create swap chain!");
   }
-
   // we only specified a minimum number of images in the swap chain, so the implementation is
   // allowed to create a swap chain with more. That's why we'll first query the final number of
   // images with vkGetSwapchainImagesKHR, then resize the container and finally call it again to
@@ -228,9 +226,47 @@ void SwapChain::createImageViews() {
   }
 }
 
-void SwapChain::createRenderPass(VkRenderPassCreateInfo* configureInfo) {
+void SwapChain::createRenderPass() {
 
-  if (vkCreateRenderPass(device.device(), configureInfo, nullptr, &renderPass) != VK_SUCCESS) {
+  VkAttachmentDescription attachment;
+    attachment.format = swapChainImageFormat;
+    attachment.samples = device.msaaSamples;
+    attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    attachment.flags = 0;
+
+  VkAttachmentReference colorAttachmentRef = {};
+    colorAttachmentRef.attachment = 0;
+    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+  VkSubpassDescription subpass {};
+    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass.colorAttachmentCount = 1;
+    subpass.pColorAttachments = &colorAttachmentRef;
+
+  VkSubpassDependency dependency = {};
+    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependency.dstSubpass = 0;
+    dependency.srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    dependency.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+  VkRenderPassCreateInfo* renderPassInfo = new VkRenderPassCreateInfo();
+    renderPassInfo->sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    renderPassInfo->attachmentCount = 1;
+    renderPassInfo->pAttachments = &attachment;
+    renderPassInfo->subpassCount = 1;
+    renderPassInfo->pSubpasses = &subpass;
+    renderPassInfo->dependencyCount = 1;
+    renderPassInfo->pDependencies = &dependency;
+
+  if (vkCreateRenderPass(device.device(), renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
     throw std::runtime_error("failed to create render pass!");
   }
   
@@ -239,20 +275,13 @@ void SwapChain::createRenderPass(VkRenderPassCreateInfo* configureInfo) {
 void SwapChain::createFramebuffers() {
   swapChainFramebuffers.resize(imageCount());
   for (size_t i = 0; i < imageCount(); i++) {
-    //std::vector<VkImageView> attachments = { swapChainImageViews[i], depthImageViews[i], }; //colorImageView};
-    //renderpass attachments are references, frame buffer attachments are the matching image views
-    std::vector<VkImageView> attachments;
-    attachments.push_back(swapChainImageViews[i]);
-    for(int j = 1; j <allAttachments.size(); j++) {
-      attachments.push_back(allAttachments[j][i]);
-    }
 
     VkExtent2D swapChainExtent = getSwapChainExtent();
     VkFramebufferCreateInfo framebufferInfo = {};
     framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
     framebufferInfo.renderPass = renderPass;
-    framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-    framebufferInfo.pAttachments = attachments.data();
+    framebufferInfo.attachmentCount = 1;
+    framebufferInfo.pAttachments = &swapChainImageViews[i];
     framebufferInfo.width = swapChainExtent.width;
     framebufferInfo.height = swapChainExtent.height;
     framebufferInfo.layers = 1;
@@ -338,78 +367,5 @@ VkExtent2D SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilit
     return actualExtent;
   }
 }
-
-VkFormat SwapChain::findDepthFormat() {
-  return device.findSupportedFormat(
-      {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
-      VK_IMAGE_TILING_OPTIMAL,
-      VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
-}
-
-void SwapChain::createImageResources(VkRenderPassCreateInfo* info) {
-  //This function is meant to create all image views required given any number or kind of attachment passed in info.
-  //it prepares for framebuffer creation by creating a image view for each attachment for each frame buffer. 
-  //In other words, each frame buffer gets its own imageView for each attachment.
-  //The first attachment must be swapchain image therefore is already set up :)
-
-  allAttachments.resize(info->attachmentCount);
-  ImageMemory.resize(info->attachmentCount * imageCount());
-
-  for(int i = 1; i < info->attachmentCount; i++) {
-    for(int j=0; j < imageCount(); j++) {  
-      //create image ===========================================================
-      VkImage image;
-      VkImageCreateInfo imageInfo{};
-      imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-      imageInfo.imageType = VK_IMAGE_TYPE_2D;
-      imageInfo.extent.width = swapChainExtent.width;
-      imageInfo.extent.height = swapChainExtent.height;
-      imageInfo.extent.depth = 1;
-      imageInfo.mipLevels = 1;
-      imageInfo.arrayLayers = 1;
-      imageInfo.format = info->pAttachments[i].format; // <========
-      imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-      imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-      if(info->pAttachments[i].format == findDepthFormat()) {
-        imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
-      }
-      else {
-        imageInfo.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
-      }
-
-      imageInfo.samples = device.msaaSamples;
-      imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-      imageInfo.flags = 0;
-
-      device.createImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image, ImageMemory[i * j]);
-
-      //create image view ===========================================================
-      VkImageView imageView;
-      VkImageViewCreateInfo viewInfo{};
-      viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-      viewInfo.image = image;
-      viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-      viewInfo.format = info->pAttachments[i].format;
-      
-      if(info->pAttachments[i].format == findDepthFormat()) {
-        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-      }
-      else {
-        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-      }
-      
-      viewInfo.subresourceRange.baseMipLevel = 0;
-      viewInfo.subresourceRange.levelCount = 1;
-      viewInfo.subresourceRange.baseArrayLayer = 0;
-      viewInfo.subresourceRange.layerCount = 1;
-
-      vkCreateImageView(device.device(), &viewInfo, nullptr, &imageView);
-
-      //append to imageView vector ===========================================================
-      allAttachments[i].push_back(imageView);
-      }
-    }
-  }
   
 }
