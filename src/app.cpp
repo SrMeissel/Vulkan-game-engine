@@ -20,7 +20,6 @@
 namespace engine {
 
     app::app() {
-        renderer.setRenderPassInfo(configureRenderPass());
         loadGameObjects();
     }
     app::~app() {
@@ -52,11 +51,14 @@ namespace engine {
             writer.build(globalDescriptorSets[i]);
         }
 
-        //Initialize shader objects ======================================
+        //Initialize render systems ======================================
 
-        RenderSystem renderSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
-        PointLightSystem pointLightSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
-        AtmoSystem atmoSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
+        RenderPass scenePass{device, window, configureRenderPass(), true};
+        renderer.appendRenderPass(scenePass);
+
+        RenderSystem renderSystem{device, renderer.getRenderPass(0).getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
+        PointLightSystem pointLightSystem{device, renderer.getRenderPass(0).getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
+        //AtmoSystem atmoSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
 
         //Initialize Camera object ===================================
 
@@ -73,6 +75,9 @@ namespace engine {
         //int frames = 0; // <=== useful for debugging (add to while condition)
         while(!window.shouldClose()){
             glfwPollEvents();
+
+            //Updates scene editor frame, should not stay here.
+            //sceneEditor.run();
 
             //get passed time
             auto newTime = std::chrono::high_resolution_clock::now();
@@ -134,18 +139,22 @@ namespace engine {
                 uboBuffers[frameIndex]->flush();
 
                 //render =====================================================
-                renderer.beginSwapChainRenderPass(commandBuffer);
 
+                renderer.beginNextRenderPass(commandBuffer);
                 //order matters, the transparent pointLights need to be rendered first (Brendan tutorial 27)
                 renderSystem.renderGameObjects(frameInfo);
                 pointLightSystem.render(frameInfo);
 
-                //function is self explanitory
+                //atmoSystem.renderAtmosphere(frameInfo, renderer.getSwapchainDepthImageViews()[renderer.getCurrentImageIndex()]);
+                //this works, just not focusing on it rn 
+
                 vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
 
-                //atmoSystem.renderAtmosphere(frameInfo, renderer.getSwapchainDepthImageViews()[renderer.getCurrentImageIndex()]);
-                //this works, just not fcusing on it rn 
-                     
+                renderer.endCurrentRenderPass(commandBuffer);
+                renderer.beginSwapChainRenderPass(commandBuffer);
+
+                sceneEditor.run(commandBuffer);
+
                 //finished and submit to presentation
                 renderer.endSwapChainRenderPass(commandBuffer);
                 
@@ -233,15 +242,7 @@ namespace engine {
             attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             attachments[1].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        //colorAttachmentResolve
-            // attachments[2].format = chooseSwapSurfaceFormat();
-            // attachments[2].samples = VK_SAMPLE_COUNT_1_BIT;
-            // attachments[2].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            // attachments[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            // attachments[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            // attachments[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            // attachments[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            // attachments[2].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
 
         static VkAttachmentReference colorAttachmentRef = {};
         colorAttachmentRef.attachment = 0;
@@ -254,10 +255,6 @@ namespace engine {
         static VkAttachmentReference inputReference = {};
         inputReference.attachment = 1;
         inputReference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-        // static VkAttachmentReference colorAttachmentResolveRef{};
-        // colorAttachmentResolveRef.attachment = 2;
-        // colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         static std::array<VkSubpassDescription, 2> subpasses {};
             subpasses[0].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -300,9 +297,9 @@ namespace engine {
         renderPassInfo->sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
         renderPassInfo->attachmentCount = static_cast<uint32_t>(attachments.size());
         renderPassInfo->pAttachments = attachments.data();
-        renderPassInfo->subpassCount = 2;
+        renderPassInfo->subpassCount = subpasses.size();
         renderPassInfo->pSubpasses = subpasses.data();
-        renderPassInfo->dependencyCount = 3;
+        renderPassInfo->dependencyCount = dependency.size();
         renderPassInfo->pDependencies = dependency.data();
 
         return renderPassInfo;

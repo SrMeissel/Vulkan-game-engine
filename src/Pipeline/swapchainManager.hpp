@@ -16,8 +16,8 @@ class SwapChain {
  public:
   static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-  SwapChain(Device &deviceRef, VkExtent2D windowExtent, VkRenderPassCreateInfo* info);
-  SwapChain(Device &deviceRef, VkExtent2D windowExtent, VkRenderPassCreateInfo* info, std::shared_ptr<SwapChain> previous);
+  SwapChain(Device &deviceRef, VkExtent2D windowExtent);
+  SwapChain(Device &deviceRef, VkExtent2D windowExtent, std::shared_ptr<SwapChain> previous);
   ~SwapChain();
 
   SwapChain(const SwapChain &) = delete;
@@ -26,11 +26,9 @@ class SwapChain {
   VkFramebuffer getFrameBuffer(int index) { return swapChainFramebuffers[index]; }
   VkRenderPass getRenderPass() { return renderPass; }
   VkImageView getImageView(int index) { return swapChainImageViews[index]; }
-  std::vector<VkImageView> getDepthImageViews() {return depthImageViews; }
   std::vector<VkImage> getImages() {return swapChainImages; }
   size_t imageCount() { return swapChainImages.size(); }
   VkFormat getSwapChainImageFormat() { return swapChainImageFormat; }
-  VkFormat getDepthImageFormat() {return findDepthFormat(); }
   VkExtent2D getSwapChainExtent() { return swapChainExtent; }
   uint32_t width() { return swapChainExtent.width; }
   uint32_t height() { return swapChainExtent.height; }
@@ -43,21 +41,16 @@ class SwapChain {
   VkResult submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
 
   bool compareSwapChain(const SwapChain& swapChain) const {
-    return swapChain.swapChainDepthFormat == swapChainDepthFormat && swapChain.swapChainImageFormat == swapChainImageFormat;
+    return swapChain.swapChainImageFormat == swapChainImageFormat;
   }
 
  private:
-  void init(VkRenderPassCreateInfo* info);
+  void init();
   void createSwapChain();
   void createImageViews();
-  void createDepthResources();
-  void createColorResources();
-  void createRenderPass(VkRenderPassCreateInfo* info);
+  void createRenderPass();
   void createFramebuffers();
   void createSyncObjects();
-  VkFormat findDepthFormat();
-
-  void createImageResources(VkRenderPassCreateInfo* info);
 
   // Helper functions
   VkSurfaceFormatKHR chooseSwapSurfaceFormat(
@@ -67,15 +60,11 @@ class SwapChain {
   VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
 
   VkFormat swapChainImageFormat;
-  VkFormat swapChainDepthFormat;
   VkExtent2D swapChainExtent;
 
   std::vector<VkFramebuffer> swapChainFramebuffers;
   VkRenderPass renderPass;
 
-  std::vector<VkImage> depthImages;
-  std::vector<VkDeviceMemory> depthImageMemorys;
-  std::vector<VkImageView> depthImageViews;
   std::vector<VkImage> swapChainImages;
   std::vector<VkImageView> swapChainImageViews;
 

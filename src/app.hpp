@@ -36,7 +36,7 @@ namespace engine {
             Device device{window};
             Renderer renderer{window, device};
 
-            //SceneEditor SceneEditor{device, window.getGLFWwindow(), renderer.getRenderPass()};
+            SceneEditor sceneEditor{device, window, renderer};
 
             PhysicsSimulation physicsSimulation{};
             TextureManager textureManager{device}; 

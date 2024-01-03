@@ -78,6 +78,8 @@ Sources:
 
 - <https://vcpkg.io/en/>
 - <https://www.alexhyett.com/stack-vs-heap-memory/>
+- <https://www.youtube.com/watch?v=NRnj_lnpORU>
+- <https://jose-villegas.github.io/post/deferred_voxel_shading/>
 
 ## Tasks
 

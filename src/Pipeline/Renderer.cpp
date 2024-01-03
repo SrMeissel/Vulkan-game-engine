@@ -8,11 +8,10 @@
 namespace engine {
 
     Renderer::Renderer(Window& window, Device& device) : window{window}, device{device} {
-        //recreateSwapChain();
+        recreateSwapChain();
         createCommandBuffers();
     }
     Renderer::~Renderer() {
-        delete renderPassInfo;
         freeCommandBuffers();
     }
 
@@ -26,10 +25,10 @@ namespace engine {
         vkDeviceWaitIdle(device.device());
 
         if(swapchain == nullptr) {
-            swapchain = std::make_unique<SwapChain>(device, extent, renderPassInfo);
+            swapchain = std::make_unique<SwapChain>(device, extent);
         } else {
             std::shared_ptr<SwapChain> oldSwapchain = std::move(swapchain);
-            swapchain = std::make_unique<SwapChain>(device, extent, renderPassInfo,oldSwapchain);
+            swapchain = std::make_unique<SwapChain>(device, extent, oldSwapchain);
             
             if(!oldSwapchain->compareSwapChain(*swapchain.get())){
                 throw std::runtime_error("Swapchain format has changed!");
@@ -59,6 +58,7 @@ namespace engine {
     VkCommandBuffer Renderer::beginFrame() {
         assert(!isFrameStarted && "Cant call begin frame while frame is already is progress!");
 
+        currentRenderPass = 0;
 
         auto result = swapchain->acquireNextImage(&currentImageIndex);
 
@@ -83,6 +83,7 @@ namespace engine {
 
         return commandBuffer;
     }
+
     void Renderer::endFrame() {
         assert(isFrameStarted && "Cannot call end frame while no frame is in progress!");
         auto commandBuffer = getCurrentCommandBuffer();
@@ -102,6 +103,55 @@ namespace engine {
         isFrameStarted = false;
         currentFrameIndex = (currentFrameIndex + 1) % SwapChain::MAX_FRAMES_IN_FLIGHT;
     }
+
+    void Renderer::beginNextRenderPass(VkCommandBuffer commandBuffer) {
+        assert(isFrameStarted && "cannot call beginNextRenderPass if no frame is in progress!");
+        assert(commandBuffer == getCurrentCommandBuffer() && "Cannot begin render pass on command buffer from a different frame");
+        RenderPass renderPass = renderPasses[currentRenderPass];
+
+        VkRenderPassBeginInfo renderPassbeginInfo{};
+        renderPassbeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassbeginInfo.renderPass = renderPass.getRenderPass();
+        renderPassbeginInfo.framebuffer = renderPass.getFrameBuffer();
+        renderPassbeginInfo.renderArea.offset = {0, 0};
+        renderPassbeginInfo.renderArea.extent = renderPass.extent;
+
+        std::vector<VkClearValue> clearValues;
+        clearValues.resize(renderPass.getRenderPassInfo().attachmentCount);
+        for(int i = 0; i < renderPass.getRenderPassInfo().attachmentCount; i++) {
+            if(renderPass.getRenderPassInfo().pAttachments[i].format == device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
+                clearValues[i].depthStencil = {1.0f, 0};
+            } else {
+                clearValues[i].color = {0.0f, 0.0f, 0.001f, 1.0f};  
+            } 
+        }
+
+        renderPassbeginInfo.clearValueCount = clearValues.size();
+        renderPassbeginInfo.pClearValues = clearValues.data();
+        
+        vkCmdBeginRenderPass(commandBuffer, &renderPassbeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = static_cast<float>(renderPass.extent.width);
+        viewport.height = static_cast<float>(renderPass.extent.height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        VkRect2D scissor{{0, 0}, renderPass.extent};
+        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+    }
+
+    void Renderer::endCurrentRenderPass(VkCommandBuffer commandBuffer) {
+        assert(isFrameStarted && "cannot call endSwapChainRenderPass if no frame is in progress!");
+        assert(commandBuffer == getCurrentCommandBuffer() && "Cannot end render pass on command buffer from a different frame");
+
+        vkCmdEndRenderPass(commandBuffer);
+
+        currentRenderPass++; // <===========
+    }
+
     void Renderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer) {
         assert(isFrameStarted && "cannot call beginSwapChainRenderPass if no frame is in progress!");
         assert(commandBuffer == getCurrentCommandBuffer() && "Cannot begin render pass on command buffer from a different frame");
@@ -113,17 +163,11 @@ namespace engine {
         renderPassbeginInfo.renderArea.offset = {0, 0};
         renderPassbeginInfo.renderArea.extent = swapchain->getSwapChainExtent();
 
-        std::vector<VkClearValue> clearValues;
-        clearValues.resize(renderPassInfo->attachmentCount);
-        for(int i = 0; i < renderPassInfo->attachmentCount; i++) {
-            if(renderPassInfo->pAttachments[i].format == device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
-                clearValues[i].depthStencil = {1.0f, 0};
-            } else {
-                clearValues[i].color = {0.0f, 0.0f, 0.001f, 1.0f};  
-            } 
-        }
-        renderPassbeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-        renderPassbeginInfo.pClearValues = clearValues.data();
+        VkClearValue clearValue;
+        clearValue.color = {0.0f, 0.0f, 0.001f, 1.0f};
+
+        renderPassbeginInfo.clearValueCount = 1;
+        renderPassbeginInfo.pClearValues = &clearValue;
 
         vkCmdBeginRenderPass(commandBuffer, &renderPassbeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
