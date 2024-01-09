@@ -3,6 +3,8 @@
 #include <iostream>
 
 //https://vkguide.dev/docs/extra-chapter/implementing_imgui/
+//https://frguthmann.github.io/posts/vulkan_imgui/
+//https://pthom.github.io/imgui_manual_online/manual/imgui_manual.html
 
 namespace engine {
 
@@ -48,6 +50,8 @@ namespace engine {
         ImGui_ImplVulkan_CreateFontsTexture();
     }
     SceneEditor::~SceneEditor() {
+        ImGui_ImplVulkan_RemoveTexture(viewportDescriptorSet);
+
         ImGui_ImplGlfw_Shutdown();
         ImGui_ImplVulkan_Shutdown();
     }
@@ -57,10 +61,26 @@ namespace engine {
         ImGui_ImplGlfw_NewFrame();
         
         ImGui::NewFrame();
-        ImGui::ShowDemoWindow();
+
+        //Viewport Window ===========================================================================================================================================
+        ImGui::Begin("Viewport", false, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground);
+        ImGui::Image((ImTextureID)viewportDescriptorSet, ImVec2(viewportExtent.width, viewportExtent.height));
+        ImGui::End();
+
+        //mess with object Window ====================================================
+        ImGui::Begin("Object thingy");
+        
+        ImGui::End();
+
+        //ImGui::ShowDemoWindow();
         ImGui::Render();
 
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+    }
+
+    void SceneEditor::configureViewport(VkImageView imageView, VkSampler sampler, VkExtent2D extent) {
+        viewportDescriptorSet = ImGui_ImplVulkan_AddTexture(sampler, imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        viewportExtent = extent;
     }
 
     VkRenderPassCreateInfo* SceneEditor::configureRenderPass() {

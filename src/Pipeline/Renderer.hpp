@@ -21,6 +21,7 @@ namespace engine {
             float getAspectRatio() const {return swapchain->extentAspectRatio(); }
             std::vector<VkImage> getSwapchainImages() const {return swapchain->getImages(); }
             VkRenderPass getSwapchainRenderPass() {return swapchain->getRenderPass(); } // <=============
+            VkImageView getSwapchainImageView(int i) {return swapchain->getImageView(i); }
             bool isFrameInProgress() const { return isFrameStarted; }
 
             VkCommandBuffer getCurrentCommandBuffer() const {

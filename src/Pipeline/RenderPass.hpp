@@ -14,6 +14,7 @@ namespace engine {
             //if so, and window extent changes remake everything.
             bool isWindowExtent;
             VkExtent2D extent;
+            float getAspectRatio() {return static_cast<float>(extent.width) / static_cast<float>(extent.height); }
 
             VkRenderPass getRenderPass() {return renderPass; }
             VkRenderPassCreateInfo getRenderPassInfo() {return *info; }
