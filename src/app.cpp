@@ -53,12 +53,14 @@ namespace engine {
 
         //Initialize render systems ======================================
 
-        RenderPass scenePass{device, window, configureRenderPass(), true};
+        RenderPass scenePass{device, window, configureRenderPass(), false, {800, 600}};
         renderer.appendRenderPass(scenePass);
 
         RenderSystem renderSystem{device, renderer.getRenderPass(0).getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
         PointLightSystem pointLightSystem{device, renderer.getRenderPass(0).getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
         //AtmoSystem atmoSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
+
+        sceneEditor.configureViewport(renderer.getRenderPass(0).getAttachmentImageView(0), textureManager.getTextureSampler(), renderer.getRenderPass(0).extent);
 
         //Initialize Camera object ===================================
 
@@ -113,7 +115,7 @@ namespace engine {
             //update camera from user input
             cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerObject);
             camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);            
-            float aspect = renderer.getAspectRatio();
+            float aspect = renderer.getRenderPass(0).getAspectRatio();
             camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 50.0f);
 
             //update objects ==========================================================
@@ -232,7 +234,7 @@ namespace engine {
             attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+            attachments[0].finalLayout =  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; //VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // <==================
         //depthAttachment
             attachments[1].format = device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
             attachments[1].samples = device.msaaSamples;

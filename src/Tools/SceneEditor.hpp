@@ -20,6 +20,8 @@ namespace engine {
 
             void run(VkCommandBuffer commandBuffer);
 
+            void configureViewport(VkImageView imageView, VkSampler sampler, VkExtent2D extent);
+
         private:
             Device& device;
             Window& window;
@@ -28,5 +30,7 @@ namespace engine {
             VkRenderPassCreateInfo* configureRenderPass();
 
             std::shared_ptr<DescriptorPool> imguiPool {};
+            VkDescriptorSet viewportDescriptorSet;
+            VkExtent2D viewportExtent;
     };
 }
