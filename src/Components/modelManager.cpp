@@ -1,5 +1,5 @@
 #include "modelManager.hpp"
-#include "Utils.hpp"
+#include "../Utils.hpp"
 
 #define TINYOBJECTLOADER_IMPLEMENTATION
 #define GLM_ENABLE_EXPERIMENTAL
