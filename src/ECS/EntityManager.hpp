@@ -8,15 +8,15 @@
 
 namespace ECS {
 
-using Entity = std::uint32_t;
-static const Entity MAX_ENTITIES = 5000; //#def const? what diff? If I use a vector I dont need this constant
+    using Entity = std::uint32_t;
+    static const Entity MAX_ENTITIES = 5000; //#def const? what diff? If I use a vector I dont need this constant
 
-using ComponentType = std::uint8_t;
-const ComponentType MAX_COMPONENTS = 32;
+    using ComponentType = std::uint8_t;
+    const ComponentType MAX_COMPONENTS = 32;
 
-using Signature = std::bitset<MAX_COMPONENTS>; // used to determine which components an entity has
-    //Entities are the ID's that accociate components together
-    
+    using Signature = std::bitset<MAX_COMPONENTS>; // used to determine which components an entity has
+        //Entities are the ID's that accociate components together
+        
     class EntityManager {
     public:
         EntityManager() {
@@ -28,7 +28,7 @@ using Signature = std::bitset<MAX_COMPONENTS>; // used to determine which compon
 
         Entity createEntity() {
             assert(livingEntities < MAX_ENTITIES && "TOO MANY THINGS!!");
-            
+                
             Entity id = availableEntities.front();
             availableEntities.pop();
             livingEntities++;
