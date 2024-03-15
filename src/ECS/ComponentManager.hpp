@@ -11,10 +11,10 @@
 
 namespace ECS {
     
-    template<typename T>
     class ComponentManager {
     public:
         //this is a better solution than the current static GameObject ID function
+        template<typename T>
         void RegisterComponent() { 
             const char* typeName = typeid(T).name();
 
@@ -49,12 +49,29 @@ namespace ECS {
             // Remove a component from the array for an entity
             GetComponentArray<T>()->RemoveData(entity);
         }
+        
+        template<typename T>
+        T& GetComponent(Entity entity) {
+            // Get a reference to a component from the array for an entity
+            return GetComponentArray<T>()->GetData(entity);
+        }
 
+
+        void EntityDestroyed(Entity entity) {
+            // Notify each component array that an entity has been destroyed
+            // If it has a component for that entity, it will remove it
+            for (auto const& pair : componentArrays)
+            {
+                auto const& component = pair.second;
+
+                component->EntityDestroyed(entity);
+            }
+        }
 
     private:
         //takes in type ID's as keys
         std::unordered_map<const char*, ComponentType> componentTypes{};
-        std::unordered_map<const char*, std::shared_ptr<ComponentArray>> componentArrays{};
+        std::unordered_map<const char*, std::shared_ptr<ComponentArrayParent>> componentArrays{};
 
         ComponentType nextComponentType{};
 

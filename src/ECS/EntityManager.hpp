@@ -26,7 +26,7 @@ namespace ECS {
             }
         };
 
-        Entity createEntity() {
+        Entity CreateEntity() {
             assert(livingEntities < MAX_ENTITIES && "TOO MANY THINGS!!");
                 
             Entity id = availableEntities.front();
@@ -37,7 +37,7 @@ namespace ECS {
         };
 
         //cleaning up stale component data of a deleted entity is handled elsewhere
-        void destroyEntity(Entity entity) {
+        void DestroyEntity(Entity entity) {
             assert(entity < MAX_ENTITIES && "Entity can never have existed");
 
             signatures[entity].reset();
