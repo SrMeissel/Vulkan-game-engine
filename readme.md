@@ -86,13 +86,13 @@ Sources:
 TO DO:
 
 - [ ] shadows
-- [ ] skybox
+- [ ] skybox  
 Going for volumetric atmosphere, turns out that is very hard.
 - [ ] ECS
 - [ ] UI
 Going to use imgui for tooling UI to make the traisition for hardcoded objects to loaded files easier.
 - [ ] Sound
-- [ ] Physics
+- [ ] Physics  
 I'm taking a break from physics to do clouds
 - [ ] Asset System
 - [ ] CVAR System
@@ -115,14 +115,14 @@ Sources:
 
 ### Vulkan descriptors and memory bullshit
 
-Turns out, I could/should set up an *arbitrary-ish* amount of discriptor sets based on how frequently they change. eg. per camera, per object, per frame.
+Turns out, I could/should set up an *arbitrary-ish* amount of discriptor sets based on how frequently they change. eg. per camera, per object, per frame.  
 
-- <https://www.reddit.com/r/vulkan/comments/4gvmus/best_way_for_textures_in_shaders/>
-  first comment knows whats up ^
+- <https://www.reddit.com/r/vulkan/comments/4gvmus/best_way_for_textures_in_shaders/>  
+  first comment knows whats up ^  
 
 - <https://stackoverflow.com/questions/42214710/vkallocatedescriptorsets-returns-vk-out-of-host-memory>
 
-These types are apparently very useful, but lacks proper hardware support so it would only make things more difficult in the end.
+These types are apparently very useful, but lacks proper hardware support so it would only make things more difficult in the end.  
 
 - Descriptor indexing
 - Push descriptors

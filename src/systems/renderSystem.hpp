@@ -8,11 +8,13 @@
 #include "descriptorManager.hpp"
 #include "Components/textureManager.hpp"
 
+#include "ECS/SystemManager.hpp"
+
 #include <memory>
 #include <vector>
 
 namespace engine {
-    class RenderSystem {
+    class RenderSystem : public ECS::System {
         public:
 
             RenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
@@ -22,6 +24,7 @@ namespace engine {
             RenderSystem &operator=(const RenderSystem &) = delete;
 
             void renderGameObjects(frameInfo& frameInfo);
+            void renderUsingECS(frameInfo& frameInfo);
 
         private:
             void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);

@@ -18,8 +18,8 @@ find_package(Vulkan REQUIRED)
 file(GLOB_RECURSE SOURCES 
 ${PROJECT_SOURCE_DIR}/src/*.cpp 
 # I dont think this does what I think it does...
-${PROJECT_SOURCE_DIR}/*.hpp
-${PROJECT_SOURCE_SIR}/*.h
+${PROJECT_SOURCE_DIR}/src/*.hpp
+${PROJECT_SOURCE_SIR}/src/*.h
 )
 
 add_executable(engine
@@ -49,30 +49,30 @@ target_link_libraries(engine tinyobjloader)
 target_link_libraries(engine Vulkan::Vulkan)
 
 # Build Shaders !!! doesnt work!
-find_program(GLSL_VALIDATOR glslangValidator HINTS
-    ${Vulkan_GLSLANG_VALIDATOR_EXECUTABLE}
-    $ENV{VULKAN_SDK}/bin/
-    $ENV{VULKAN_SDK}/bin32/
-)
+# find_program(GLSL_VALIDATOR glslangValidator HINTS
+#     ${Vulkan_GLSLANG_VALIDATOR_EXECUTABLE}
+#     $ENV{VULKAN_SDK}/bin/
+#     $ENV{VULKAN_SDK}/bin32/
+# )
 
-file(GLOB_RECURSE GLSL_SOURCE_FILES
-    "${PROJECT_SOURCE_DIR}/shaders/*.vert"
-    "${PROJECT_SOURCE_DIR}/shaders/*.frag"
-)
+# file(GLOB_RECURSE GLSL_SOURCE_FILES
+#     "${PROJECT_SOURCE_DIR}/shaders/*.vert"
+#     "${PROJECT_SOURCE_DIR}/shaders/*.frag"
+# )
 
-foreach(GLSL ${GLSL_SOURCE_FILES})
-  message(STATUS "BUILDING SHADER")
-  get_filename_component(FILE_NAME ${GLSL} NAME)
-  set(SPIRV "${PROJECT_SOURCE_DIR}/shaders/${FILE_NAME}.spv")
-  message(STATUS ${GLSL})
-  add_custom_command(
-    OUTPUT ${SPIRV}
-    COMMAND${GLSL_VALIDATOR} -V ${GLSL} -o ${SPIRV}
-    DEPENDS ${GLSL})
-  list(APPEND SPIRV_BINARY_FILES ${SPIRV})
-endforeach(GLSL)
+# foreach(GLSL ${GLSL_SOURCE_FILES})
+#   message(STATUS "BUILDING SHADER")
+#   get_filename_component(FILE_NAME ${GLSL} NAME)
+#   set(SPIRV "${PROJECT_SOURCE_DIR}/shaders/${FILE_NAME}.spv")
+#   message(STATUS ${GLSL})
+#   add_custom_command(
+#     OUTPUT ${SPIRV}
+#     COMMAND${GLSL_VALIDATOR} -V ${GLSL} -o ${SPIRV}
+#     DEPENDS ${GLSL})
+#   list(APPEND SPIRV_BINARY_FILES ${SPIRV})
+# endforeach(GLSL)
 
-add_custom_target(
-    Shaders 
-    DEPENDS ${SPIRV_BINARY_FILES}
-    )
+# add_custom_target(
+#     Shaders 
+#     DEPENDS ${SPIRV_BINARY_FILES}
+#     )
