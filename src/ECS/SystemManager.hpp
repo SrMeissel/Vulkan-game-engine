@@ -3,6 +3,7 @@
 #include <set>
 #include <unordered_map>
 #include <memory>
+#include <typeinfo>
 
 #include "EntityManager.hpp"
 
@@ -18,14 +19,15 @@ namespace ECS {
     //this is very similar to component array
     class SystemManager {
     public:
-        template<typename T>
-        std::shared_ptr<T> RegisterSystem() {
+		//I just used copilot for the first time to modify this function, its awesome
+        template<typename T, typename... Args>
+        std::shared_ptr<T> RegisterSystem(Args&&... args) {
             const char* typeName = typeid(T).name();
 
             assert(systems.find(typeName) == systems.end() && "Registering system more than once.");
 
             // Create a pointer to the system and return it so it can be used externally
-            auto system = std::make_shared<T>();
+            auto system = std::make_shared<T>(std::forward<Args>(args)...);
             //why is this different than everything else, VScode doesnt like it
             systems.insert({typeName, system});
             return system;

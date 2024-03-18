@@ -10,6 +10,8 @@
 #include "Components/Physics/PxSimulation.hpp"
 #include "Tools/SceneEditor.hpp"
 
+#include "ECS/AssetManager.hpp"
+
 #include <memory>
 #include <vector>
 
@@ -46,5 +48,7 @@ namespace engine {
             
             GameObject::map gameObjects;
 
+            ECS::AssetSystem assetSystem;
+            void doECSThings(); 
     };
 }

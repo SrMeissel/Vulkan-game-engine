@@ -54,7 +54,7 @@ namespace ECS {
 
         //parent function override
         void EntityDestroyed(Entity entity) override {
-		if (mEntityToIndexMap.find(entity) != mEntityToIndexMap.end()) {
+		if (entityToIndex.find(entity) != entityToIndex.end()) {
 			    // Remove the entity's component if it existed
 			    RemoveData(entity);
 		    }

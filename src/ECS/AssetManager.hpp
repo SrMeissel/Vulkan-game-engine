@@ -7,7 +7,7 @@
 namespace ECS {
     class AssetSystem {
     public:
-    //not just constructor?
+    //not just constructor? seems like a constructor to me.
 	void Init() {
 		componentManager = std::make_unique<ComponentManager>();
 		entityManager = std::make_unique<EntityManager>();
@@ -67,9 +67,9 @@ namespace ECS {
 
     // System functions ===========================================================
 
-	template<typename T>
-	std::shared_ptr<T> RegisterSystem() {
-		return systemManager->RegisterSystem<T>();
+	template<typename T, typename... Args>
+	std::shared_ptr<T> RegisterSystem(Args&&... args) {
+		return systemManager->RegisterSystem<T>(std::forward<Args>(args)...);
 	}
 
 	template<typename T>
@@ -82,6 +82,5 @@ namespace ECS {
         std::unique_ptr<ComponentManager> componentManager;
         std::unique_ptr<EntityManager> entityManager;
         std::unique_ptr<SystemManager> systemManager;
-
     };
 }

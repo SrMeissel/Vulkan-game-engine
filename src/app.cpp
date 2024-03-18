@@ -21,6 +21,7 @@ namespace engine {
 
     app::app() {
         loadGameObjects();
+        doECSThings();
     }
     app::~app() {
 
@@ -56,7 +57,9 @@ namespace engine {
         RenderPass scenePass{device, window, configureRenderPass(), false, {800, 600}};
         renderer.appendRenderPass(scenePass);
 
-        RenderSystem renderSystem{device, renderer.getRenderPass(0).getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
+        //RenderSystem renderSystem{device, renderer.getRenderPass(0).getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
+        auto renderSystem = assetSystem.RegisterSystem<RenderSystem>(device, renderer.getRenderPass(0).getRenderPass(), globalSetLayout->getDescriptorSetLayout());
+        
         PointLightSystem pointLightSystem{device, renderer.getRenderPass(0).getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
         //AtmoSystem atmoSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
 
@@ -144,8 +147,8 @@ namespace engine {
 
                 renderer.beginNextRenderPass(commandBuffer);
                 //order matters, the transparent pointLights need to be rendered first (Brendan tutorial 27)
-                renderSystem.renderGameObjects(frameInfo);
                 pointLightSystem.render(frameInfo);
+                renderSystem->renderGameObjects(frameInfo);
 
                 //atmoSystem.renderAtmosphere(frameInfo, renderer.getSwapchainDepthImageViews()[renderer.getCurrentImageIndex()]);
                 //this works, just not focusing on it rn 
@@ -186,7 +189,7 @@ namespace engine {
         auto object = GameObject::createGameObject(); 
         translation = {0.0f, 0.5f, 0.0f};
         scale = {1, 1, 1};
-        initilizeObject(object, translation, scale, "models/flat_vase.obj", "../../textures/default_texture.jpg");  
+        initilizeObject(object, translation, scale, "models/flat_vase.obj", "../../Experimental/Roma Imperiale Granite_whgneh2v/Albedo_8K__whgneh2v.jpg");   
 
         //Second object
         auto secondObject = GameObject::createGameObject();
@@ -220,6 +223,13 @@ namespace engine {
             pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-radius, -1, -radius, 1.0f));
             gameObjects.emplace(pointLight.getId(), std::move(pointLight));
         }
+    }
+
+    void app::doECSThings() {
+        assetSystem.Init();
+
+        //assetSystem.RegisterComponent<TransformComponent>();
+        //assetSystem.RegisterComponent<Model>();
     }
 
     //this works, vkcreateRenderPass uses pointer. The static keywords are used to prevent the objects from deleteing because their referenced.

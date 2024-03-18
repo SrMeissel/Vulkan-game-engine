@@ -79,7 +79,6 @@ namespace engine {
             if(obj.model == nullptr)
             continue;
 
-            //dont know how to 
             if(obj.texture == nullptr)
             continue;
 
