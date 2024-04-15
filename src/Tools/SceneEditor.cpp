@@ -63,7 +63,7 @@ namespace engine {
         ImGui::NewFrame();
 
         //Viewport Window ===========================================================================================================================================
-        ImGui::Begin("Viewport", false, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground);
+        ImGui::Begin("Viewport", (bool*)false, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground);
         ImGui::Image((ImTextureID)viewportDescriptorSet, ImVec2(viewportExtent.width, viewportExtent.height));
         ImGui::End();
 

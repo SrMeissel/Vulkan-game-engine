@@ -51,7 +51,7 @@ namespace engine{
 
             void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
 
-            Device& Device;
+            Device& device;
             VkPipeline graphicsPipeline;
             std::vector<VkShaderModule> modules{};
             //VkShaderModule vertShaderModule;

@@ -27,7 +27,7 @@ namespace engine {
             void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
             void createPipeline(VkRenderPass renderPass);
 
-            void AtmoSystem::createMemoryObjects(frameInfo& frameInfo,VkImageView& depthImageView);
+            void createMemoryObjects(frameInfo& frameInfo,VkImageView& depthImageView);
 
             Device &device;
             std::unique_ptr<Pipeline> pipeline;

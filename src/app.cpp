@@ -10,7 +10,7 @@
 #include <stdexcept>
 #include <array>
 #include <chrono>
-#include <String>
+#include <string>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -155,8 +155,10 @@ namespace engine {
 
                 vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
 
+
                 renderer.endCurrentRenderPass(commandBuffer);
                 renderer.beginSwapChainRenderPass(commandBuffer);
+
 
                 sceneEditor.run(commandBuffer);
 

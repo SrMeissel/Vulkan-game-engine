@@ -41,7 +41,7 @@ namespace ECS {
 		signature.set(componentManager->GetComponentType<T>(), true);
 		entityManager->SetSignature(entity, signature);
 
-		mSystemManager->EntitySignatureChanged(entity, signature);
+		systemManager->EntitySignatureChanged(entity, signature);
 	}
     
 	template<typename T>
@@ -49,7 +49,7 @@ namespace ECS {
 		componentManager->RemoveComponent<T>(entity);
 
 		auto signature = entityManager->GetSignature(entity);
-		signature.set(mComponentManager->GetComponentType<T>(), false);
+		signature.set(componentManager->GetComponentType<T>(), false);
 		entityManager->SetSignature(entity, signature);
 
 		systemManager->EntitySignatureChanged(entity, signature);

@@ -29,7 +29,6 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
 layout(push_constant) uniform Push {
     mat4 modelMatrix; // projection * view * model
     mat4 normalMatrix;
-    int textureIndex;
 } push;
 
 const float AMBIENT = 0.02;

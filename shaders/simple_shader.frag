@@ -32,7 +32,6 @@ layout(set = 1, binding = 1) uniform texture2D textureValue;
 layout(push_constant) uniform Push {
     mat4 modelMatrix; // projection * view * model
     mat4 normalMatrix;
-    int textureIndex;
 } push;
 
 void main() {

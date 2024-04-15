@@ -9,17 +9,17 @@
 
 namespace engine {
     
-    Pipeline::Pipeline(engine::Device& device,std::vector<std::string> files, std::vector<VkShaderStageFlagBits> flags, const PipelineConfigInfo& configInfo) : Device{device} {
+    Pipeline::Pipeline(engine::Device& device,std::vector<std::string> files, std::vector<VkShaderStageFlagBits> flags, const PipelineConfigInfo& configInfo) : device{device} {
         createGraphicsPipeline(files, flags, configInfo);
     }
 
     Pipeline::~Pipeline() {
         for(auto mod : modules) {
-            vkDestroyShaderModule(Device.device(), mod, nullptr);
+            vkDestroyShaderModule(device.device(), mod, nullptr);
         }
         // vkDestroyShaderModule(Device.device(), vertShaderModule, nullptr);
         // vkDestroyShaderModule(Device.device(), fragShaderModule, nullptr);
-        vkDestroyPipeline(Device.device(), graphicsPipeline, nullptr);
+        vkDestroyPipeline(device.device(), graphicsPipeline, nullptr);
     }
 
     std::vector<char> Pipeline::readFile(const std::string& filePath) {
@@ -100,7 +100,7 @@ namespace engine {
         pipelineInfo.basePipelineIndex = -1;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-        if(vkCreateGraphicsPipelines(Device.device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+        if(vkCreateGraphicsPipelines(device.device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create graphics pipeline!");
         }
 
@@ -112,7 +112,7 @@ namespace engine {
         createInfo.codeSize = code.size();
         createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
-        if(vkCreateShaderModule(Device.device(), &createInfo, nullptr, shaderModule) != VK_SUCCESS) {
+        if(vkCreateShaderModule(device.device(), &createInfo, nullptr, shaderModule) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create shader module");
         }
     }

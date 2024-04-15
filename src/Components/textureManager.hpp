@@ -29,7 +29,7 @@ namespace engine{
 
             VkSampler getTextureSampler() {return textureSampler; }
 
-            std::unique_ptr<Texture> TextureManager::createTextureFromFile(char * filePath);
+            std::unique_ptr<Texture> createTextureFromFile(char * filePath);
 
         private:
 
