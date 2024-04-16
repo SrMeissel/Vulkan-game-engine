@@ -8,7 +8,13 @@ namespace engine {
     class RenderPass {
         public:
             RenderPass(Device& device, Window& window, VkRenderPassCreateInfo* info, bool isWindowExtent, VkExtent2D extent = {0,0});
-            ~RenderPass() {}; // destroy everything.
+            ~RenderPass(); // destroy everything.
+
+            // Not copyable or movable
+            RenderPass(const RenderPass &) = delete;
+            RenderPass& operator=(const RenderPass &) = delete;
+            RenderPass(RenderPass &&) = delete;
+            RenderPass& operator=(RenderPass &&) = delete;
 
             //are images surface resolution? yes/no
             //if so, and window extent changes remake everything.

@@ -20,7 +20,7 @@ namespace engine {
 
             float getAspectRatio() const {return swapchain->extentAspectRatio(); }
             std::vector<VkImage> getSwapchainImages() const {return swapchain->getImages(); }
-            VkRenderPass getSwapchainRenderPass() {return swapchain->getRenderPass(); } // <=============
+            VkRenderPass* getSwapchainRenderPass() {return swapchain->getRenderPass(); } // <=============
             VkImageView getSwapchainImageView(int i) {return swapchain->getImageView(i); }
             bool isFrameInProgress() const { return isFrameStarted; }
 
@@ -36,8 +36,8 @@ namespace engine {
             }
             uint32_t getCurrentImageIndex() const {return currentImageIndex; }
 
-            void appendRenderPass(RenderPass renderPass) {renderPasses.push_back(renderPass); }
-            RenderPass getRenderPass(int i) {return renderPasses[i]; }
+            void appendRenderPass(RenderPass* renderPass) {renderPasses.emplace_back(renderPass); }
+            RenderPass*  getRenderPass(int i) {return renderPasses[i]; }
 
             VkCommandBuffer beginFrame();
             void endFrame();
@@ -59,7 +59,7 @@ namespace engine {
             std::unique_ptr<SwapChain> swapchain;
             std::vector<VkCommandBuffer> commandBuffers;
 
-            std::vector<RenderPass> renderPasses;
+            std::vector<RenderPass*> renderPasses;
             int currentRenderPass{0};
 
             // Image index and frame index are different things!!!!!

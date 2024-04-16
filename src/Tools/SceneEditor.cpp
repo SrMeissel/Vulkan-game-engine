@@ -46,7 +46,7 @@ namespace engine {
         initInfo.ImageCount = 3;
         initInfo.MSAASamples = device.msaaSamples;
         
-        ImGui_ImplVulkan_Init(&initInfo, renderer.getSwapchainRenderPass());
+        ImGui_ImplVulkan_Init(&initInfo, *renderer.getSwapchainRenderPass());
         ImGui_ImplVulkan_CreateFontsTexture();
     }
     SceneEditor::~SceneEditor() {

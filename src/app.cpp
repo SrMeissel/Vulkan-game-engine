@@ -55,15 +55,15 @@ namespace engine {
         //Initialize render systems ======================================
 
         RenderPass scenePass{device, window, configureRenderPass(), false, {800, 600}};
-        renderer.appendRenderPass(scenePass);
+        renderer.appendRenderPass(&scenePass);
 
         //RenderSystem renderSystem{device, renderer.getRenderPass(0).getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
-        auto renderSystem = assetSystem.RegisterSystem<RenderSystem>(device, renderer.getRenderPass(0).getRenderPass(), globalSetLayout->getDescriptorSetLayout());
+        auto renderSystem = assetSystem.RegisterSystem<RenderSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
         
-        PointLightSystem pointLightSystem{device, renderer.getRenderPass(0).getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
+        PointLightSystem pointLightSystem{device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
         //AtmoSystem atmoSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
 
-        sceneEditor.configureViewport(renderer.getRenderPass(0).getAttachmentImageView(0), textureManager.getTextureSampler(), renderer.getRenderPass(0).extent);
+        sceneEditor.configureViewport(renderer.getRenderPass(0)->getAttachmentImageView(0), textureManager.getTextureSampler(), renderer.getRenderPass(0)->extent);
 
         //Initialize Camera object ===================================
 
@@ -118,7 +118,7 @@ namespace engine {
             //update camera from user input
             cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerObject);
             camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);            
-            float aspect = renderer.getRenderPass(0).getAspectRatio();
+            float aspect = renderer.getRenderPass(0)->getAspectRatio();
             camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 50.0f);
 
             //update objects ==========================================================

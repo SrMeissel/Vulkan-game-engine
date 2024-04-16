@@ -231,7 +231,7 @@ void SwapChain::createRenderPass() {
   VkAttachmentDescription attachment;
     attachment.format = swapChainImageFormat;
     attachment.samples = device.msaaSamples;
-    attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // <=========
     attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;

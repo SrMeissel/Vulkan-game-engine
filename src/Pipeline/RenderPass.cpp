@@ -1,6 +1,7 @@
 #include "RenderPass.hpp"
 
 #include <stdexcept>
+#include <iostream>
 
 namespace engine {
     RenderPass::RenderPass(Device& device, Window& window, VkRenderPassCreateInfo* info, bool isWindowExtent, VkExtent2D customExtent) : 
@@ -18,6 +19,18 @@ namespace engine {
         createImageResources();
         createFrameBuffer();
     }
+
+    RenderPass::~RenderPass() {
+        std::cout << "Destroying RenderPass" << std::endl;
+        for (size_t i = 0; i < attachmentImageViews.size(); i++) {
+            vkDestroyImageView(device.device(), attachmentImageViews[i], nullptr);
+            vkDestroyImage(device.device(), attachmentImages[i], nullptr);
+            vkFreeMemory(device.device(), attachmentMemory[i], nullptr);
+        }
+        vkDestroyFramebuffer(device.device(), frameBuffer, nullptr);
+        vkDestroyRenderPass(device.device(), renderPass, nullptr);
+    }
+    //copilot wrote this, it actually looks good.
 
     void RenderPass::createImageResources() {
         attachmentMemory.resize(info->attachmentCount);
