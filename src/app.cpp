@@ -55,7 +55,7 @@ namespace engine {
         //Initialize render systems ======================================
 
         RenderPass scenePass{device, window, configureRenderPass(), false, {800, 600}};
-        renderer.appendRenderPass(&scenePass);
+        renderer.appendRenderPass(& scenePass);
 
         //RenderSystem renderSystem{device, renderer.getRenderPass(0).getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
         auto renderSystem = assetSystem.RegisterSystem<RenderSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());

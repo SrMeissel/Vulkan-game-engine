@@ -17,6 +17,13 @@ namespace engine{
         createTextureSampler();
     };
 
+    TextureManager::~TextureManager() {
+        for(VkDeviceMemory memory : textureImageMemory){
+            vkFreeMemory(device.device(), memory, nullptr);
+        }
+        vkDestroySampler(device.device(), textureSampler, nullptr);
+    }
+
     std::unique_ptr<Texture> TextureManager::createTextureFromFile(char * filePath) {
         VkImage image = createTextureImage(filePath);
         VkImageView imageView = createTextureImageView(image);
@@ -42,7 +49,8 @@ namespace engine{
 
         stbi_image_free(pixels);
 
-        createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image, textureImageMemory);
+        textureImageMemory.push_back(VK_NULL_HANDLE);
+        createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image, textureImageMemory.back());
     
         device.transitionImageLayout(image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         device.copyBufferToImage(stagingBuffer.getBuffer(), image, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 1);

@@ -72,9 +72,6 @@ class SwapChain {
   VkDeviceMemory colorImageMemory;
   VkImageView colorImageView;
 
-  std::vector<std::vector<VkImageView>> allAttachments; // <==============
-  std::vector<VkDeviceMemory> ImageMemory; // <===============
-
   Device &device;
   VkExtent2D windowExtent;
 

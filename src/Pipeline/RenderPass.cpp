@@ -21,7 +21,6 @@ namespace engine {
     }
 
     RenderPass::~RenderPass() {
-        std::cout << "Destroying RenderPass" << std::endl;
         for (size_t i = 0; i < attachmentImageViews.size(); i++) {
             vkDestroyImageView(device.device(), attachmentImageViews[i], nullptr);
             vkDestroyImage(device.device(), attachmentImages[i], nullptr);

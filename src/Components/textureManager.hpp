@@ -23,6 +23,7 @@ namespace engine{
     class TextureManager{
         public:
             TextureManager(Device& device);
+            ~TextureManager();
 
             TextureManager(const TextureManager &) = delete;
             TextureManager& operator=(const TextureManager &) = delete;
@@ -43,7 +44,7 @@ namespace engine{
 
             
             Device &device;
-            VkDeviceMemory textureImageMemory;
+            std::vector<VkDeviceMemory> textureImageMemory;
             VkSampler textureSampler;
     };
 }

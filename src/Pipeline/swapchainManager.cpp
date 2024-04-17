@@ -41,12 +41,6 @@ SwapChain::~SwapChain() {
     swapchain = nullptr;
   }
 
-  //added with abstraction
-  for(auto& memory : ImageMemory) {
-    vkFreeMemory(device.device(), memory, nullptr);
-  }
-  
-
   for (auto framebuffer : swapChainFramebuffers) {
     vkDestroyFramebuffer(device.device(), framebuffer, nullptr);
   }
@@ -60,8 +54,6 @@ SwapChain::~SwapChain() {
     vkDestroyFence(device.device(), inFlightFences[i], nullptr);
   }
 
-  //new info attachments cleanup
-  //TODO
 }
 
 VkResult SwapChain::acquireNextImage(uint32_t *imageIndex) {
