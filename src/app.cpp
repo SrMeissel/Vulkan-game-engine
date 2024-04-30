@@ -2,11 +2,9 @@
 #include "cameraManager.hpp"
 #include "keyboard_movement_controller.hpp"
 #include "bufferManager.hpp"
-#include "systems/renderSystem.hpp"
-#include "systems/pointLightSystem.hpp"
-#include "systems/Volumetric/AtmoSystem.hpp"
 #include "systems/meshSystem.hpp"
 #include "Importer.hpp"
+#include "frameInfo.hpp"
 
 #include <iostream>
 #include <stdexcept>
@@ -22,8 +20,6 @@
 namespace engine {
 
     app::app() {
-        loadGameObjects();
-        doECSThings();
     }
     app::~app() {
 
@@ -73,18 +69,19 @@ namespace engine {
         signature.set(assetSystem.GetComponentType<ECS::Renderable>());
         assetSystem.SetSystemSignature<MeshSystem>(signature);
 
-        ECS::Entity entity = assetSystem.CreateEntity();
-        ECS::Transform transform{glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f)};
-        assetSystem.AddComponent(entity, transform);
-        assetSystem.AddComponent(entity, Importer::loadOBJmodel("../../models/colored_cube.obj", device));
+        ECS::Entity box = assetSystem.CreateEntity();
+        assetSystem.AddComponent(box, ECS::Transform{glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(1.0f)});
+        assetSystem.AddComponent(box, Importer::loadOBJmodel("../../models/colored_cube.obj", device));
+
+        ECS::Entity sphere = assetSystem.CreateEntity();
+        assetSystem.AddComponent(sphere, ECS::Transform{glm::vec3(-1.0f, -0.5f, 2.5f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(1.0f)});
+        assetSystem.AddComponent(sphere, Importer::loadOBJmodel("../../models/sphere.obj", device));
+
+        ECS::Entity plane = assetSystem.CreateEntity();
+        assetSystem.AddComponent(plane, ECS::Transform{glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(50.0, 1.0, 50.0), glm::vec3(1.0f)});
+        assetSystem.AddComponent(plane, Importer::loadOBJmodel("../../models/sphere.obj", device));
 
         //=======================================================================
-
-        //RenderSystem renderSystem{device, renderer.getRenderPass(0).getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
-        auto renderSystem = assetSystem.RegisterSystem<RenderSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
-        
-        PointLightSystem pointLightSystem{device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
-        //AtmoSystem atmoSystem{device, renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
 
         sceneEditor.configureViewport(renderer.getRenderPass(0)->getAttachmentImageView(0), textureManager.getTextureSampler(), renderer.getRenderPass(0)->extent);
 
@@ -92,8 +89,8 @@ namespace engine {
 
         CameraManager camera{};
         camera.setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
-        float orbitSpeed = 1;
-        auto viewerObject = GameObject::createGameObject();
+        ECS::Entity viewerObject = assetSystem.CreateEntity();
+        assetSystem.AddComponent(viewerObject, ECS::Transform{glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
         keyboardMovementController cameraController{};
 
         //Main system loop ============================================
@@ -126,34 +123,19 @@ namespace engine {
                 screenshotSaved = true;
             }
 
-            //shoot ray forward from camera!
-            if(glfwGetKey(window.getGLFWwindow(), GLFW_KEY_SPACE) == GLFW_PRESS) {
-                Ray ray;
-                ray.posiiton = viewerObject.transform.translation;
-                float yaw = viewerObject.transform.rotation.y;
-                float pitch = viewerObject.transform.rotation.x;
-                ray.direction = {sin(yaw), -tan(pitch), cos(yaw)};
-                ray.direction = glm::normalize(ray.direction);
-
-                physicsSimulation.sphereRayCollision(ray, *physicsSimulation.objects[0].collisionMesh.get());
-            }
-
             //update camera from user input
-            cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerObject);
-            camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);            
+            ECS::Transform& viewerTransform = assetSystem.GetComponent<ECS::Transform>(viewerObject);
+            cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerTransform);
+            camera.setViewYXZ(viewerTransform.translation, viewerTransform.rotation);            
             float aspect = renderer.getRenderPass(0)->getAspectRatio();
             camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 50.0f);
-
-            //update objects ==========================================================
-
-            physicsSimulation.update(frameTime);
 
             //new frame ready, runs every frame ===============================================
             if(auto commandBuffer = renderer.beginFrame()) {
                 int frameIndex = renderer.getFrameIndex();
 
                 frameInfo frameInfo{
-                    frameIndex, frameTime, commandBuffer, camera, globalDescriptorSets[frameIndex], gameObjects
+                    frameIndex, frameTime, commandBuffer, camera, globalDescriptorSets[frameIndex]
                 };
 
                 //update graphics memory objects =====================================
@@ -161,7 +143,6 @@ namespace engine {
                 ubo.projection = camera.getProjection();
                 ubo.view = camera.getView();
                 ubo.inverseView = camera.getInverseView();
-                pointLightSystem.update(frameInfo, ubo);
 
                 uboBuffers[frameIndex]->writeToBuffer(&ubo);
                 uboBuffers[frameIndex]->flush();
@@ -169,9 +150,6 @@ namespace engine {
                 //render =====================================================
 
                 renderer.beginNextRenderPass(commandBuffer);
-                //order matters, the transparent pointLights need to be rendered first (Brendan tutorial 27)
-                pointLightSystem.render(frameInfo);
-                renderSystem->renderGameObjects(frameInfo);
 
                 //atmoSystem.renderAtmosphere(frameInfo, renderer.getSwapchainDepthImageViews()[renderer.getCurrentImageIndex()]);
                 //this works, just not focusing on it rn 
@@ -194,65 +172,6 @@ namespace engine {
             }
         }
         vkDeviceWaitIdle(device.device());
-    }
-
-    void app::initilizeObject(GameObject& object, glm::vec3 position, glm::vec3 scale, std::string modelFile, char* textureFile) {
-        std::shared_ptr<Model> model = Model::createModelFromFile(device, modelFile);
-        object.model = move(model);
-        object.transform.translation = position;
-        object.transform.scale = scale;
-
-        std::shared_ptr<Texture> texture = textureManager.createTextureFromFile(textureFile);
-        object.texture = move(texture);
-
-        gameObjects.emplace(object.getId(), std::move(object));
-    }
-
-    void app::loadGameObjects() {
-
-        glm::vec3 translation;
-        glm::vec3 scale; 
-
-        auto object = GameObject::createGameObject(); 
-        translation = {0.0f, 0.5f, 0.0f};
-        scale = {1, 1, 1};
-        initilizeObject(object, translation, scale, "models/flat_vase.obj", "../../Experimental/Roma Imperiale Granite_whgneh2v/Albedo_8K__whgneh2v.jpg");   
-
-        //Second object
-        auto secondObject = GameObject::createGameObject();
-        translation = {-1.0f, -0.5f, 2.5f};
-        scale = {0.5, 0.5, 0.5};
-        initilizeObject(secondObject, translation, scale, "models/sphere.obj", "../../Experimental/Roma Imperiale Granite_whgneh2v/Albedo_8K__whgneh2v.jpg");
-        //creates a physics sim object
-        PhysicsObject physics(gameObjects[1].transform, gameObjects[1].getId());
-        physicsSimulation.objects.emplace_back(std::move(physics));
-
-        //floor
-        auto floor = GameObject::createGameObject();
-        translation = {0.0f, 0.5f, 0.0f};
-        scale = {50.0, 1.0, 50.0};
-        initilizeObject(floor, translation, scale, "models/quad.obj", "../../Experimental/Mossy_Ground_xiboab2r/Albedo_2K__xiboab2r.jpg");
-
-        //tree
-        auto tree = GameObject::createGameObject();
-        translation = {0.0f, 1.5f, 0.0f};
-        scale = {1, 1, 1};
-        initilizeObject(tree, translation, scale, "models/Lowpoly_tree_sample.obj", "../../textures/default_texture.jpg");
-
-           
-        // best light color {1.0f, 0.96f, 0.71f};
-        int lightNum = 1;
-        float radius = 2.5f;
-        for(int i=0; i <lightNum; i++){
-            auto pointLight = GameObject::makePointLight();
-            pointLight.color = {1.0f, 0.96f, 0.71f};
-            auto  rotateLight = glm::rotate(glm::mat4(1.0f), (i*glm::two_pi<float>()) / lightNum, {0.0f, -1.0f, 0.0f});
-            pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-radius, -1, -radius, 1.0f));
-            gameObjects.emplace(pointLight.getId(), std::move(pointLight));
-        }
-    }
-
-    void app::doECSThings() {
     }
 
     //this works, vkcreateRenderPass uses pointer. The static keywords are used to prevent the objects from deleteing because their referenced.

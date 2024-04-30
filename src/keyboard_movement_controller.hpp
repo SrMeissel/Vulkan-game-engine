@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gameObject.hpp"
 #include "Pipeline/windowManager.hpp"
+#include "ECS/Components.hpp"
 
 namespace engine {
     class keyboardMovementController {
@@ -21,7 +21,7 @@ namespace engine {
                 int keyP = GLFW_KEY_P;
             };
 
-            void moveInPlaneXZ(GLFWwindow* window, float dt, GameObject& gameObject);
+            void moveInPlaneXZ(GLFWwindow* window, float dt, ECS::Transform& cameraTransform);
             
 
             keyMappings keys{};

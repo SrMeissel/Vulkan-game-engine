@@ -1,7 +1,6 @@
 #pragma once
 
 #include "cameraManager.hpp"
-#include "gameObject.hpp"
 
 #include <vulkan/vulkan.h>
 
@@ -20,17 +19,11 @@ namespace engine {
         VkCommandBuffer commandBuffer;
         CameraManager& camera;
         VkDescriptorSet globalDescriptorSet;
-        GameObject::map &gameObjects;
     };
 
     struct GlobalUbo {
     glm::mat4 projection{1.0f};
     glm::mat4 view{1.0f};
     glm::mat4 inverseView{1.0f};
-
-    glm::vec4 ambientColor{1.0f, 1.0f, 1.0f, 0.02f};
-
-    PointLight pointLights[MAX_LIGHTS];
-    int numLights;
     };
 }

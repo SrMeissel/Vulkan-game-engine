@@ -2,6 +2,7 @@
 
 #include "deviceManager.hpp"
 
+
 #include <string>
 #include <vector>
 #include <array>

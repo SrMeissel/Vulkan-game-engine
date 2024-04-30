@@ -1,8 +1,10 @@
 #include "keyboard_movement_controller.hpp"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 
 namespace engine {
-    void keyboardMovementController::moveInPlaneXZ(GLFWwindow* window, float dt, GameObject& gameObject) {
+    void keyboardMovementController::moveInPlaneXZ(GLFWwindow* window, float dt, ECS::Transform& cameraTransform) {
         glm::vec3 rotate{0};
 
         if(glfwGetKey(window, keys.lookRight) == GLFW_PRESS) rotate.y += 1.0f;
@@ -12,14 +14,14 @@ namespace engine {
 
 
         if(glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon()){
-            gameObject.transform.rotation += lookSpeed * dt * glm::normalize(rotate);
+            cameraTransform.rotation += lookSpeed * dt * glm::normalize(rotate);
         }
 
-        gameObject.transform.rotation.x = glm::clamp(gameObject.transform.rotation.x, -1.5f, 1.5f);
-        gameObject.transform.rotation.y = glm::mod(gameObject.transform.rotation.y, glm::two_pi<float>());
+        cameraTransform.rotation.x = glm::clamp(cameraTransform.rotation.x, -1.5f, 1.5f);
+        cameraTransform.rotation.y = glm::mod(cameraTransform.rotation.y, glm::two_pi<float>());
 
-        float yaw = gameObject.transform.rotation.y;
-        float pitch = gameObject.transform.rotation.x;
+        float yaw = cameraTransform.rotation.y;
+        float pitch = cameraTransform.rotation.x;
         const glm::vec3 forwardDir{sin(yaw), -tan(pitch), cos(yaw)};
 
         const glm::vec3 rightDir{forwardDir.z, 0.0f, -forwardDir.x};
@@ -34,7 +36,7 @@ namespace engine {
         if(glfwGetKey(window, keys.moveDown) == GLFW_PRESS) moveDir -= upDir;
 
         if(glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon()){
-            gameObject.transform.translation += moveSpeed * dt * glm::normalize(moveDir);
+            cameraTransform.translation += moveSpeed * dt * glm::normalize(moveDir);
         }
     }
 }

@@ -2,17 +2,14 @@
 
 #include "Pipeline/windowManager.hpp"
 #include "Pipeline/deviceManager.hpp"
-#include "gameObject.hpp"
 #include "Pipeline/Renderer.hpp"
 #include "descriptorManager.hpp"
 #include "screenshotTool.hpp"
 #include "Components/textureManager.hpp"
-#include "Components/Physics/PxSimulation.hpp"
 #include "Tools/SceneEditor.hpp"
 
 #include "ECS/AssetManager.hpp"
 #include "ECS/Components.hpp"
-
 
 #include <memory>
 #include <vector>
@@ -31,8 +28,6 @@ namespace engine {
 
             void run();
         private:
-            void loadGameObjects();
-            void initilizeObject(GameObject& object, glm::vec3 position, glm::vec3 scale, std::string modelFile, char* textureFile);
             VkRenderPassCreateInfo* configureRenderPass();
             VkFormat chooseSwapSurfaceFormat();
 
@@ -42,15 +37,11 @@ namespace engine {
 
             SceneEditor sceneEditor{device, window, renderer};
 
-            PhysicsSimulation physicsSimulation{};
             TextureManager textureManager{device}; 
             ScreenshotTool screenshotTool;
 
             std::shared_ptr<DescriptorPool> globalPool;
             
-            GameObject::map gameObjects;
-
             ECS::AssetSystem assetSystem;
-            void doECSThings(); 
     };
 }
