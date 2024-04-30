@@ -5,6 +5,8 @@
 #include "systems/renderSystem.hpp"
 #include "systems/pointLightSystem.hpp"
 #include "systems/Volumetric/AtmoSystem.hpp"
+#include "systems/meshSystem.hpp"
+#include "Importer.hpp"
 
 #include <iostream>
 #include <stdexcept>
@@ -52,10 +54,31 @@ namespace engine {
             writer.build(globalDescriptorSets[i]);
         }
 
+
         //Initialize render systems ======================================
 
         RenderPass scenePass{device, window, configureRenderPass(), false, {800, 600}};
         renderer.appendRenderPass(& scenePass);
+
+        //Initialize asset system ======================================
+        assetSystem.Init();
+
+        assetSystem.RegisterComponent<ECS::Transform>();
+        assetSystem.RegisterComponent<ECS::Renderable>();
+
+        std::shared_ptr<MeshSystem> meshSystem = assetSystem.RegisterSystem<MeshSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
+
+        ECS::Signature signature;
+        signature.set(assetSystem.GetComponentType<ECS::Transform>());
+        signature.set(assetSystem.GetComponentType<ECS::Renderable>());
+        assetSystem.SetSystemSignature<MeshSystem>(signature);
+
+        ECS::Entity entity = assetSystem.CreateEntity();
+        ECS::Transform transform{glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f)};
+        assetSystem.AddComponent(entity, transform);
+        assetSystem.AddComponent(entity, Importer::loadOBJmodel("../../models/colored_cube.obj", device));
+
+        //=======================================================================
 
         //RenderSystem renderSystem{device, renderer.getRenderPass(0).getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
         auto renderSystem = assetSystem.RegisterSystem<RenderSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
@@ -153,6 +176,8 @@ namespace engine {
                 //atmoSystem.renderAtmosphere(frameInfo, renderer.getSwapchainDepthImageViews()[renderer.getCurrentImageIndex()]);
                 //this works, just not focusing on it rn 
 
+                meshSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
+
                 vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
 
 
@@ -228,59 +253,106 @@ namespace engine {
     }
 
     void app::doECSThings() {
-        assetSystem.Init();
-
-        //assetSystem.RegisterComponent<TransformComponent>();
-        //assetSystem.RegisterComponent<Model>();
     }
 
     //this works, vkcreateRenderPass uses pointer. The static keywords are used to prevent the objects from deleteing because their referenced.
     VkRenderPassCreateInfo* app::configureRenderPass() {
 
-        static std::array<VkAttachmentDescription, 2> attachments;
+        static std::array<VkAttachmentDescription, 4> attachments;
+
+        static std::array<VkAttachmentReference, 3> colorAttachmentRef = {};
+        static std::array<VkAttachmentReference, 3> inputReference = {};
+
+
         //colorAttachment (Attachment 0 must be swapchain image, this is constant every time)
-            attachments[0].format = chooseSwapSurfaceFormat();
-            attachments[0].samples = device.msaaSamples;
-            attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            attachments[0].finalLayout =  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; //VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // <==================
+        attachments[0].format = chooseSwapSurfaceFormat();
+        attachments[0].samples = device.msaaSamples;
+        attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attachments[0].finalLayout =  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; //VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // <==================
+
+        colorAttachmentRef[0].attachment = 0;
+        colorAttachmentRef[0].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        //normal color attachment
+        attachments[1].format = chooseSwapSurfaceFormat();
+        attachments[1].samples = device.msaaSamples;
+        attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attachments[1].finalLayout =  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        colorAttachmentRef[1].attachment = 1;
+        colorAttachmentRef[1].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        inputReference[0].attachment = 1;
+        inputReference[0].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        //position color attachment
+        attachments[2].format = chooseSwapSurfaceFormat();
+        attachments[2].samples = device.msaaSamples;
+        attachments[2].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachments[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attachments[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachments[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachments[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attachments[2].finalLayout =  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        colorAttachmentRef[2].attachment = 2;
+        colorAttachmentRef[2].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        inputReference[1].attachment = 2;
+        inputReference[1].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
         //depthAttachment
-            attachments[1].format = device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
-            attachments[1].samples = device.msaaSamples;
-            attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            attachments[1].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        attachments[3].format = device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+        attachments[3].samples = device.msaaSamples;
+        attachments[3].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachments[3].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attachments[3].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachments[3].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachments[3].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attachments[3].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-
-        static VkAttachmentReference colorAttachmentRef = {};
-        colorAttachmentRef.attachment = 0;
-        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-        static VkAttachmentReference depthAttachmentRef{};
-        depthAttachmentRef.attachment = 1;
+        static VkAttachmentReference depthAttachmentRef = {};
+        depthAttachmentRef.attachment = 3;
         depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        //for second subpass
-        static VkAttachmentReference inputReference = {};
-        inputReference.attachment = 1;
-        inputReference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        inputReference[2].attachment = 3;
+        inputReference[2].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        //lighting attachment
+        static VkAttachmentDescription lightingAttachment{};
+        lightingAttachment.format = chooseSwapSurfaceFormat();
+        lightingAttachment.samples = device.msaaSamples;
+        lightingAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        lightingAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        lightingAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        lightingAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        lightingAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        lightingAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        static VkAttachmentReference lightingAttachmentRef = {};
+        lightingAttachmentRef.attachment = 0;
+        lightingAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         static std::array<VkSubpassDescription, 2> subpasses {};
             subpasses[0].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-            subpasses[0].colorAttachmentCount = 1;
-            subpasses[0].pColorAttachments = &colorAttachmentRef;
+            subpasses[0].colorAttachmentCount = colorAttachmentRef.size();
+            subpasses[0].pColorAttachments = colorAttachmentRef.data();
             subpasses[0].pDepthStencilAttachment = &depthAttachmentRef;
 
             subpasses[1].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
             subpasses[1].colorAttachmentCount = 1;
-            subpasses[1].pColorAttachments = &colorAttachmentRef;
-            subpasses[1].inputAttachmentCount = 1;
-            subpasses[1].pInputAttachments = &inputReference;
+            subpasses[1].pColorAttachments = &lightingAttachmentRef;
+            subpasses[1].inputAttachmentCount = inputReference.size();
+            subpasses[1].pInputAttachments = inputReference.data();
+            subpasses[1].pDepthStencilAttachment = &depthAttachmentRef;
 
         static std::array<VkSubpassDependency, 3> dependency = {};
             dependency[0].srcSubpass = VK_SUBPASS_EXTERNAL;

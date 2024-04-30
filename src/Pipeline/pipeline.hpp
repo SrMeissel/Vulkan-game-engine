@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <array>
 
 namespace engine{
 
@@ -20,7 +21,7 @@ namespace engine{
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
         VkPipelineRasterizationStateCreateInfo rasterizationInfo;
         VkPipelineMultisampleStateCreateInfo multisampleInfo;
-        VkPipelineColorBlendAttachmentState colorBlendAttachment;
+        std::array<VkPipelineColorBlendAttachmentState, 3> colorBlendAttachment{};
         VkPipelineColorBlendStateCreateInfo colorBlendInfo;
         VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
         std::vector<VkDynamicState> dynamicStateEnables;

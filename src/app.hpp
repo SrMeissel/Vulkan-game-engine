@@ -11,6 +11,8 @@
 #include "Tools/SceneEditor.hpp"
 
 #include "ECS/AssetManager.hpp"
+#include "ECS/Components.hpp"
+
 
 #include <memory>
 #include <vector>
