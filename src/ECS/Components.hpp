@@ -1,6 +1,7 @@
 #pragma once
 
 #include "bufferManager.hpp"
+#include "Utils.hpp"
 
 #include <memory>
 #include <glm/glm.hpp>
@@ -13,6 +14,11 @@ namespace ECS {
         bool hasIndexBuffer = false;
         std::shared_ptr<engine::Buffer> indexBuffer;
         uint32_t indexCount;
+    };
+
+    struct Material {
+        engine::AllocatedImage albedo;
+        engine::AllocatedImage normal;
     };
 
     struct Transform {

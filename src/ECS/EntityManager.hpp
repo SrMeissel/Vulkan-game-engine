@@ -16,6 +16,7 @@ namespace ECS {
 
     using Signature = std::bitset<MAX_COMPONENTS>; // used to determine which components an entity has
         //Entities are the ID's that accociate components together
+        //lol thats spelt wrong
         
     class EntityManager {
     public:

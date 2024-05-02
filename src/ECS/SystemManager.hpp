@@ -41,6 +41,15 @@ namespace ECS {
 
 		signatures.insert({typeName, signature});
 	}
+
+	template<typename T>
+	void SetAntiSignature(Signature signature) {
+		const char* typeName = typeid(T).name();
+		
+		assert(systems.find(typeName) != systems.end() && "System used before registered.");
+
+		antiSignatures.insert({typeName, signature});
+	}
     
     void EntityDestroyed(Entity entity) {
 		// entities is a set so no check needed. thats cool
@@ -59,10 +68,11 @@ namespace ECS {
 			auto const& type = pair.first;
 			auto const& system = pair.second;
 			auto const& systemSignature = signatures[type];
+			auto const& antiSignature = antiSignatures[type];
 
 			// Entity signature matches system signature - insert into set
             //this is a cool bit of bitwise op's. the entity AND the signiture return the signiture if the entity contains all bits of the signiture :)
-			if ((entitySignature & systemSignature) == systemSignature)
+			if (((entitySignature & systemSignature) == systemSignature) && ((entitySignature & antiSignature) == 0))
 			{
 				system->entities.insert(entity);
 			}
@@ -77,6 +87,7 @@ namespace ECS {
 
     private:        
         std::unordered_map<const char*, Signature> signatures{};
+		std::unordered_map<const char*, Signature> antiSignatures{};
         std::unordered_map<const char*, std::shared_ptr<System>> systems{};
     };
 }

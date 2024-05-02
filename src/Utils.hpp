@@ -49,6 +49,15 @@ namespace engine {
         return attributeDescriptions;
     }
 
+    struct AllocatedImage {
+        VkImage image;
+        VkImageView imageView;
+
+        VkDeviceMemory memory;
+        VkExtent3D imageExtent;
+        VkFormat imageFormat;
+    };
+
 }
 
 namespace std {

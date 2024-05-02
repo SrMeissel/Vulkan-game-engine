@@ -78,6 +78,11 @@ namespace ECS {
 		systemManager->SetSignature<T>(signature);
 	}
 
+	template<typename T>
+	void SetSystemAntiSignature(Signature signature) {
+		systemManager->SetAntiSignature<T>(signature);
+	}
+
 
     private:
         std::unique_ptr<ComponentManager> componentManager;

@@ -61,30 +61,35 @@ namespace engine {
 
         assetSystem.RegisterComponent<ECS::Transform>();
         assetSystem.RegisterComponent<ECS::Renderable>();
+        assetSystem.RegisterComponent<ECS::Material>();
 
         std::shared_ptr<MeshSystem> meshSystem = assetSystem.RegisterSystem<MeshSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
 
-        ECS::Signature signature;
-        signature.set(assetSystem.GetComponentType<ECS::Transform>());
-        signature.set(assetSystem.GetComponentType<ECS::Renderable>());
-        assetSystem.SetSystemSignature<MeshSystem>(signature);
+        ECS::Signature meshSignature;
+        meshSignature.set(assetSystem.GetComponentType<ECS::Transform>());
+        meshSignature.set(assetSystem.GetComponentType<ECS::Renderable>());
+        assetSystem.SetSystemSignature<MeshSystem>(meshSignature);
+
+        ECS::Signature meshAntiSignature;
+        meshAntiSignature.set(assetSystem.GetComponentType<ECS::Material>());
+        assetSystem.SetSystemAntiSignature<MeshSystem>(meshAntiSignature);
 
         ECS::Entity box = assetSystem.CreateEntity();
-        assetSystem.AddComponent(box, ECS::Transform{glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(1.0f)});
+        assetSystem.AddComponent(box, ECS::Transform{glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0f)});
         assetSystem.AddComponent(box, Importer::loadOBJmodel("../../models/colored_cube.obj", device));
 
         ECS::Entity sphere = assetSystem.CreateEntity();
-        assetSystem.AddComponent(sphere, ECS::Transform{glm::vec3(-1.0f, -0.5f, 2.5f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(1.0f)});
+        assetSystem.AddComponent(sphere, ECS::Transform{glm::vec3(-1.0f, -0.5f, 2.5f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0f)});
         assetSystem.AddComponent(sphere, Importer::loadOBJmodel("../../models/sphere.obj", device));
 
         ECS::Entity plane = assetSystem.CreateEntity();
-        assetSystem.AddComponent(plane, ECS::Transform{glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(50.0, 1.0, 50.0), glm::vec3(1.0f)});
-        assetSystem.AddComponent(plane, Importer::loadOBJmodel("../../models/sphere.obj", device));
+        assetSystem.AddComponent(plane, ECS::Transform{glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(50.0, 1.0, 50.0), glm::vec3(0.0f)});
+        assetSystem.AddComponent(plane, Importer::loadOBJmodel("../../models/quad.obj", device));
 
         //=======================================================================
 
         sceneEditor.configureViewport(renderer.getRenderPass(0)->getAttachmentImageView(0), textureManager.getTextureSampler(), renderer.getRenderPass(0)->extent);
-
+ 
         //Initialize Camera object ===================================
 
         CameraManager camera{};
