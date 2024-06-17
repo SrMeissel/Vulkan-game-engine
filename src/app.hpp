@@ -11,6 +11,8 @@
 #include "ECS/AssetManager.hpp"
 #include "ECS/Components.hpp"
 
+#include "systems/ScriptingSystem.hpp"
+
 #include <memory>
 #include <vector>
 
@@ -43,5 +45,7 @@ namespace engine {
             std::shared_ptr<DescriptorPool> globalPool;
             
             ECS::AssetSystem assetSystem;
+
+            ScriptingSystem scriptingSystem{};
     };
 }

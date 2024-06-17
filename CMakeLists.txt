@@ -14,6 +14,7 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/libs/tinyobjloader-release)
 
 find_package(Vulkan REQUIRED)
 
+
 # local source
 file(GLOB_RECURSE SOURCES 
 ${PROJECT_SOURCE_DIR}/src/*.cpp 
@@ -28,7 +29,7 @@ add_executable(engine
 
 target_include_directories(engine PUBLIC
     ${PROJECT_SOURCE_DIR}/src  
-    # ${PROJECT_SOURCE_DIR}/libs/imgui  
+    "C:/Program Files/Mono/include/mono-2.0"
 )
 
 target_sources(engine PRIVATE
@@ -42,11 +43,17 @@ target_sources(engine PRIVATE
 
 "${PROJECT_SOURCE_DIR}/libs/imgui/imgui_impl_vulkan.cpp"
 "${PROJECT_SOURCE_DIR}/libs/imgui/imgui_impl_glfw.cpp"
+
 )
+
+# include_directories("c:/Program Files/mono/msvc/build/sgen/x64/lib/Debug")
 
 target_link_libraries(engine glfw)
 target_link_libraries(engine tinyobjloader)
 target_link_libraries(engine Vulkan::Vulkan)
+target_link_libraries(engine "C:/Program Files/mono/msvc/build/sgen/x64/lib/Debug/mono-2.0-sgen.lib")
+#"C:/Program Files/mono/msvc/build/sgen/x64/lib/Debug/*.lib"
+#"C:/Program Files/mono/msvc/build/sgen/x64/bin/Debug/*.lib"
 
 # Build Shaders !!! doesnt work!
 # find_program(GLSL_VALIDATOR glslangValidator HINTS

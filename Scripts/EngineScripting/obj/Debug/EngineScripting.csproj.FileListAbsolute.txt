@@ -1,0 +1,6 @@
+C:\Users\mizer\dev\Vulkan-game-engine\Scripts\EngineScripting\bin\Debug\EngineScripting.dll
+C:\Users\mizer\dev\Vulkan-game-engine\Scripts\EngineScripting\bin\Debug\EngineScripting.pdb
+C:\Users\mizer\dev\Vulkan-game-engine\Scripts\EngineScripting\obj\Debug\EngineScripting.csproj.AssemblyReference.cache
+C:\Users\mizer\dev\Vulkan-game-engine\Scripts\EngineScripting\obj\Debug\EngineScripting.csproj.CoreCompileInputs.cache
+C:\Users\mizer\dev\Vulkan-game-engine\Scripts\EngineScripting\obj\Debug\EngineScripting.dll
+C:\Users\mizer\dev\Vulkan-game-engine\Scripts\EngineScripting\obj\Debug\EngineScripting.pdb
