@@ -16,7 +16,8 @@ namespace engine {
         ScriptingSystem();
         ~ScriptingSystem();
 
-        void LoadAssembly(const std::string& assemblyPath);
+        MonoAssembly* LoadAssembly(const std::string& assemblyPath);
+        void printAssemblyMetadata(MonoAssembly* assembly);
         void RunScript(const std::string& scriptName);
 
         void DoAThing() {
@@ -25,6 +26,6 @@ namespace engine {
 
     private:
         MonoDomain* domain;
-        MonoAssembly* assembly;
+        MonoDomain* appDomain;
     };
 }
