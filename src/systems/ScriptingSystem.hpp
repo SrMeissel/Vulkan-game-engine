@@ -5,6 +5,9 @@
 
 #include "ECS/AssetManager.hpp"
 
+#include "ECS/AssetManager.hpp"
+#include "ECS/Components.hpp"
+
 // https://www.mono-project.com/docs/advanced/embedding/
 // if it breaks, copilot did it
 
@@ -18,14 +21,16 @@ namespace engine {
 
         MonoAssembly* LoadAssembly(const std::string& assemblyPath);
         void printAssemblyMetadata(MonoAssembly* assembly);
-        void RunScript(const std::string& scriptName);
 
         void DoAThing() {
             std::cout << "Doing the second thing!" << std::endl;
         }
 
+        void update(float deltaTime, int entity, ECS::AssetSystem& assetManager);
+
     private:
         MonoDomain* domain;
         MonoDomain* appDomain;
+        MonoAssembly* assembly;
     };
 }

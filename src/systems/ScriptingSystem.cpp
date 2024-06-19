@@ -11,14 +11,77 @@ namespace engine {
         appDomain = mono_domain_create_appdomain("MyAppDomain", nullptr);
         mono_domain_set(appDomain, true);
 
-        MonoAssembly* assembly = LoadAssembly("C:/Users/mizer/dev/Vulkan-game-engine/Scripts/EngineScripting/bin/Debug/EngineScripting.dll");
+        assembly = LoadAssembly("C:/Users/mizer/dev/Vulkan-game-engine/Scripts/EngineScripting/bin/Debug/EngineScripting.dll");
         if(assembly == nullptr) std::cout << "Failed to load assembly!" << std::endl;
 
-        printAssemblyMetadata(assembly);
+        //printAssemblyMetadata(assembly);
+
+        //call a function from the assembly
+
+        // MonoImage* image = mono_assembly_get_image(assembly);
+        // MonoClass* scriptClass = mono_class_from_name(image, "", "CSharpTesting");
+        // if(scriptClass == nullptr) std::cout << "Failed to get class!" << std::endl;
+
+        // MonoObject* scriptObject = mono_object_new(appDomain, scriptClass);
+        // if(scriptObject == nullptr) std::cout << "Failed to create object!" << std::endl;
+
+        // mono_runtime_object_init(scriptObject); // constructor
+
+        // MonoClass* instanceClass = mono_object_get_class(scriptObject);
+
+        // MonoMethod* method = mono_class_get_method_from_name(instanceClass, "PrintFloatVar", 0);
+        // if(method == nullptr) std::cout << "Failed to get method!" << std::endl;
+
+        // MonoClassField* floatField = mono_class_get_field_from_name(instanceClass, "MyPublicFloatVar");
+
+        // // Get the value of MyPublicFloatVar from the testingInstance object
+        // float value;
+        // mono_field_get_value(scriptObject, floatField, &value);
+
+        // //std::cout << "Value of MyPublicFloatVar: " << value << std::endl;
+
+        // // Increment value by 10 and assign it back to the variable
+        // value += 10.0f;
+        // mono_field_set_value(scriptObject, floatField, &value);
+
+        // MonoObject* exception = nullptr;
+        // mono_runtime_invoke(method, scriptObject, nullptr, &exception);
     }
 
     ScriptingSystem::~ScriptingSystem() {
         mono_jit_cleanup(domain);
+    }
+
+    void ScriptingSystem::update(float deltaTime, int entity, ECS::AssetSystem& assetManager) {
+        MonoImage* image = mono_assembly_get_image(assembly);
+        MonoClass* scriptClass = mono_class_from_name(image, "", "TransformExpirement");
+        if(scriptClass == nullptr) std::cout << "Failed to get class!" << std::endl;
+
+        MonoObject* scriptObject = mono_object_new(appDomain, scriptClass);
+        if(scriptObject == nullptr) std::cout << "Failed to create object!" << std::endl;
+
+        mono_runtime_object_init(scriptObject); // constructor
+
+        MonoClass* scriptInstance = mono_object_get_class(scriptObject);
+
+        float& position = assetManager.GetComponent<ECS::Transform>(entity).translation.x;
+
+        //set data
+        MonoClassField* scriptDeltaTime = mono_class_get_field_from_name(scriptInstance, "deltaTime");
+        mono_field_set_value(scriptObject, scriptDeltaTime, &deltaTime);
+        MonoClassField* scriptPosition = mono_class_get_field_from_name(scriptInstance, "transformPositionX");
+        mono_field_set_value(scriptObject, scriptPosition, &position);
+
+        //do thing
+        MonoMethod* method = mono_class_get_method_from_name(scriptInstance, "update", 0);
+        if(method == nullptr) std::cout << "Failed to get method!" << std::endl;
+
+        MonoObject* exception = nullptr;
+        mono_runtime_invoke(method, scriptObject, nullptr, &exception);
+
+        //get data
+        mono_field_get_value(scriptObject, scriptPosition, &position);
+
     }
 
     //I like this error handling.
@@ -35,6 +98,8 @@ namespace engine {
         char* buffer = new char[size];
         stream.read((char*)buffer, size);
         stream.close();
+
+        //==================================================================
 
         MonoImageOpenStatus status;
         MonoImage* image = mono_image_open_from_data_full(buffer, size, 1, &status, 0);

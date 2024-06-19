@@ -79,6 +79,7 @@ namespace engine {
         assetSystem.AddComponent(box, Importer::loadOBJmodel("../../models/colored_cube.obj", device));
 
         ECS::Entity sphere = assetSystem.CreateEntity();
+        //std::cout << "sphere entity: " << sphere << "\n";
         assetSystem.AddComponent(sphere, ECS::Transform{glm::vec3(-1.0f, -0.5f, 2.5f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0f)});
         assetSystem.AddComponent(sphere, Importer::loadOBJmodel("../../models/sphere.obj", device));
 
@@ -119,6 +120,8 @@ namespace engine {
 
             //proccess user input =======================================================
 
+            scriptingSystem.update(frameTime, box, assetSystem);
+
             //take screenshot
             int stateKeyP = glfwGetKey(window.getGLFWwindow(), GLFW_KEY_P);
             if(stateKeyP == GLFW_PRESS && screenshotSaved == false) {
@@ -155,9 +158,6 @@ namespace engine {
                 //render =====================================================
 
                 renderer.beginNextRenderPass(commandBuffer);
-
-                //atmoSystem.renderAtmosphere(frameInfo, renderer.getSwapchainDepthImageViews()[renderer.getCurrentImageIndex()]);
-                //this works, just not focusing on it rn 
 
                 meshSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
 
