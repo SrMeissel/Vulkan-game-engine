@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Class1.cs" />
+    <Compile Include="EngineCore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TransformExpirement.cs" />
   </ItemGroup>

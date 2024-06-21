@@ -62,8 +62,10 @@ namespace engine {
         assetSystem.RegisterComponent<ECS::Transform>();
         assetSystem.RegisterComponent<ECS::Renderable>();
         assetSystem.RegisterComponent<ECS::Material>();
+        assetSystem.RegisterComponent<ECS::Script>();
 
         std::shared_ptr<MeshSystem> meshSystem = assetSystem.RegisterSystem<MeshSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
+        std::shared_ptr<ScriptingSystem> scriptingSystem = assetSystem.RegisterSystem<ScriptingSystem>();
 
         ECS::Signature meshSignature;
         meshSignature.set(assetSystem.GetComponentType<ECS::Transform>());
@@ -74,9 +76,15 @@ namespace engine {
         meshAntiSignature.set(assetSystem.GetComponentType<ECS::Material>());
         assetSystem.SetSystemAntiSignature<MeshSystem>(meshAntiSignature);
 
+        ECS::Signature scriptSignature;
+        scriptSignature.set(assetSystem.GetComponentType<ECS::Transform>());
+        scriptSignature.set(assetSystem.GetComponentType<ECS::Script>());
+        assetSystem.SetSystemSignature<ScriptingSystem>(scriptSignature);
+
         ECS::Entity box = assetSystem.CreateEntity();
-        assetSystem.AddComponent(box, ECS::Transform{glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0f)});
+        assetSystem.AddComponent(box, ECS::Transform{glm::vec3(0.1f, 0.0f, 0.0f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0f)});
         assetSystem.AddComponent(box, Importer::loadOBJmodel("../../models/colored_cube.obj", device));
+        assetSystem.AddComponent(box, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain });
 
         ECS::Entity sphere = assetSystem.CreateEntity();
         //std::cout << "sphere entity: " << sphere << "\n";
@@ -120,7 +128,7 @@ namespace engine {
 
             //proccess user input =======================================================
 
-            scriptingSystem.update(frameTime, box, assetSystem);
+            scriptingSystem->update(frameTime, assetSystem);
 
             //take screenshot
             int stateKeyP = glfwGetKey(window.getGLFWwindow(), GLFW_KEY_P);

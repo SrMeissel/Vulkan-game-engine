@@ -4,8 +4,6 @@
 #include <iostream>
 
 #include "ECS/AssetManager.hpp"
-
-#include "ECS/AssetManager.hpp"
 #include "ECS/Components.hpp"
 
 // https://www.mono-project.com/docs/advanced/embedding/
@@ -14,7 +12,7 @@
 // https://nilssondev.com/mono-guide/book/
 
 namespace engine {
-    class ScriptingSystem {
+    class ScriptingSystem : public ECS::System{
     public:
         ScriptingSystem();
         ~ScriptingSystem();
@@ -22,13 +20,8 @@ namespace engine {
         MonoAssembly* LoadAssembly(const std::string& assemblyPath);
         void printAssemblyMetadata(MonoAssembly* assembly);
 
-        void DoAThing() {
-            std::cout << "Doing the second thing!" << std::endl;
-        }
+        void update(float deltaTime, ECS::AssetSystem& assetManager);
 
-        void update(float deltaTime, int entity, ECS::AssetSystem& assetManager);
-
-    private:
         MonoDomain* domain;
         MonoDomain* appDomain;
         MonoAssembly* assembly;

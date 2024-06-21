@@ -1,19 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using GameEngine;
+using System;
 
-public class TransformExpirement
+public class TransformExpirement : EngineCore
 {
 
-    public float deltaTime;
-
-    public float transformPositionX;
-
+    public double elapsedTime;
+    public float radius = 5;
     public void update()
     {
-        transformPositionX += 0.5f * deltaTime;
-    }
+        elapsedTime += deltaTime;
+        if (elapsedTime > (2 * Math.PI))
+        {
+            elapsedTime = 0;
+        }
+        transform.position.x = radius * (float)Math.Cos(elapsedTime);
+        transform.position.z = radius * (float)Math.Sin(elapsedTime);
 
+/*        transform.position.x += deltaTime;
+        transform.position.y -= deltaTime;
+        transform.position.z -= deltaTime;*/
+    }
 }

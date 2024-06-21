@@ -45,7 +45,5 @@ namespace engine {
             std::shared_ptr<DescriptorPool> globalPool;
             
             ECS::AssetSystem assetSystem;
-
-            ScriptingSystem scriptingSystem{};
     };
 }
