@@ -34,11 +34,15 @@ namespace engine {
             void* params[] = {
                 &transform.translation.x,
                 &transform.translation.y,
-                &transform.translation.z
-            };
-
+                &transform.translation.z,
+                &transform.rotation.x,
+                &transform.rotation.y,
+                &transform.rotation.z
+            };  
+            
             MonoClass* parentClass = mono_class_get_parent(script.objectClass);
-            MonoMethod* sendTransformMethod = mono_class_get_method_from_name(parentClass, "loadTransform", 3);
+
+            MonoMethod* sendTransformMethod = mono_class_get_method_from_name(parentClass, "loadTransform", 6);
             mono_runtime_invoke(sendTransformMethod, script.scriptObject, params, &exception);
 
             //do thing ==================================================
@@ -49,12 +53,16 @@ namespace engine {
             if(exception != nullptr) std::cout << "Exception thrown!" << std::endl;
 
             //get data ==================================================
-            MonoMethod* getTransformMethod = mono_class_get_method_from_name(parentClass, "returnTransform", 0);
-            MonoObject* result = mono_runtime_invoke(getTransformMethod, script.scriptObject, nullptr, &exception);
+            MonoMethod* getPositionMethod = mono_class_get_method_from_name(parentClass, "returnPosition", 0);
+            MonoObject* result = mono_runtime_invoke(getPositionMethod, script.scriptObject, nullptr, &exception);
+            if(exception != nullptr) std::cout << "Exception thrown!" << std::endl;
+
+            MonoMethod* getRotationMethod = mono_class_get_method_from_name(parentClass, "returnRotation", 0);
+            MonoObject* result2 = mono_runtime_invoke(getRotationMethod, script.scriptObject, nullptr, &exception);
             if(exception != nullptr) std::cout << "Exception thrown!" << std::endl;
 
             transform.translation = *(glm::vec3*)mono_object_unbox(result);
-
+            transform.rotation = *(glm::vec3*)mono_object_unbox(result2);
         }
     }
 

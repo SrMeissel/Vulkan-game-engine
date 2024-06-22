@@ -15,6 +15,7 @@ public class TransformExpirement : EngineCore
         }
         transform.position.x = radius * (float)Math.Cos(elapsedTime);
         transform.position.z = radius * (float)Math.Sin(elapsedTime);
+        //transform.position.y = radius * (float)Math.Tan(elapsedTime); <- this works
 
 /*        transform.position.x += deltaTime;
         transform.position.y -= deltaTime;
