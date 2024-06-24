@@ -13,12 +13,8 @@ public class TransformExpirement : EngineCore
         {
             elapsedTime = 0;
         }
-        transform.position.x = radius * (float)Math.Cos(elapsedTime);
-        transform.position.z = radius * (float)Math.Sin(elapsedTime);
+        Object.transform.position.x = radius * (float)Math.Cos(elapsedTime);
+        Object.transform.position.z = radius * (float)Math.Sin(elapsedTime);
         //transform.position.y = radius * (float)Math.Tan(elapsedTime); <- this works
-
-/*        transform.position.x += deltaTime;
-        transform.position.y -= deltaTime;
-        transform.position.z -= deltaTime;*/
     }
 }

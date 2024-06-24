@@ -65,7 +65,7 @@ namespace engine {
         assetSystem.RegisterComponent<ECS::Script>();
 
         std::shared_ptr<MeshSystem> meshSystem = assetSystem.RegisterSystem<MeshSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
-        std::shared_ptr<ScriptingSystem> scriptingSystem = assetSystem.RegisterSystem<ScriptingSystem>();
+        std::shared_ptr<ScriptingSystem> scriptingSystem = assetSystem.RegisterSystem<ScriptingSystem>(window);
 
         ECS::Signature meshSignature;
         meshSignature.set(assetSystem.GetComponentType<ECS::Transform>());
@@ -84,7 +84,7 @@ namespace engine {
         ECS::Entity box = assetSystem.CreateEntity();
         assetSystem.AddComponent(box, ECS::Transform{glm::vec3(0.1f, 0.0f, 0.0f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0)});
         assetSystem.AddComponent(box, Importer::loadOBJmodel("../../models/colored_cube.obj", device));
-        assetSystem.AddComponent(box, ECS::Script{"Rotate", scriptingSystem->assembly, scriptingSystem->appDomain });
+        assetSystem.AddComponent(box, ECS::Script{"CameraControl", scriptingSystem->assembly, scriptingSystem->appDomain });
 
         ECS::Entity sphere = assetSystem.CreateEntity();
         assetSystem.AddComponent(sphere, ECS::Transform{glm::vec3(-1.0f, -0.5f, 2.5f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0f)});
@@ -144,7 +144,7 @@ namespace engine {
             cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerTransform);
             camera.setViewYXZ(viewerTransform.translation, viewerTransform.rotation);            
             float aspect = renderer.getRenderPass(0)->getAspectRatio();
-            camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 50.0f);
+            camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 500.0f);
 
             //new frame ready, runs every frame ===============================================
             if(auto commandBuffer = renderer.beginFrame()) {

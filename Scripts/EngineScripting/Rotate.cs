@@ -5,8 +5,8 @@ class Rotate : EngineCore
 {
     public void update()
     {
-        transform.rotation.x += deltaTime;
-        transform.rotation.y += deltaTime;
-        transform.rotation.z += deltaTime;
+        Object.transform.rotation.x += deltaTime;
+        Object.transform.rotation.y += deltaTime;
+        Object.transform.rotation.z += deltaTime;
     }
 }

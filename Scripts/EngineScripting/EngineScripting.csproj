@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CameraControl.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="EngineCore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -20,7 +20,7 @@ file(GLOB_RECURSE SOURCES
 ${PROJECT_SOURCE_DIR}/src/*.cpp 
 # I dont think this does what I think it does...
 ${PROJECT_SOURCE_DIR}/src/*.hpp
-${PROJECT_SOURCE_SIR}/src/*.h
+${PROJECT_SOURCE_DIR}/src/*.h
 )
 
 add_executable(engine

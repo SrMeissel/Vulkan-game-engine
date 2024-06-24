@@ -2,7 +2,7 @@
 #include <fstream>
 
 namespace engine {
-    ScriptingSystem::ScriptingSystem() {
+    ScriptingSystem::ScriptingSystem(Window& window) : window{window} {
         std::cout << "Initializing Mono runtime..." << std::endl;
 
         mono_set_assemblies_path("C:/Program Files/mono/lib");
@@ -13,6 +13,8 @@ namespace engine {
 
         assembly = LoadAssembly("C:/Users/mizer/dev/Vulkan-game-engine/Scripts/EngineScripting/bin/Debug/EngineScripting.dll");
         if(assembly == nullptr) std::cout << "Failed to load assembly!" << std::endl;
+
+        mono_add_internal_call("GameEngine.EngineCore::DoSomething", DoSomething);
 
     }
 
@@ -29,6 +31,9 @@ namespace engine {
             //set data ==================================================
             MonoClassField* scriptDeltaTime = mono_class_get_field_from_name(script.objectClass, "deltaTime");
             mono_field_set_value(script.scriptObject, scriptDeltaTime, &deltaTime);
+
+            MonoClassField* scriptThingy = mono_class_get_field_from_name(script.objectClass, "thingy");
+            mono_field_set_value(script.scriptObject, scriptThingy, (char*)this); 
 
             MonoObject* exception = nullptr;
             void* params[] = {
