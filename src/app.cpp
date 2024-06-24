@@ -84,7 +84,7 @@ namespace engine {
         ECS::Entity box = assetSystem.CreateEntity();
         assetSystem.AddComponent(box, ECS::Transform{glm::vec3(0.1f, 0.0f, 0.0f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0)});
         assetSystem.AddComponent(box, Importer::loadOBJmodel("../../models/colored_cube.obj", device));
-        assetSystem.AddComponent(box, ECS::Script{"CameraControl", scriptingSystem->assembly, scriptingSystem->appDomain });
+        assetSystem.AddComponent(box, ECS::Script{"Rotate", scriptingSystem->assembly, scriptingSystem->appDomain });
 
         ECS::Entity sphere = assetSystem.CreateEntity();
         assetSystem.AddComponent(sphere, ECS::Transform{glm::vec3(-1.0f, -0.5f, 2.5f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0f)});
@@ -105,6 +105,7 @@ namespace engine {
         camera.setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
         ECS::Entity viewerObject = assetSystem.CreateEntity();
         assetSystem.AddComponent(viewerObject, ECS::Transform{glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
+        assetSystem.AddComponent(viewerObject, ECS::Script{"CameraControl", scriptingSystem->assembly, scriptingSystem->appDomain });
         keyboardMovementController cameraController{};
 
         //Main system loop ============================================
@@ -141,7 +142,7 @@ namespace engine {
 
             //update camera from user input
             ECS::Transform& viewerTransform = assetSystem.GetComponent<ECS::Transform>(viewerObject);
-            cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerTransform);
+            //cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerTransform);
             camera.setViewYXZ(viewerTransform.translation, viewerTransform.rotation);            
             float aspect = renderer.getRenderPass(0)->getAspectRatio();
             camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 500.0f);

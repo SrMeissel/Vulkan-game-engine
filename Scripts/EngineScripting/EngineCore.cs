@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Numerics;
 
 
 namespace GameEngine
@@ -35,10 +36,10 @@ namespace GameEngine
         [StructLayout(LayoutKind.Sequential)]
         public struct Transform
         {
-            public Vec3 position;
-            public Vec3 rotation;
+            public Vector3 position;
+            public Vector3 rotation;
 
-            public Transform(Vec3 position, Vec3 rotation)
+            public Transform(Vector3 position, Vector3 rotation)
             {
                 this.position = position;
                 this.rotation = rotation;
@@ -66,14 +67,14 @@ namespace GameEngine
 
         public void loadTransform(float posX, float posY, float posZ, float rotX, float rotY, float rotZ)
         {
-            this.Object.transform = new Transform(new Vec3(posX, posY, posZ), new Vec3(rotX, rotY, rotZ)); 
+            this.Object.transform = new Transform(new Vector3(posX, posY, posZ), new Vector3(rotX, rotY, rotZ)); 
         } // so I can load the data with a single funciton call, but how do I get it back?          Solved :)       nvm :(
 
-        public Vec3 returnPosition()
+        public Vector3 returnPosition()
         {
             return this.Object.transform.position;
         }
-        public Vec3 returnRotation()
+        public Vector3 returnRotation()
         {
             return this.Object.transform.rotation;
         }

@@ -5,7 +5,7 @@ namespace engine {
     ScriptingSystem::ScriptingSystem(Window& window) : window{window} {
         std::cout << "Initializing Mono runtime..." << std::endl;
 
-        mono_set_assemblies_path("C:/Program Files/mono/lib");
+        mono_set_assemblies_path("C:/Program Files/mono/lib/mono/4.5");
         domain = mono_jit_init("engine");
 
         appDomain = mono_domain_create_appdomain("MyAppDomain", nullptr);
