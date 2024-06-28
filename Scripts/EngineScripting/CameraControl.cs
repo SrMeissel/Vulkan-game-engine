@@ -4,10 +4,17 @@ using System.Numerics;
 
 class CameraControl : EngineCore
 {
-
-    public float speedModifier = 3.0f;
     public void update()
     {
+        float speedModifier = 2.5f;
+        float speedModifierPOS = 3.0f;
+
+        if(isButtonDown(GLFW_KEY_LEFT_SHIFT))
+        {
+            speedModifier *= 1.4f;
+            speedModifierPOS *= 2.5f;
+        }
+
         Vector3 velocity = new Vector3(0.0f, 0.0f, 0.0f);
 
         if (isButtonDown(GLFW_KEY_RIGHT)) { velocity.X += 1; }
@@ -20,8 +27,8 @@ class CameraControl : EngineCore
             velocity = Vector3.Normalize(velocity);
         }
 
-        Object.transform.rotation.Y += velocity.X * deltaTime;
-        Object.transform.rotation.X += velocity.Y * deltaTime;
+        Object.transform.rotation.Y += velocity.X * deltaTime * speedModifier;
+        Object.transform.rotation.X += velocity.Y * deltaTime * speedModifier;
 
         Object.transform.rotation.X = Math.Max(-1.5f, Object.transform.rotation.X);
         Object.transform.rotation.X = Math.Min(1.5f, Object.transform.rotation.X);
@@ -47,7 +54,7 @@ class CameraControl : EngineCore
 
         if(Vector3.Dot(moveDir, moveDir) > 0)
         {
-            Object.transform.position += Vector3.Normalize(moveDir) * deltaTime * speedModifier;
+            Object.transform.position += Vector3.Normalize(moveDir) * deltaTime * speedModifierPOS;
         }
     }
 }
