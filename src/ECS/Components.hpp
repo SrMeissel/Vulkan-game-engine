@@ -5,6 +5,10 @@
 
 #include <memory>
 #include <glm/glm.hpp>
+#include <iostream>
+
+#include <mono/jit/jit.h>
+#include <mono/metadata/assembly.h>
 
 namespace ECS {
     struct Renderable {
@@ -86,6 +90,33 @@ namespace ECS {
                 }
             };
         }
+    };
+
+    struct Script {
+        MonoClass* scriptClass;
+        MonoObject* scriptObject;
+        MonoClass* objectClass;
+
+        Script() {
+            scriptClass = nullptr;
+            scriptObject = nullptr;
+            objectClass = nullptr;
+        }
+
+        // I might want to find a way to make the assembly and domain accessible differently.
+        Script(char* name, MonoAssembly* assembly, MonoDomain* appDomain) {
+            MonoImage* image = mono_assembly_get_image(assembly);
+            scriptClass = mono_class_from_name(image, "", name);
+            if(scriptClass == nullptr) std::cout << "Failed to get class!" << std::endl;
+
+            scriptObject = mono_object_new(appDomain, scriptClass);
+            if(scriptObject == nullptr) std::cout << "Failed to create object!" << std::endl;
+
+            mono_runtime_object_init(scriptObject); // constructor
+
+            objectClass = mono_object_get_class(scriptObject);
+        }
+
     };
 
 }

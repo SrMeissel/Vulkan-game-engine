@@ -62,8 +62,10 @@ namespace engine {
         assetSystem.RegisterComponent<ECS::Transform>();
         assetSystem.RegisterComponent<ECS::Renderable>();
         assetSystem.RegisterComponent<ECS::Material>();
+        assetSystem.RegisterComponent<ECS::Script>();
 
         std::shared_ptr<MeshSystem> meshSystem = assetSystem.RegisterSystem<MeshSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
+        std::shared_ptr<ScriptingSystem> scriptingSystem = assetSystem.RegisterSystem<ScriptingSystem>(window);
 
         ECS::Signature meshSignature;
         meshSignature.set(assetSystem.GetComponentType<ECS::Transform>());
@@ -74,13 +76,20 @@ namespace engine {
         meshAntiSignature.set(assetSystem.GetComponentType<ECS::Material>());
         assetSystem.SetSystemAntiSignature<MeshSystem>(meshAntiSignature);
 
+        ECS::Signature scriptSignature;
+        scriptSignature.set(assetSystem.GetComponentType<ECS::Transform>());
+        scriptSignature.set(assetSystem.GetComponentType<ECS::Script>());
+        assetSystem.SetSystemSignature<ScriptingSystem>(scriptSignature);
+
         ECS::Entity box = assetSystem.CreateEntity();
-        assetSystem.AddComponent(box, ECS::Transform{glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0f)});
+        assetSystem.AddComponent(box, ECS::Transform{glm::vec3(0.1f, 0.0f, 0.0f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0)});
         assetSystem.AddComponent(box, Importer::loadOBJmodel("../../models/colored_cube.obj", device));
+        assetSystem.AddComponent(box, ECS::Script{"Rotate", scriptingSystem->assembly, scriptingSystem->appDomain });
 
         ECS::Entity sphere = assetSystem.CreateEntity();
         assetSystem.AddComponent(sphere, ECS::Transform{glm::vec3(-1.0f, -0.5f, 2.5f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0f)});
         assetSystem.AddComponent(sphere, Importer::loadOBJmodel("../../models/sphere.obj", device));
+        assetSystem.AddComponent(sphere, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain });
 
         ECS::Entity plane = assetSystem.CreateEntity();
         assetSystem.AddComponent(plane, ECS::Transform{glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(50.0, 1.0, 50.0), glm::vec3(0.0f)});
@@ -96,6 +105,7 @@ namespace engine {
         camera.setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
         ECS::Entity viewerObject = assetSystem.CreateEntity();
         assetSystem.AddComponent(viewerObject, ECS::Transform{glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
+        assetSystem.AddComponent(viewerObject, ECS::Script{"CameraControl", scriptingSystem->assembly, scriptingSystem->appDomain });
         keyboardMovementController cameraController{};
 
         //Main system loop ============================================
@@ -119,6 +129,8 @@ namespace engine {
 
             //proccess user input =======================================================
 
+            scriptingSystem->update(frameTime, assetSystem);
+
             //take screenshot
             int stateKeyP = glfwGetKey(window.getGLFWwindow(), GLFW_KEY_P);
             if(stateKeyP == GLFW_PRESS && screenshotSaved == false) {
@@ -130,10 +142,10 @@ namespace engine {
 
             //update camera from user input
             ECS::Transform& viewerTransform = assetSystem.GetComponent<ECS::Transform>(viewerObject);
-            cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerTransform);
+            //cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerTransform);
             camera.setViewYXZ(viewerTransform.translation, viewerTransform.rotation);            
             float aspect = renderer.getRenderPass(0)->getAspectRatio();
-            camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 50.0f);
+            camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 500.0f);
 
             //new frame ready, runs every frame ===============================================
             if(auto commandBuffer = renderer.beginFrame()) {
@@ -155,9 +167,6 @@ namespace engine {
                 //render =====================================================
 
                 renderer.beginNextRenderPass(commandBuffer);
-
-                //atmoSystem.renderAtmosphere(frameInfo, renderer.getSwapchainDepthImageViews()[renderer.getCurrentImageIndex()]);
-                //this works, just not focusing on it rn 
 
                 meshSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
 
