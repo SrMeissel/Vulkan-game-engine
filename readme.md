@@ -5,7 +5,6 @@ This project is dedicated to the development of a custom game engine, focusing o
 
 ![Textures Showcase](Images/ScreenShots/BindedTextures.JPG)
 ![Position Image](Images/ScreenShots/PositionImage.JPG)
-![Scripting](Images/ScreenShots/ScriptingWorks.mp4)
 
 ## Scripting API
 The engine can now run scripts attached to game objects. The scripting engine uses Mono and scripts can currently process user input and access the properties of the parent entity.
