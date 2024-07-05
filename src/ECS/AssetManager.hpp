@@ -3,7 +3,9 @@
 #include "EntityManager.hpp"
 #include "ComponentManager.hpp"
 #include "SystemManager.hpp"
+#include "SavedataManager.hpp"
 
+#include <type_traits>
 
 namespace ECS {
     class AssetSystem {
@@ -13,30 +15,45 @@ namespace ECS {
 		componentManager = std::make_unique<ComponentManager>();
 		entityManager = std::make_unique<EntityManager>();
 		systemManager = std::make_unique<SystemManager>();
+		saveDataManager = std::make_unique<SaveDataManager>();
 	}
 
     // Entity functions ===========================================================
 
     Entity CreateEntity() {
-		return entityManager->CreateEntity();
+		Entity entity = entityManager->CreateEntity();
+		saveDataManager->entityCreated(entity);
+		return entity;
+		
 	}
 
 	void DestroyEntity(Entity entity) {
 		entityManager->DestroyEntity(entity); // do the thing 
 		componentManager->EntityDestroyed(entity); // deal with the repercussions
 		systemManager->EntityDestroyed(entity); // good motto.
+		saveDataManager->entityDestroyed(entity);
 	}
+
+	// std::vector<Entity> getAllEntities() {
+	// 	return entityManager->getAllEntities();
+	// }
+
+	// Signature GetEntitySignature(Entity entity) {
+	// 	return entityManager->GetSignature(entity);
+	// }
 
     // Component functions ===========================================================
 
     template<typename T>
 	void RegisterComponent() {
+		static_assert(std::is_base_of<Component, T>::value, "T must be derived from Component");
 		componentManager->RegisterComponent<T>();
 	}
 
     template<typename T>
 	void AddComponent(Entity entity, T component) {
-		componentManager->AddComponent<T>(entity, component); // do the thing
+		T& placedComponent = componentManager->AddComponent<T>(entity, component); // do the thing
+		saveDataManager->componentCreated(entity, &placedComponent);
 
 		auto signature = entityManager->GetSignature(entity); // make everyone aware that you did the thing
 		signature.set(componentManager->GetComponentType<T>(), true);
@@ -47,6 +64,9 @@ namespace ECS {
     
 	template<typename T>
 	void RemoveComponent(Entity entity) {
+		static_assert(std::is_base_of<Component, T>::value, "T must be derived from Component");
+		saveDataManager->componentDestroyed(entity, &(componentManager->GetComponent<T>(entity)));
+
 		componentManager->RemoveComponent<T>(entity);
 
 		auto signature = entityManager->GetSignature(entity);
@@ -66,6 +86,11 @@ namespace ECS {
 		return componentManager->GetComponentType<T>();
 	}
 
+	// template<typename T>
+	// bool HasComponent(Entity entity) {
+	// 	return componentManager->HasComponent<T>(entity);
+	// }
+
     // System functions ===========================================================
 
 	template<typename T, typename... Args>
@@ -83,10 +108,17 @@ namespace ECS {
 		systemManager->SetAntiSignature<T>(signature);
 	}
 
+	// SaveData functions ===========================================================
+
+	void saveEverything() {
+		saveDataManager->saveData();
+	}
 
     private:
         std::unique_ptr<ComponentManager> componentManager;
         std::unique_ptr<EntityManager> entityManager;
         std::unique_ptr<SystemManager> systemManager;
+
+		std::unique_ptr<SaveDataManager> saveDataManager;
     };
 }

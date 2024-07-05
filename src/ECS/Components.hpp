@@ -11,21 +11,39 @@
 #include <mono/metadata/assembly.h>
 
 namespace ECS {
-    struct Renderable {
+
+    struct Component {
+        virtual ~Component() = default;
+        virtual void save() = 0; // <======
+    };
+
+    struct Renderable : public Component {
         std::shared_ptr<engine::Buffer> vertexBuffer;
         uint32_t vertexCount;
 
         bool hasIndexBuffer = false;
         std::shared_ptr<engine::Buffer> indexBuffer;
         uint32_t indexCount;
+
+        void save() override {
+            std::cout << "Renderable saved!" << std::endl;
+        }
     };
 
-    struct Material {
+    struct Material : public Component {
         engine::AllocatedImage albedo;
         engine::AllocatedImage normal;
+
+        void save() override {
+            std::cout << "Material saved!" << std::endl;
+        }
     };
 
-    struct Transform {
+    struct Transform : public Component {
+        Transform() = default;
+        Transform(glm::vec3 translation, glm::vec3 scale, glm::vec3 rotation)
+            : translation(translation), scale(scale), rotation(rotation) {}
+
         glm::vec3 translation{};
         glm::vec3 scale{1.0f, 1.0f, 1.0f};
         glm::vec3 rotation{};
@@ -90,9 +108,13 @@ namespace ECS {
                 }
             };
         }
+
+        void save() override {
+            std::cout << "Transform saved!" << translation.x << std::endl;
+        }
     };
 
-    struct Script {
+    struct Script : public Component {
         MonoClass* scriptClass;
         MonoObject* scriptObject;
         MonoClass* objectClass;
@@ -115,6 +137,10 @@ namespace ECS {
             mono_runtime_object_init(scriptObject); // constructor
 
             objectClass = mono_object_get_class(scriptObject);
+        }
+
+        void save() override {
+            std::cout << "Script saved!" << std::endl;
         }
 
     };

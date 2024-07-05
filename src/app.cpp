@@ -94,6 +94,9 @@ namespace engine {
         ECS::Entity plane = assetSystem.CreateEntity();
         assetSystem.AddComponent(plane, ECS::Transform{glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(50.0, 1.0, 50.0), glm::vec3(0.0f)});
         assetSystem.AddComponent(plane, Importer::loadOBJmodel("../../models/quad.obj", device));
+        assetSystem.AddComponent(plane, ECS::Script{"CameraControl", scriptingSystem->assembly, scriptingSystem->appDomain });
+
+        assetSystem.RemoveComponent<ECS::Script>(plane);
 
         //=======================================================================
 
@@ -138,6 +141,8 @@ namespace engine {
                 VkImage srcImage = images[renderer.getCurrentImageIndex()]; 
                 screenshotTool.takeScreenshot(srcImage, "testScreenshot.jpg", device, window.getExtent());
                 screenshotSaved = true;
+
+                assetSystem.saveEverything(); // <==============================================================================================================
             }
 
             //update camera from user input

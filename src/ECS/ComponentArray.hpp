@@ -16,7 +16,7 @@ namespace ECS {
     template<typename T>
     class ComponentArray : public ComponentArrayParent {
     public:
-        void InsertData(Entity entity, T component) {
+        T& InsertData(Entity entity, T component) {
     		assert(entityToIndex.find(entity) == entityToIndex.end() && "Component added to same entity more than once.");
 
         size_t newIndex = arraySize;
@@ -24,6 +24,8 @@ namespace ECS {
 		indexToEntity[newIndex] = entity;
 		componentArray[newIndex] = component;
 		++arraySize;
+
+        return componentArray[newIndex];
         }
 
         void RemoveData(Entity entity) {
@@ -51,6 +53,10 @@ namespace ECS {
 		    // Return a reference to the entity's component
 	    	return componentArray[entityToIndex[entity]];
     	}
+
+        // bool HasData(Entity entity) {
+        //     return entityToIndex.find(entity) != entityToIndex.end();
+        // }
 
         //parent function override
         void EntityDestroyed(Entity entity) override {

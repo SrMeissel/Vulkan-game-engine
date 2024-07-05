@@ -10,7 +10,7 @@ This project is dedicated to the development of a custom game engine, focusing o
 ## Scripting API
 The engine can now run scripts attached to game objects. The scripting engine uses Mono and scripts can currently process user input and access the properties of the parent entity.
 
-## Parameters
+### Parameters
 
 - Object.Transform: This struct mirrors the transform component of the parent entity and the values of the translation and rotation are refleted in the scene. (Except scale atm)
 
