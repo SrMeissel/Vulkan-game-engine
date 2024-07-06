@@ -59,6 +59,7 @@ namespace Importer {
         }
         
         ECS::Renderable renderable{};
+        renderable.Path = filepath;
         // create vertex buffer ========================================================================================
         std::cout << "Vertex Count: " << vertices.size() << "\n";
 

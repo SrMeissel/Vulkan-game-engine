@@ -2,10 +2,12 @@
 
 #include "bufferManager.hpp"
 #include "Utils.hpp"
+#include "../../libs/tinyXML/tinyxml2.h"
 
 #include <memory>
 #include <glm/glm.hpp>
 #include <iostream>
+#include <string>
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
@@ -14,10 +16,12 @@ namespace ECS {
 
     struct Component {
         virtual ~Component() = default;
-        virtual void save() = 0; // <======
+        virtual tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) = 0; // <======
     };
 
     struct Renderable : public Component {
+        std::string Path;
+
         std::shared_ptr<engine::Buffer> vertexBuffer;
         uint32_t vertexCount;
 
@@ -25,17 +29,24 @@ namespace ECS {
         std::shared_ptr<engine::Buffer> indexBuffer;
         uint32_t indexCount;
 
-        void save() override {
-            std::cout << "Renderable saved!" << std::endl;
+        tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
+            tinyxml2::XMLElement* renderable = doc.NewElement("Renderable");
+            renderable->SetText(Path.c_str());
+            return renderable;
         }
     };
 
     struct Material : public Component {
+        const char* albedoPath;
         engine::AllocatedImage albedo;
+        const char* normalPath;
         engine::AllocatedImage normal;
 
-        void save() override {
-            std::cout << "Material saved!" << std::endl;
+        tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
+            tinyxml2::XMLElement* material = doc.NewElement("Material");
+            material->SetAttribute("albedoPath", albedoPath);
+            material->SetAttribute("normalPath", normalPath);
+            return material;
         }
     };
 
@@ -109,12 +120,33 @@ namespace ECS {
             };
         }
 
-        void save() override {
-            std::cout << "Transform saved!" << translation.x << std::endl;
+        tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
+            tinyxml2::XMLElement* transform = doc.NewElement("Transform");
+            
+            tinyxml2::XMLElement* translation = doc.NewElement("Translation");
+            translation->SetAttribute("x", this->translation.x);
+            translation->SetAttribute("y", this->translation.y);
+            translation->SetAttribute("z", this->translation.z);
+            transform->InsertEndChild(translation);
+
+            tinyxml2::XMLElement* rotation = doc.NewElement("Rotation");
+            rotation->SetAttribute("x", this->rotation.x);
+            rotation->SetAttribute("y", this->rotation.y);
+            rotation->SetAttribute("z", this->rotation.z);
+            transform->InsertEndChild(rotation);
+
+            tinyxml2::XMLElement* scale = doc.NewElement("Scale");
+            scale->SetAttribute("x", this->scale.x);
+            scale->SetAttribute("y", this->scale.y);
+            scale->SetAttribute("z", this->scale.z);
+            transform->InsertEndChild(scale);
+
+            return transform;
         }
     };
 
     struct Script : public Component {
+        const char* className;
         MonoClass* scriptClass;
         MonoObject* scriptObject;
         MonoClass* objectClass;
@@ -126,7 +158,8 @@ namespace ECS {
         }
 
         // I might want to find a way to make the assembly and domain accessible differently.
-        Script(char* name, MonoAssembly* assembly, MonoDomain* appDomain) {
+        Script(const char* name, MonoAssembly* assembly, MonoDomain* appDomain) {
+            className = name;
             MonoImage* image = mono_assembly_get_image(assembly);
             scriptClass = mono_class_from_name(image, "", name);
             if(scriptClass == nullptr) std::cout << "Failed to get class!" << std::endl;
@@ -139,8 +172,10 @@ namespace ECS {
             objectClass = mono_object_get_class(scriptObject);
         }
 
-        void save() override {
-            std::cout << "Script saved!" << std::endl;
+        tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
+            tinyxml2::XMLElement* script = doc.NewElement("Script");
+            script->SetText(className);
+            return script;
         }
 
     };

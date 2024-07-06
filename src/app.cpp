@@ -17,6 +17,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 
+#ifndef ENGINE_PATH
+#define ENGINE_PATH "C:/Users/mizer/dev/vulkan-game-engine/"
+#endif
+
 namespace engine {
 
     app::app() {
@@ -94,9 +98,6 @@ namespace engine {
         ECS::Entity plane = assetSystem.CreateEntity();
         assetSystem.AddComponent(plane, ECS::Transform{glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(50.0, 1.0, 50.0), glm::vec3(0.0f)});
         assetSystem.AddComponent(plane, Importer::loadOBJmodel("../../models/quad.obj", device));
-        assetSystem.AddComponent(plane, ECS::Script{"CameraControl", scriptingSystem->assembly, scriptingSystem->appDomain });
-
-        assetSystem.RemoveComponent<ECS::Script>(plane);
 
         //=======================================================================
 
@@ -110,6 +111,8 @@ namespace engine {
         assetSystem.AddComponent(viewerObject, ECS::Transform{glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
         assetSystem.AddComponent(viewerObject, ECS::Script{"CameraControl", scriptingSystem->assembly, scriptingSystem->appDomain });
         keyboardMovementController cameraController{};
+
+        assetSystem.saveEverything("../../saveFiles/default.xml");
 
         //Main system loop ============================================
 
@@ -141,8 +144,6 @@ namespace engine {
                 VkImage srcImage = images[renderer.getCurrentImageIndex()]; 
                 screenshotTool.takeScreenshot(srcImage, "testScreenshot.jpg", device, window.getExtent());
                 screenshotSaved = true;
-
-                assetSystem.saveEverything(); // <==============================================================================================================
             }
 
             //update camera from user input

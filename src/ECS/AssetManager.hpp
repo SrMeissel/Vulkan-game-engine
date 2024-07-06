@@ -66,6 +66,7 @@ namespace ECS {
 	void RemoveComponent(Entity entity) {
 		static_assert(std::is_base_of<Component, T>::value, "T must be derived from Component");
 		saveDataManager->componentDestroyed(entity, &(componentManager->GetComponent<T>(entity)));
+		//hell yeah brother
 
 		componentManager->RemoveComponent<T>(entity);
 
@@ -110,8 +111,8 @@ namespace ECS {
 
 	// SaveData functions ===========================================================
 
-	void saveEverything() {
-		saveDataManager->saveData();
+	void saveEverything(const char* fileName) {
+		saveDataManager->saveData(fileName);
 	}
 
     private:

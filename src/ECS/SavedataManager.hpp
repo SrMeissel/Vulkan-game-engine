@@ -1,7 +1,8 @@
 #pragma once
 
-#include "AssetManager.hpp"
 #include "Components.hpp"
+
+#include "../../libs/tinyXML/tinyxml2.h"
 
 #include <vector>
 #include <unordered_map>
@@ -9,12 +10,22 @@
 namespace ECS {
     class SaveDataManager {
         public:
-            void saveData(){
+            void saveData(const char* fileName){
+                tinyxml2::XMLDocument doc;
+                tinyxml2::XMLNode* pRoot = doc.NewElement("Collection");
+                doc.InsertFirstChild(pRoot);
+
                 for(auto& pair : savedComponents) {
+                tinyxml2::XMLElement* pElement = doc.NewElement("Entity");
+
                     for(auto& component : pair.second) {
-                        component->save();
+                        tinyxml2::XMLElement* pComponent = component->save(doc);
+                        pElement->InsertEndChild(pComponent);
                     }
+                    pRoot->InsertEndChild(pElement);
                 }
+
+                doc.SaveFile(fileName);
             }
             void loadData();
 
