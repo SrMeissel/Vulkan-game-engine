@@ -85,19 +85,22 @@ namespace engine {
         scriptSignature.set(assetSystem.GetComponentType<ECS::Script>());
         assetSystem.SetSystemSignature<ScriptingSystem>(scriptSignature);
 
-        ECS::Entity box = assetSystem.CreateEntity();
-        assetSystem.AddComponent(box, ECS::Transform{glm::vec3(0.1f, 0.0f, 0.0f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0)});
-        assetSystem.AddComponent(box, Importer::loadOBJmodel("../../models/colored_cube.obj", device));
-        assetSystem.AddComponent(box, ECS::Script{"Rotate", scriptingSystem->assembly, scriptingSystem->appDomain });
+        // ECS::Entity box = assetSystem.CreateEntity();
+        // assetSystem.AddComponent(box, ECS::Transform{glm::vec3(0.1f, 0.0f, 0.0f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0)});
+        // assetSystem.AddComponent(box, Importer::loadOBJmodel("../../models/colored_cube.obj", device));
+        // assetSystem.AddComponent(box, ECS::Script{"Rotate", scriptingSystem->assembly, scriptingSystem->appDomain });
 
-        ECS::Entity sphere = assetSystem.CreateEntity();
-        assetSystem.AddComponent(sphere, ECS::Transform{glm::vec3(-1.0f, -0.5f, 2.5f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0f)});
-        assetSystem.AddComponent(sphere, Importer::loadOBJmodel("../../models/sphere.obj", device));
-        assetSystem.AddComponent(sphere, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain });
+        // ECS::Entity sphere = assetSystem.CreateEntity();
+        // assetSystem.AddComponent(sphere, ECS::Transform{glm::vec3(-1.0f, -0.5f, 2.5f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0f)});
+        // assetSystem.AddComponent(sphere, Importer::loadOBJmodel("../../models/sphere.obj", device));
+        // assetSystem.AddComponent(sphere, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain });
 
-        ECS::Entity plane = assetSystem.CreateEntity();
-        assetSystem.AddComponent(plane, ECS::Transform{glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(50.0, 1.0, 50.0), glm::vec3(0.0f)});
-        assetSystem.AddComponent(plane, Importer::loadOBJmodel("../../models/quad.obj", device));
+        // ECS::Entity plane = assetSystem.CreateEntity();
+        // assetSystem.AddComponent(plane, ECS::Transform{glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(50.0, 1.0, 50.0), glm::vec3(0.0f)});
+        // assetSystem.AddComponent(plane, Importer::loadOBJmodel("../../models/quad.obj", device));
+
+        ECS::SaveDataManager saveDataManager{device, *scriptingSystem}; 
+        saveDataManager.loadData("../../saveFiles/Test.xml", assetSystem);
 
         //=======================================================================
 
@@ -112,7 +115,7 @@ namespace engine {
         assetSystem.AddComponent(viewerObject, ECS::Script{"CameraControl", scriptingSystem->assembly, scriptingSystem->appDomain });
         keyboardMovementController cameraController{};
 
-        assetSystem.saveEverything("../../saveFiles/default.xml");
+        //saveDataManager.saveData("../../saveFiles/Test.xml", assetSystem.getAllEntities());
 
         //Main system loop ============================================
 

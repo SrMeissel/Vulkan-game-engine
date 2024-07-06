@@ -1,16 +1,23 @@
 #pragma once
 
 #include "Components.hpp"
-
+#include "AssetManager.hpp"
 #include "../../libs/tinyXML/tinyxml2.h"
+#include "../Importer.hpp"
+#include "../Pipeline/deviceManager.hpp"
 
 #include <vector>
 #include <unordered_map>
+#include <iostream>
+
+// https://shilohjames.wordpress.com/2014/04/27/tinyxml2-tutorial/
 
 namespace ECS {
     class SaveDataManager {
         public:
-            void saveData(const char* fileName){
+            SaveDataManager(engine::Device& device, engine::ScriptingSystem& scriptingSystem) : device(device), scriptingSystem(scriptingSystem) {};
+
+            void saveData(const char* fileName, std::unordered_map<Entity, std::vector<Component*>>& savedComponents){
                 tinyxml2::XMLDocument doc;
                 tinyxml2::XMLNode* pRoot = doc.NewElement("Collection");
                 doc.InsertFirstChild(pRoot);
@@ -27,29 +34,55 @@ namespace ECS {
 
                 doc.SaveFile(fileName);
             }
-            void loadData();
+            void loadData(const char* fileName, AssetSystem& assetSystem) {
+                tinyxml2::XMLDocument doc;
+                doc.LoadFile(fileName);
 
-            // ===========================================
+                tinyxml2::XMLElement* pRoot = doc.FirstChildElement("Collection");
+                tinyxml2::XMLElement* pEntity = pRoot->FirstChildElement("Entity");
 
-            void entityCreated(Entity entity) {
-                std::vector<Component*> components;
-                savedComponents.insert({entity, components});
+                while(pEntity) {
+                    Entity entity = assetSystem.CreateEntity();
+                    tinyxml2::XMLElement* pComponent = pEntity->FirstChildElement();
+
+                    while(pComponent) {
+                        const char* componentName = pComponent->Name();
+
+                        if (strcmp(componentName, "Transform") == 0) {
+                            Transform transform;
+
+                            tinyxml2::XMLElement* pTranslation = pComponent->FirstChildElement("Translation");
+                            pTranslation->QueryFloatAttribute("x", &transform.translation.x);
+                            pTranslation->QueryFloatAttribute("y", &transform.translation.y);
+                            pTranslation->QueryFloatAttribute("z", &transform.translation.z);
+
+                            tinyxml2::XMLElement* pRotation = pComponent->FirstChildElement("Rotation");
+                            pRotation->QueryFloatAttribute("x", &transform.rotation.x);
+                            pRotation->QueryFloatAttribute("y", &transform.rotation.y);
+                            pRotation->QueryFloatAttribute("z", &transform.rotation.z);
+
+                            tinyxml2::XMLElement* pScale = pComponent->FirstChildElement("Scale");
+                            pScale->QueryFloatAttribute("x", &transform.scale.x);
+                            pScale->QueryFloatAttribute("y", &transform.scale.y);
+                            pScale->QueryFloatAttribute("z", &transform.scale.z);
+
+                            assetSystem.AddComponent(entity, transform);
+                            
+                        } else if (strcmp(componentName, "Renderable") == 0) {
+                            assetSystem.AddComponent(entity, Importer::loadOBJmodel(pComponent->GetText(), device));
+                        } else if (strcmp(componentName, "Script") == 0) {
+                            assetSystem.AddComponent(entity, Script{pComponent->GetText(), scriptingSystem.assembly, scriptingSystem.appDomain });
+                        } else {
+                            std::cout << "Component not found" << std::endl;
+                        }
+
+                        pComponent = pComponent->NextSiblingElement();
+                    }
+                    pEntity = pEntity->NextSiblingElement();
+                }
             }
-
-            void componentCreated(Entity entity, Component* component) {
-                savedComponents[entity].push_back(component);
-            }
-
-            void entityDestroyed(Entity entity) {
-                savedComponents.erase(entity);
-            }
-
-            void componentDestroyed(Entity entity, Component* component) {
-                savedComponents[entity].erase(std::remove(savedComponents[entity].begin(), savedComponents[entity].end(), component), savedComponents[entity].end());
-            }
-
         private:
-            std::unordered_map<Entity, std::vector<Component*>> savedComponents;
-
+            engine::Device& device;
+            engine::ScriptingSystem& scriptingSystem;
     };
 }

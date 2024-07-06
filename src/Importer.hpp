@@ -12,7 +12,7 @@
 namespace Importer {
     
     // returns renderable component
-    ECS::Renderable loadOBJmodel(const std::string& filepath, engine::Device& device) {
+    static ECS::Renderable loadOBJmodel(const std::string& filepath, engine::Device& device) {
 
         // Load OBJ file =========================================================================
         std::vector<engine::Vertex> vertices{};

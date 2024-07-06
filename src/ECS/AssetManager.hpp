@@ -3,7 +3,7 @@
 #include "EntityManager.hpp"
 #include "ComponentManager.hpp"
 #include "SystemManager.hpp"
-#include "SavedataManager.hpp"
+#include "components.hpp"
 
 #include <type_traits>
 
@@ -15,14 +15,16 @@ namespace ECS {
 		componentManager = std::make_unique<ComponentManager>();
 		entityManager = std::make_unique<EntityManager>();
 		systemManager = std::make_unique<SystemManager>();
-		saveDataManager = std::make_unique<SaveDataManager>();
 	}
 
     // Entity functions ===========================================================
 
     Entity CreateEntity() {
 		Entity entity = entityManager->CreateEntity();
-		saveDataManager->entityCreated(entity);
+		
+		std::vector<Component*> components;
+        savedComponents.insert({entity, components});
+		
 		return entity;
 		
 	}
@@ -31,7 +33,7 @@ namespace ECS {
 		entityManager->DestroyEntity(entity); // do the thing 
 		componentManager->EntityDestroyed(entity); // deal with the repercussions
 		systemManager->EntityDestroyed(entity); // good motto.
-		saveDataManager->entityDestroyed(entity);
+		savedComponents.erase(entity);
 	}
 
 	// std::vector<Entity> getAllEntities() {
@@ -53,7 +55,7 @@ namespace ECS {
     template<typename T>
 	void AddComponent(Entity entity, T component) {
 		T& placedComponent = componentManager->AddComponent<T>(entity, component); // do the thing
-		saveDataManager->componentCreated(entity, &placedComponent);
+		savedComponents[entity].push_back(&placedComponent);
 
 		auto signature = entityManager->GetSignature(entity); // make everyone aware that you did the thing
 		signature.set(componentManager->GetComponentType<T>(), true);
@@ -65,7 +67,7 @@ namespace ECS {
 	template<typename T>
 	void RemoveComponent(Entity entity) {
 		static_assert(std::is_base_of<Component, T>::value, "T must be derived from Component");
-		saveDataManager->componentDestroyed(entity, &(componentManager->GetComponent<T>(entity)));
+		savedComponents[entity].erase(std::remove(savedComponents[entity].begin(), savedComponents[entity].end(), &(componentManager->GetComponent<T>(entity))), savedComponents[entity].end());
 		//hell yeah brother
 
 		componentManager->RemoveComponent<T>(entity);
@@ -111,8 +113,8 @@ namespace ECS {
 
 	// SaveData functions ===========================================================
 
-	void saveEverything(const char* fileName) {
-		saveDataManager->saveData(fileName);
+	std::unordered_map<Entity, std::vector<Component*>>& getAllEntities() {
+		return savedComponents;
 	}
 
     private:
@@ -120,6 +122,7 @@ namespace ECS {
         std::unique_ptr<EntityManager> entityManager;
         std::unique_ptr<SystemManager> systemManager;
 
-		std::unique_ptr<SaveDataManager> saveDataManager;
+		//uses inheritence and virtual functions, is slow but will not be needed each frame, so its ok :)
+		std::unordered_map<Entity, std::vector<Component*>> savedComponents;
     };
 }
