@@ -12,8 +12,9 @@
 #include "Utils.hpp"
 
 namespace Importer {
-
-    ECS::Renderable loadOBJmodel(const std::string& filepath, engine::Device& device) {
+    
+    // returns renderable component
+    static ECS::Renderable loadOBJmodel(const std::string& filepath, engine::Device& device) {
 
         // Load OBJ file =========================================================================
         std::vector<engine::Vertex> vertices{};
@@ -85,6 +86,7 @@ namespace Importer {
 
 
         ECS::Renderable renderable{};
+        renderable.Path = filepath;
         // create vertex buffer ========================================================================================
         std::cout << "Vertex Count: " << vertices.size() << "\n";
 

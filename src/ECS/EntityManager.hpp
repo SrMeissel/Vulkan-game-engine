@@ -59,6 +59,13 @@ namespace ECS {
             return signatures[entity];
         }
 
+        // std::vector<Entity> getAllEntities() {
+        //     std::vector<Entity> entities;
+        //     for(Entity entity = 0; entity < livingEntities; ++entity) {
+        //         entities.push_back(entity);
+        //     }
+        // }
+
     private:
         std::array<Signature, MAX_ENTITIES> signatures{}; //could be vector. // each bit represents a component a entity has. // Will need to be changed if I want to have multiple of the same type of component, which I likely will.
         std::queue<Entity> availableEntities{}; 

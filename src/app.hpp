@@ -11,6 +11,10 @@
 #include "ECS/AssetManager.hpp"
 #include "ECS/Components.hpp"
 
+#include "systems/ScriptingSystem.hpp"
+
+#include "ECS/SavedataManager.hpp"
+
 #include <memory>
 #include <vector>
 

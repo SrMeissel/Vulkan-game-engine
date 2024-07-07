@@ -39,9 +39,9 @@ namespace ECS {
 	    }
 
         template<typename T>
-        void AddComponent(Entity entity, T component) {
+        T& AddComponent(Entity entity, T component) {
             // Add a component to the array for an entity
-            GetComponentArray<T>()->InsertData(entity, component);
+            return GetComponentArray<T>()->InsertData(entity, component);
         }
 
         template<typename T>
@@ -56,6 +56,10 @@ namespace ECS {
             return GetComponentArray<T>()->GetData(entity);
         }
 
+        // template<typename T>
+        // bool HasComponent(Entity entity) {
+        //     return GetComponentArray<T>()->HasData(entity);
+        // }
 
         void EntityDestroyed(Entity entity) {
             // Notify each component array that an entity has been destroyed
@@ -67,6 +71,20 @@ namespace ECS {
                 component->EntityDestroyed(entity);
             }
         }
+
+        //is very slow
+        // const char* GetComponentName(ComponentType type) {
+        //     for (auto const& pair : componentTypes) {
+        //         if (pair.second == type) {
+        //             return pair.first;
+        //         }
+        //     }
+        //     return "Component not found";
+        // }
+
+        // std::shared_ptr<ComponentArrayParent> GetComponentArray(const char* typeName) {
+        //     return componentArrays[typeName];
+        // }
 
     private:
         //takes in type ID's as keys

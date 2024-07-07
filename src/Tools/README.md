@@ -6,3 +6,6 @@ However, if the editor and game run as 1 proccess then when 1 crashes, both cras
 If the engine launches the game as a seperate proccess, that wont happen. I just dont know how to do that
 Avoid putting editor code in game code.
 <https://www.guerrilla-games.com/media/News/Files/GDC2017_Sumaili_VanDerSteen_CreatingAToolsPipelineForHorizonZeroDawn.pdf>
+
+
+https://www.team-nutshell.dev/nutshellengine/articles/first-editor.html <====================

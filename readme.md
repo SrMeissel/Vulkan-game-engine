@@ -1,58 +1,23 @@
 # Introduction
 
-This engine originally followed the tutorial series:
-[Vulkan (c++) Game Engine Tutorials](https://www.youtube.com/playlist?list=PL8327DO66nu9qYVKLDmdLW_84-yE4auCR)
-This engine has since surpassed it's scope.
+This project is dedicated to the development of a custom game engine, focusing on the exploration and implementation of advanced rendering techniques and physics simulations. The initiative stems from a desire to deeply understand the mechanics behind game engines and to apply this knowledge in creating visually rich and interactive scenes. While navigating the complexities of game engine architecture, this project also serves as a practical learning journey, aiming to bridge theoretical concepts with real-world application.
 
-Intending to create a differed renderer with a universal ray marcher. The pipeline will be defined as follows:
-Objects -> Volumetrics -> Lighting -> Post-Proccessing -> UI
- I'm thinking UI should actually be first, no?
-
-## Features w/ Sources
-
-### Textures
-
-Sources:
-
-- <https://vulkan-tutorial.com/Texture_mapping/Images>
-- <https://vkguide.dev/docs/chapter-5/drawing_images/>
-- <https://www.youtube.com/watch?v=lbaHrocxQdM>
-
-Textures were originally binded as a global array, but are now binded per object.
 
 ![Textures Showcase](Images/ScreenShots/BindedTextures.JPG)
+![Position Image](Images/ScreenShots/PositionImage.JPG)
 
-I am looking into a more involved material system with multiple masks for things like:
+## Scripting API
+The engine can now run scripts attached to game objects. The scripting engine uses Mono and scripts can currently process user input and access the properties of the parent entity.
 
-- Albedo
-- AO
-- Bump
-- Cavity
-- Displacement
-- gloss
-- Normal
-- Roughness
-- Specular
-- Transmission
+### Parameters
 
-![Example goal for material system](Experimental/Mossy_Ground_xiboab2r/preview.png)
+- Object.Transform: This struct mirrors the transform component of the parent entity and the values of the translation and rotation are refleted in the scene. (Except scale atm)
 
-### MultiSampling anti-aliasing
+### Functions
 
-Sources:
+- isButtonDown(key): This function returns true if the key in question is currently pressed
 
-- <https://vulkan-tutorial.com/Multisampling>
-
-### Screenshots
-
-Sources:
-
-- <https://github.com/SaschaWillems/Vulkan/blob/master/examples/screenshot/screenshot.cpp>
-- <https://reference.torque3d.org/coding/file/swizzle_8h/>
-
-![BGR Screenshot](Images\ScreenShots\didntcrashscreenshot.jpg)
-
-Not a very useful or optimized system, but I learned something. Also, If the image seems very blue, It's because it BGR instead of RGB and I cant be bothered to fix it.
+## Features TODO
 
 ### Physics engine
 
@@ -81,22 +46,6 @@ Sources:
 - <https://www.youtube.com/watch?v=NRnj_lnpORU>
 - <https://jose-villegas.github.io/post/deferred_voxel_shading/>
 
-## Tasks
-
-TO DO:
-
-- [ ] shadows
-- [ ] skybox  
-Going for volumetric atmosphere, turns out that is very hard.
-- [ ] ECS
-- [ ] UI
-Going to use imgui for tooling UI to make the traisition for hardcoded objects to loaded files easier.
-- [ ] Sound
-- [ ] Physics  
-I'm taking a break from physics to do clouds
-- [ ] Asset System
-- [ ] CVAR System
-
 ### Atmosphere and clouds
 
 Sources:
@@ -113,34 +62,20 @@ Sources:
 - <https://github.com/sebh/UnrealEngineSkyAtmosphere>
 - <https://advances.realtimerendering.com/s2019/index.htm>
 
-### Vulkan descriptors and memory bullshit
-
-Turns out, I could/should set up an *arbitrary-ish* amount of discriptor sets based on how frequently they change. eg. per camera, per object, per frame.  
-
-- <https://www.reddit.com/r/vulkan/comments/4gvmus/best_way_for_textures_in_shaders/>  
-  first comment knows whats up ^  
-
-- <https://stackoverflow.com/questions/42214710/vkallocatedescriptorsets-returns-vk-out-of-host-memory>
-
-These types are apparently very useful, but lacks proper hardware support so it would only make things more difficult in the end.  
-
-- Descriptor indexing
-- Push descriptors
-- bindless descriptors
-- dynamic UBO's
-
-## Vulkan resources
+### Vulkan resources
 
 This is becoming more and more useful:
 <https://vulkan.gpuinfo.org/displayreport.php?id=25342#formats_optimal>
 built in variables for frag shaders:
 <https://www.khronos.org/opengl/wiki/Fragment_Shader>
 
-## Dependancies
+## dependencies
 
-- Vulkan SDK
+- Vulkan SDK- <https://www.vulkan.org/>
 - stb - <https://github.com/nothings/stb>
-- glfw - <https://github.com/glfw/glfw>
 - glm - <https://github.com/g-truc/glm>
 - tinyobjloader - <https://github.com/tinyobjloader/tinyobjloader>
 - imgui - <https://github.com/ocornut/imgui.git>
+- Mono - <https://www.mono-project.com/>
+
+I started this engine following [Vulkan (c++) Game Engine Tutorials](https://www.youtube.com/playlist?list=PL8327DO66nu9qYVKLDmdLW_84-yE4auCR) by Brendan Galea. This was intrumental on getting the ball rolling and I am very grateful that he took the time to make the series.

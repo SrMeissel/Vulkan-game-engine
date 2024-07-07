@@ -1,0 +1,28 @@
+<Collection>
+    <Entity>
+        <Transform>
+            <Translation x="0.1" y="0" z="0"/>
+            <Rotation x="0" y="0" z="0"/>
+            <Scale x="1" y="1" z="1"/>
+        </Transform>
+        <Renderable>../../models/colored_cube.obj</Renderable>
+        <Script>Rotate</Script>
+    </Entity>
+    <Entity>
+        <Transform>
+            <Translation x="-1" y="-0.5" z="2.5"/>
+            <Rotation x="0" y="0" z="0"/>
+            <Scale x="1" y="1" z="1"/>
+        </Transform>
+        <Renderable>../../models/sphere.obj</Renderable>
+        <Script>TransformExpirement</Script>
+    </Entity>
+    <Entity>
+        <Transform>
+            <Translation x="0" y="0.5" z="0"/>
+            <Rotation x="0" y="0" z="0"/>
+            <Scale x="50" y="1" z="50"/>
+        </Transform>
+        <Renderable>../../models/quad.obj</Renderable>
+    </Entity>
+</Collection>

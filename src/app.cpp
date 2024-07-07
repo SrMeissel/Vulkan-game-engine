@@ -18,6 +18,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 
+#ifndef ENGINE_PATH
+#define ENGINE_PATH "C:/Users/mizer/dev/vulkan-game-engine/"
+#endif
+
 namespace engine {
 
     app::app() {
@@ -63,9 +67,11 @@ namespace engine {
         assetSystem.RegisterComponent<ECS::Transform>();
         assetSystem.RegisterComponent<ECS::Renderable>();
         assetSystem.RegisterComponent<ECS::Material>();
+        assetSystem.RegisterComponent<ECS::Script>();
 
         std::shared_ptr<MeshSystem> meshSystem = assetSystem.RegisterSystem<MeshSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
-        
+        std::shared_ptr<ScriptingSystem> scriptingSystem = assetSystem.RegisterSystem<ScriptingSystem>(window);
+
         ECS::Signature meshSignature;
         meshSignature.set(assetSystem.GetComponentType<ECS::Transform>());
         meshSignature.set(assetSystem.GetComponentType<ECS::Renderable>());
@@ -83,19 +89,27 @@ namespace engine {
         materialSignature.set(assetSystem.GetComponentType<ECS::Material>());
         assetSystem.SetSystemSignature<MaterialSystem>(materialSignature);
 
-        ECS::Entity box = assetSystem.CreateEntity();
-        assetSystem.AddComponent(box, ECS::Transform{glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0f)});
-        assetSystem.AddComponent(box, Importer::loadOBJmodel("../../models/colored_cube.obj", device));
-        assetSystem.AddComponent(box, ECS::Material{Importer::loadJPGImage("../../textures/Experimental/Oak Bark_vmcjdbyfw/Albedo_2K__vmcjdbyfw.jpg", device), Importer::loadJPGImage("../../textures/Experimental/Oak Bark_vmcjdbyfw/Normal_2K__vmcjdbyfw.jpg", device)});
+        ECS::Signature scriptSignature;
+        scriptSignature.set(assetSystem.GetComponentType<ECS::Transform>());
+        scriptSignature.set(assetSystem.GetComponentType<ECS::Script>());
+        assetSystem.SetSystemSignature<ScriptingSystem>(scriptSignature);
 
-        ECS::Entity sphere = assetSystem.CreateEntity();
-        assetSystem.AddComponent(sphere, ECS::Transform{glm::vec3(-1.0f, -0.5f, 2.5f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0f)});
-        assetSystem.AddComponent(sphere, Importer::loadOBJmodel("../../models/sphere.obj", device));
+        // ECS::Entity box = assetSystem.CreateEntity();
+        // assetSystem.AddComponent(box, ECS::Transform{glm::vec3(0.1f, 0.0f, 0.0f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0)});
+        // assetSystem.AddComponent(box, Importer::loadOBJmodel("../../models/colored_cube.obj", device));
+        // assetSystem.AddComponent(box, ECS::Script{"Rotate", scriptingSystem->assembly, scriptingSystem->appDomain });
 
-        ECS::Entity plane = assetSystem.CreateEntity();
-        assetSystem.AddComponent(plane, ECS::Transform{glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(25.0, -1.0, 25.0), glm::vec3(0.0f)});
-        assetSystem.AddComponent(plane, Importer::loadOBJmodel("../../models/quad.obj", device));
-        assetSystem.AddComponent(plane, ECS::Material{Importer::loadJPGImage("../../textures/Experimental/Mossy_Ground_xiboab2r/Albedo_2K__xiboab2r.jpg", device), Importer::loadJPGImage("../../textures/Experimental/Mossy_Ground_xiboab2r/Normal_2K__xiboab2r.jpg", device)});
+        // ECS::Entity sphere = assetSystem.CreateEntity();
+        // assetSystem.AddComponent(sphere, ECS::Transform{glm::vec3(-1.0f, -0.5f, 2.5f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0f)});
+        // assetSystem.AddComponent(sphere, Importer::loadOBJmodel("../../models/sphere.obj", device));
+        // assetSystem.AddComponent(sphere, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain });
+
+        // ECS::Entity plane = assetSystem.CreateEntity();
+        // assetSystem.AddComponent(plane, ECS::Transform{glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(50.0, 1.0, 50.0), glm::vec3(0.0f)});
+        // assetSystem.AddComponent(plane, Importer::loadOBJmodel("../../models/quad.obj", device));
+
+        ECS::SaveDataManager saveDataManager{device, *scriptingSystem}; 
+        saveDataManager.loadData("../../saveFiles/Test.xml", assetSystem);
 
         //=======================================================================
 
@@ -107,7 +121,10 @@ namespace engine {
         camera.setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
         ECS::Entity viewerObject = assetSystem.CreateEntity();
         assetSystem.AddComponent(viewerObject, ECS::Transform{glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
+        assetSystem.AddComponent(viewerObject, ECS::Script{"CameraControl", scriptingSystem->assembly, scriptingSystem->appDomain });
         keyboardMovementController cameraController{};
+
+        //saveDataManager.saveData("../../saveFiles/Test.xml", assetSystem.getAllEntities());
 
         //Main system loop ============================================
 
@@ -130,6 +147,8 @@ namespace engine {
 
             //proccess user input =======================================================
 
+            scriptingSystem->update(frameTime, assetSystem);
+
             //take screenshot
             int stateKeyP = glfwGetKey(window.getGLFWwindow(), GLFW_KEY_P);
             if(stateKeyP == GLFW_PRESS && screenshotSaved == false) {
@@ -141,10 +160,10 @@ namespace engine {
 
             //update camera from user input
             ECS::Transform& viewerTransform = assetSystem.GetComponent<ECS::Transform>(viewerObject);
-            cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerTransform);
+            //cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerTransform);
             camera.setViewYXZ(viewerTransform.translation, viewerTransform.rotation);            
             float aspect = renderer.getRenderPass(0)->getAspectRatio();
-            camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 50.0f);
+            camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 500.0f);
 
             //new frame ready, runs every frame ===============================================
             if(auto commandBuffer = renderer.beginFrame()) {
