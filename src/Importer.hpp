@@ -1,6 +1,8 @@
 #pragma once
 
 #include <tiny_obj_loader.h>
+#include <../libs/stb/stb_image.h>
+
 #include <stdexcept>
 #include <iostream>
 #include <unordered_map>
@@ -10,8 +12,7 @@
 #include "Utils.hpp"
 
 namespace Importer {
-    
-    // returns renderable component
+
     ECS::Renderable loadOBJmodel(const std::string& filepath, engine::Device& device) {
 
         // Load OBJ file =========================================================================
@@ -49,7 +50,6 @@ namespace Importer {
                     vertex.uv = {attrib.texcoords[2 * index.texcoord_index + 0], attrib.texcoords[2 * index.texcoord_index + 1]};
                 }
 
-                //implementing index buffer to reduce memory size
                 if(uniqueVertices.count(vertex) == 0){
                     uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
                     vertices.push_back(vertex);
@@ -57,7 +57,33 @@ namespace Importer {
                 indices.push_back(uniqueVertices[vertex]);
             }
         }
-        
+        //here is where I would calculate the tangents, maybe
+        //copilot copied from https://learnopengl.com/Advanced-Lighting/Normal-Mapping, apparently\
+        // I want to get lighting working before I implement this
+        // for(int i = 0; i < indices.size(); i+=3){
+        //     engine::Vertex& v0 = vertices[indices[i]];
+        //     engine::Vertex& v1 = vertices[indices[i+1]];
+        //     engine::Vertex& v2 = vertices[indices[i+2]];
+
+        //     glm::vec3 edge1 = v1.position - v0.position;
+        //     glm::vec3 edge2 = v2.position - v0.position;
+
+        //     glm::vec2 deltaUV1 = v1.uv - v0.uv;
+        //     glm::vec2 deltaUV2 = v2.uv - v0.uv;
+
+        //     float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+        //     glm::vec3 tangent;
+        //     tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+        //     tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+        //     tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+
+        //     v0.tangent += tangent;
+        //     v1.tangent += tangent;
+        //     v2.tangent += tangent;
+        // }
+
+
         ECS::Renderable renderable{};
         // create vertex buffer ========================================================================================
         std::cout << "Vertex Count: " << vertices.size() << "\n";
@@ -97,5 +123,66 @@ namespace Importer {
 
         //========================================================================================
         return renderable;
+    };
+
+    engine::AllocatedImage loadJPGImage(const std::string& filepath, engine::Device& device) {
+        
+        engine::AllocatedImage image{};
+        
+        //create image ========================================================================================
+        int texWidth, texHeight, texChannels;
+        stbi_uc* pixels = stbi_load(filepath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+        VkDeviceSize imageSize = texWidth * texHeight * 4; // whats the 4? channels?
+
+        if(!pixels){
+            throw std::runtime_error("failed to load texture image!");
+        }
+
+        engine::Buffer stagingBuffer{device, sizeof(pixels[0]), static_cast<uint32_t>(imageSize), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
+        stagingBuffer.map();
+        stagingBuffer.writeToBuffer((void*)pixels);
+
+        stbi_image_free(pixels); // the pixels are now in the staging buffer so we can free the memory
+
+        VkImageCreateInfo imageInfo{};
+        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageInfo.extent.width = texWidth;
+        imageInfo.extent.height = texHeight;
+        imageInfo.extent.depth = 1;
+        imageInfo.mipLevels = 1;
+        imageInfo.arrayLayers = 1;
+        imageInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        device.createImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image.image, image.memory);
+        
+        device.transitionImageLayout(image.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        device.copyBufferToImage(stagingBuffer.getBuffer(), image.image, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 1);
+    
+        device.transitionImageLayout(image.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+        //create image view ========================================================================================
+        VkImageViewCreateInfo viewInfo{};
+        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        viewInfo.image = image.image;
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        viewInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        viewInfo.subresourceRange.baseMipLevel = 0;
+        viewInfo.subresourceRange.levelCount = 1;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount = 1;
+
+        if (vkCreateImageView(device.device(), &viewInfo, nullptr, &image.imageView) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create texture image view!");
+        }
+
+        // ========================================================================================
+        return image;
     };
 }

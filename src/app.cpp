@@ -3,6 +3,7 @@
 #include "keyboard_movement_controller.hpp"
 #include "bufferManager.hpp"
 #include "systems/meshSystem.hpp"
+#include "systems/materialSystem.hpp"
 #include "Importer.hpp"
 #include "frameInfo.hpp"
 
@@ -64,7 +65,7 @@ namespace engine {
         assetSystem.RegisterComponent<ECS::Material>();
 
         std::shared_ptr<MeshSystem> meshSystem = assetSystem.RegisterSystem<MeshSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
-
+        
         ECS::Signature meshSignature;
         meshSignature.set(assetSystem.GetComponentType<ECS::Transform>());
         meshSignature.set(assetSystem.GetComponentType<ECS::Renderable>());
@@ -74,21 +75,31 @@ namespace engine {
         meshAntiSignature.set(assetSystem.GetComponentType<ECS::Material>());
         assetSystem.SetSystemAntiSignature<MeshSystem>(meshAntiSignature);
 
+        std::shared_ptr<MaterialSystem> materialSystem = assetSystem.RegisterSystem<MaterialSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
+
+        ECS::Signature materialSignature;
+        materialSignature.set(assetSystem.GetComponentType<ECS::Transform>());
+        materialSignature.set(assetSystem.GetComponentType<ECS::Renderable>());
+        materialSignature.set(assetSystem.GetComponentType<ECS::Material>());
+        assetSystem.SetSystemSignature<MaterialSystem>(materialSignature);
+
         ECS::Entity box = assetSystem.CreateEntity();
         assetSystem.AddComponent(box, ECS::Transform{glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0f)});
         assetSystem.AddComponent(box, Importer::loadOBJmodel("../../models/colored_cube.obj", device));
+        assetSystem.AddComponent(box, ECS::Material{Importer::loadJPGImage("../../textures/Experimental/Oak Bark_vmcjdbyfw/Albedo_2K__vmcjdbyfw.jpg", device), Importer::loadJPGImage("../../textures/Experimental/Oak Bark_vmcjdbyfw/Normal_2K__vmcjdbyfw.jpg", device)});
 
         ECS::Entity sphere = assetSystem.CreateEntity();
         assetSystem.AddComponent(sphere, ECS::Transform{glm::vec3(-1.0f, -0.5f, 2.5f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0f)});
         assetSystem.AddComponent(sphere, Importer::loadOBJmodel("../../models/sphere.obj", device));
 
         ECS::Entity plane = assetSystem.CreateEntity();
-        assetSystem.AddComponent(plane, ECS::Transform{glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(50.0, 1.0, 50.0), glm::vec3(0.0f)});
+        assetSystem.AddComponent(plane, ECS::Transform{glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(25.0, -1.0, 25.0), glm::vec3(0.0f)});
         assetSystem.AddComponent(plane, Importer::loadOBJmodel("../../models/quad.obj", device));
+        assetSystem.AddComponent(plane, ECS::Material{Importer::loadJPGImage("../../textures/Experimental/Mossy_Ground_xiboab2r/Albedo_2K__xiboab2r.jpg", device), Importer::loadJPGImage("../../textures/Experimental/Mossy_Ground_xiboab2r/Normal_2K__xiboab2r.jpg", device)});
 
         //=======================================================================
 
-        sceneEditor.configureViewport(renderer.getRenderPass(0)->getAttachmentImageView(0), textureManager.getTextureSampler(), renderer.getRenderPass(0)->extent);
+        sceneEditor.configureViewport(renderer.getRenderPass(0)->getAttachmentImageView(4), textureManager.getTextureSampler(), renderer.getRenderPass(0)->extent);
  
         //Initialize Camera object ===================================
 
@@ -156,10 +167,10 @@ namespace engine {
 
                 renderer.beginNextRenderPass(commandBuffer);
 
-                //atmoSystem.renderAtmosphere(frameInfo, renderer.getSwapchainDepthImageViews()[renderer.getCurrentImageIndex()]);
-                //this works, just not focusing on it rn 
-
                 meshSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
+                std::cout << "\nMesh System Rendered\n";
+                materialSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
+                std::cout << "\nMaterial System Rendered\n";
 
                 vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -182,7 +193,7 @@ namespace engine {
     //this works, vkcreateRenderPass uses pointer. The static keywords are used to prevent the objects from deleteing because their referenced.
     VkRenderPassCreateInfo* app::configureRenderPass() {
 
-        static std::array<VkAttachmentDescription, 4> attachments;
+        static std::array<VkAttachmentDescription, 5> attachments;
 
         static std::array<VkAttachmentReference, 3> colorAttachmentRef = {};
         static std::array<VkAttachmentReference, 3> inputReference = {};
@@ -251,18 +262,17 @@ namespace engine {
         inputReference[2].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         //lighting attachment
-        static VkAttachmentDescription lightingAttachment{};
-        lightingAttachment.format = chooseSwapSurfaceFormat();
-        lightingAttachment.samples = device.msaaSamples;
-        lightingAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        lightingAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        lightingAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        lightingAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        lightingAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        lightingAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        attachments[4].format = chooseSwapSurfaceFormat();
+        attachments[4].samples = device.msaaSamples;
+        attachments[4].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachments[4].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attachments[4].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachments[4].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachments[4].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attachments[4].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         static VkAttachmentReference lightingAttachmentRef = {};
-        lightingAttachmentRef.attachment = 0;
+        lightingAttachmentRef.attachment = 4;
         lightingAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         static std::array<VkSubpassDescription, 2> subpasses {};

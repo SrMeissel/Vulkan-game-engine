@@ -21,6 +21,11 @@ namespace ECS {
         engine::AllocatedImage normal;
     };
 
+    //this seems, too simple
+    struct PointLight {
+        glm::vec3 color;
+    };
+
     struct Transform {
         glm::vec3 translation{};
         glm::vec3 scale{1.0f, 1.0f, 1.0f};
