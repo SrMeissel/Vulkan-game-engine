@@ -2,6 +2,7 @@
 
 #include "Components.hpp"
 #include "AssetManager.hpp"
+#include "../systems/MaterialSystem.hpp"
 #include "../../libs/tinyXML/tinyxml2.h"
 #include "../Importer.hpp"
 #include "../Pipeline/deviceManager.hpp"
@@ -15,7 +16,7 @@
 namespace ECS {
     class SaveDataManager {
         public:
-            SaveDataManager(engine::Device& device, engine::ScriptingSystem& scriptingSystem) : device(device), scriptingSystem(scriptingSystem) {};
+            SaveDataManager(engine::Device& device, engine::ScriptingSystem& scriptingSystem, engine::MaterialSystem& materialSystem) : device(device), scriptingSystem(scriptingSystem), materialSystem(materialSystem) {};
 
             void saveData(const char* fileName, std::unordered_map<Entity, std::vector<Component*>>& savedComponents){
                 tinyxml2::XMLDocument doc;
@@ -69,10 +70,18 @@ namespace ECS {
                             assetSystem.AddComponent(entity, transform);
                             
                         } else if (strcmp(componentName, "Renderable") == 0) {
-                            assetSystem.AddComponent(entity, Importer::loadOBJmodel(pComponent->GetText(), device));
+                            assetSystem.AddComponent(entity, Renderable(pComponent->GetText(), device));
                         } else if (strcmp(componentName, "Script") == 0) {
                             assetSystem.AddComponent(entity, Script{pComponent->GetText(), scriptingSystem.assembly, scriptingSystem.appDomain });
-                        } else {
+                        } else if (strcmp(componentName, "Material") == 0) {
+                            const char* albedoPath;
+                            pComponent->QueryStringAttribute("albedoPath", &albedoPath);
+                            const char* normalPath;
+                            pComponent->QueryStringAttribute("normalPath", &normalPath);
+                            
+                            assetSystem.AddComponent(entity, ECS::Material(albedoPath, normalPath, device, materialSystem.getSampler(), materialSystem.getMaterialSetLayout()));
+                        } 
+                        else {
                             std::cout << "Component not found" << std::endl;
                         }
 
@@ -84,5 +93,6 @@ namespace ECS {
         private:
             engine::Device& device;
             engine::ScriptingSystem& scriptingSystem;
+            engine::MaterialSystem& materialSystem;
     };
 }

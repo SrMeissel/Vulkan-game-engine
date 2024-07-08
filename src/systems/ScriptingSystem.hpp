@@ -11,7 +11,6 @@
 #include "Pipeline/windowManager.hpp"
 
 // https://www.mono-project.com/docs/advanced/embedding/
-// if it breaks, copilot did it
 
 // https://nilssondev.com/mono-guide/book/
 

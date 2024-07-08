@@ -7,6 +7,7 @@
         </Transform>
         <Renderable>../../models/colored_cube.obj</Renderable>
         <Script>Rotate</Script>
+        <Material albedoPath="../../textures/Experimental/Oak Bark_vmcjdbyfw/Albedo_2K__vmcjdbyfw.jpg" normalPath="../../textures/Experimental/Oak Bark_vmcjdbyfw/Normal_2K__vmcjdbyfw.jpg"/>
     </Entity>
     <Entity>
         <Transform>
@@ -24,5 +25,6 @@
             <Scale x="50" y="1" z="50"/>
         </Transform>
         <Renderable>../../models/quad.obj</Renderable>
+        <Material albedoPath="../../textures/Experimental/Mossy_Ground_xiboab2r/Albedo_2K__xiboab2r.jpg" normalPath="../../textures/Experimental/Mossy_Ground_xiboab2r/Normal_2K__xiboab2r.jpg"/>
     </Entity>
 </Collection>

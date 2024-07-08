@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <iostream>
 
 #define TINYOBJECTLOADER_IMPLEMENTATION
 #define GLM_ENABLE_EXPERIMENTAL
@@ -50,6 +51,9 @@ namespace engine {
     }
 
     struct AllocatedImage {
+
+        std::string path;
+
         VkImage image;
         VkImageView imageView;
 

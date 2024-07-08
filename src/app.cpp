@@ -94,22 +94,10 @@ namespace engine {
         scriptSignature.set(assetSystem.GetComponentType<ECS::Script>());
         assetSystem.SetSystemSignature<ScriptingSystem>(scriptSignature);
 
-        // ECS::Entity box = assetSystem.CreateEntity();
-        // assetSystem.AddComponent(box, ECS::Transform{glm::vec3(0.1f, 0.0f, 0.0f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0)});
-        // assetSystem.AddComponent(box, Importer::loadOBJmodel("../../models/colored_cube.obj", device));
-        // assetSystem.AddComponent(box, ECS::Script{"Rotate", scriptingSystem->assembly, scriptingSystem->appDomain });
-
-        // ECS::Entity sphere = assetSystem.CreateEntity();
-        // assetSystem.AddComponent(sphere, ECS::Transform{glm::vec3(-1.0f, -0.5f, 2.5f), glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.0f)});
-        // assetSystem.AddComponent(sphere, Importer::loadOBJmodel("../../models/sphere.obj", device));
-        // assetSystem.AddComponent(sphere, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain });
-
-        // ECS::Entity plane = assetSystem.CreateEntity();
-        // assetSystem.AddComponent(plane, ECS::Transform{glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(50.0, 1.0, 50.0), glm::vec3(0.0f)});
-        // assetSystem.AddComponent(plane, Importer::loadOBJmodel("../../models/quad.obj", device));
-
-        ECS::SaveDataManager saveDataManager{device, *scriptingSystem}; 
+        ECS::SaveDataManager saveDataManager{device, *scriptingSystem, *materialSystem}; 
         saveDataManager.loadData("../../saveFiles/Test.xml", assetSystem);
+        //saveDataManager.saveData("../../saveFiles/Test.xml", assetSystem.getAllEntities());
+
 
         //=======================================================================
 
@@ -123,8 +111,6 @@ namespace engine {
         assetSystem.AddComponent(viewerObject, ECS::Transform{glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
         assetSystem.AddComponent(viewerObject, ECS::Script{"CameraControl", scriptingSystem->assembly, scriptingSystem->appDomain });
         keyboardMovementController cameraController{};
-
-        //saveDataManager.saveData("../../saveFiles/Test.xml", assetSystem.getAllEntities());
 
         //Main system loop ============================================
 
@@ -187,9 +173,7 @@ namespace engine {
                 renderer.beginNextRenderPass(commandBuffer);
 
                 meshSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
-                std::cout << "\nMesh System Rendered\n";
                 materialSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
-                std::cout << "\nMaterial System Rendered\n";
 
                 vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -207,6 +191,13 @@ namespace engine {
             }
         }
         vkDeviceWaitIdle(device.device());
+
+        //DESTROY EVERYTHING ==================================================================================================
+        //I don't know how.
+        //nvm im a genius
+
+        materialSystem->cleanup(assetSystem);
+
     }
 
     //this works, vkcreateRenderPass uses pointer. The static keywords are used to prevent the objects from deleteing because their referenced.

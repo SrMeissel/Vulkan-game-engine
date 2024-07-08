@@ -76,11 +76,7 @@ namespace engine {
         pipeline->bind(commandBuffer);
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &globalUBOSet, 0, nullptr);
 
-        descriptorSets.clear();
-        descriptorPools.clear();
-
         for(auto const& entity : entities) {    
-            std::cout << "Rendering Entity Material\n";
 
             //get components ==================================================
     
@@ -95,35 +91,8 @@ namespace engine {
             vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstant), &push);
 
             //bind material descriptor sets ==================================================
-            std::shared_ptr<DescriptorPool> materialPool = DescriptorPool::Builder(device).setMaxSets(3)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 2)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLER, 1)
-            .build();
 
-            descriptorPools.push_back(materialPool);
-
-            VkDescriptorImageInfo albedoImageInfo;
-            albedoImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            albedoImageInfo.imageView = material.albedo.imageView;
-            albedoImageInfo.sampler = sampler;
-
-            VkDescriptorImageInfo normalImageInfo;
-            normalImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            normalImageInfo.imageView = material.normal.imageView;
-            normalImageInfo.sampler = sampler;
-
-            VkDescriptorImageInfo samplerInfo;
-            samplerInfo.sampler = sampler;
-
-            VkDescriptorSet descriptorSet;
-            DescriptorWriter writer(*materialSetLayout, *materialPool);
-
-             if(writer.writeImage(0, &samplerInfo, 1).writeImage(1,&albedoImageInfo, 1).writeImage(2,&normalImageInfo, 1).build(descriptorSet) == false)
-            std::cout << "\n failed to write set \n";
-
-            descriptorSets.push_back(std::make_shared<VkDescriptorSet>(descriptorSet));
-
-            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &descriptorSet, 0, nullptr);
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &material.descriptorSet, 0, nullptr);
 
             //bind vertex buffer ==================================================
             VkBuffer buffers[] = {mesh.vertexBuffer->getBuffer()};
@@ -139,6 +108,22 @@ namespace engine {
             } else{
                 vkCmdDraw(commandBuffer, mesh.vertexCount, 1, 0, 0);
             }
+        }
+    }
+
+    void MaterialSystem::cleanup(ECS::AssetSystem& assetManager) {
+        for(auto& entity : entities) {
+            ECS::Material& material = assetManager.GetComponent<ECS::Material>(entity);
+            vkDestroyImageView(device.device(), material.albedo.imageView, nullptr);
+            vkDestroyImage(device.device(), material.albedo.image, nullptr);
+            vkFreeMemory(device.device(), material.albedo.memory, nullptr);
+
+            vkDestroyImageView(device.device(), material.normal.imageView, nullptr);
+            vkDestroyImage(device.device(), material.normal.image, nullptr);
+            vkFreeMemory(device.device(), material.normal.memory, nullptr);
+
+            //dont need to destroy descriptor things since the abstraction takes care of it already :)
+            //already destroying the descriptor set layout and sampler in the destructor
         }
     }
 }

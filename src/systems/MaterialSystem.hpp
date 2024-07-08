@@ -17,6 +17,11 @@ namespace engine {
 
         void Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager);
 
+        void cleanup(ECS::AssetSystem& assetManager);
+
+        VkSampler& getSampler() { return sampler; }
+        std::unique_ptr<DescriptorSetLayout>& getMaterialSetLayout() { return materialSetLayout; }
+
     private:
         struct PushConstant {
             glm::mat4 modelMatrix{1.f};
@@ -29,8 +34,5 @@ namespace engine {
         VkPipelineLayout pipelineLayout;
         VkSampler sampler;
         std::unique_ptr<DescriptorSetLayout> materialSetLayout;
-
-        std::vector<std::shared_ptr<VkDescriptorSet>> descriptorSets;
-        std::vector<std::shared_ptr<DescriptorPool>> descriptorPools;
     };
 }

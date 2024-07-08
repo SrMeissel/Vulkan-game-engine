@@ -3,6 +3,8 @@
 #include "bufferManager.hpp"
 #include "Utils.hpp"
 #include "../../libs/tinyXML/tinyxml2.h"
+#include "../Importer.hpp"
+#include <descriptorManager.hpp>
 
 #include <memory>
 #include <glm/glm.hpp>
@@ -20,6 +22,92 @@ namespace ECS {
     };
 
     struct Renderable : public Component {
+        Renderable() = default;
+        
+        Renderable(std::string filepath, engine::Device& device) {
+                
+            // Load OBJ file =========================================================================
+            std::vector<engine::Vertex> vertices{};
+            std::vector<uint32_t> indices{};
+
+            tinyobj::attrib_t attrib;
+            std::vector<tinyobj::shape_t> shapes;
+            std::vector<tinyobj::material_t> materials;
+            std::string warn, err;
+
+
+            if(!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filepath.c_str())){
+                throw std::runtime_error(warn + err);
+            }
+            vertices.clear();
+            indices.clear();
+
+            std::unordered_map<engine::Vertex, uint32_t> uniqueVertices{};
+
+            for(const auto& shape: shapes) {
+                for(const auto& index : shape.mesh.indices){
+                    engine::Vertex vertex{};
+                    if(index.vertex_index >= 0){
+                        vertex.position = {attrib.vertices[3 * index.vertex_index + 0], attrib.vertices[3 * index.vertex_index + 1], attrib.vertices[3 * index.vertex_index + 2] };
+                        auto colorIndex = 3 * index.vertex_index + 2;
+
+                        vertex.color = {attrib.colors[3 * index.vertex_index + 0], attrib.colors[3 * index.vertex_index + 1], attrib.colors[3 * index.vertex_index + 2]};
+
+                    }
+                    if(index.normal_index >= 0){
+                        vertex.normal = {attrib.normals[3 * index.normal_index + 0], attrib.normals[3 * index.normal_index + 1], attrib.normals[3 * index.normal_index + 2] };
+                    }
+                    if(index.texcoord_index >= 0){
+                        vertex.uv = {attrib.texcoords[2 * index.texcoord_index + 0], attrib.texcoords[2 * index.texcoord_index + 1]};
+                    }
+
+                    if(uniqueVertices.count(vertex) == 0){
+                        uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+                        vertices.push_back(vertex);
+                    }
+                    indices.push_back(uniqueVertices[vertex]);
+                }
+            }
+
+            Path = filepath;
+            // create vertex buffer ========================================================================================
+            std::cout << "Vertex Count: " << vertices.size() << "\n";
+
+            vertexCount = static_cast<uint32_t>(vertices.size());
+            assert(vertexCount >= 3 && "VertexCount must be at least 3!");
+            VkDeviceSize bufferSize = sizeof(vertices[0])*vertexCount;
+
+            uint32_t vertexSize = sizeof(vertices[0]);
+
+            engine::Buffer stagingBuffer{device, vertexSize, vertexCount, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
+
+            stagingBuffer.map();
+            stagingBuffer.writeToBuffer((void *)vertices.data());
+
+            vertexBuffer = std::make_unique<engine::Buffer>(device, vertexSize, vertexCount, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT); 
+            device.copyBuffer(stagingBuffer.getBuffer(), vertexBuffer->getBuffer(), bufferSize);
+
+            // create index buffer ========================================================================================
+            std::cout << "Index Count: " << indices.size() << "\n";
+
+            indexCount = static_cast<uint32_t>(indices.size());
+            hasIndexBuffer = indexCount > 0;
+            if(hasIndexBuffer) {
+                VkDeviceSize bufferSize = sizeof(indices[0])*indexCount; 
+                uint32_t indexSize = sizeof(indices[0]);
+
+                engine::Buffer stagingBuffer{device, indexSize, indexCount, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
+
+                stagingBuffer.map();
+                stagingBuffer.writeToBuffer((void*)indices.data());
+
+                indexBuffer = std::make_unique<engine::Buffer>(device, indexSize, indexCount, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+                device.copyBuffer(stagingBuffer.getBuffer(), indexBuffer->getBuffer(), bufferSize);
+            }
+
+        }
+
         std::string Path;
 
         std::shared_ptr<engine::Buffer> vertexBuffer;
@@ -37,15 +125,49 @@ namespace ECS {
     };
 
     struct Material : public Component {
-        const char* albedoPath;
+        Material() = default;
+        Material(std::string albedoPath, std::string normalPath, engine::Device& device, VkSampler sampler, std::unique_ptr<engine::DescriptorSetLayout>& materialSetLayout) {
+            albedo = Importer::loadJPGImage(albedoPath, device);
+            normal = Importer::loadJPGImage(normalPath, device);
+
+            descriptorPool = engine::DescriptorPool::Builder(device).setMaxSets(3)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 2)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLER, 1)
+            .build();
+
+            albedoImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            albedoImageInfo.imageView = albedo.imageView;
+            albedoImageInfo.sampler = sampler;
+
+            normalImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            normalImageInfo.imageView = normal.imageView;
+            normalImageInfo.sampler = sampler;
+
+            samplerInfo.sampler = sampler;
+
+            engine::DescriptorWriter writer(*materialSetLayout, *descriptorPool);
+
+             if(writer.writeImage(0, &samplerInfo, 1).writeImage(1,&albedoImageInfo, 1).writeImage(2,&normalImageInfo, 1).build(descriptorSet) == false)
+            std::cout << "\n failed to write set \n";
+
+
+        }
+
         engine::AllocatedImage albedo;
-        const char* normalPath;
         engine::AllocatedImage normal;
+
+        VkDescriptorImageInfo albedoImageInfo;
+        VkDescriptorImageInfo normalImageInfo;
+
+        VkDescriptorImageInfo samplerInfo;
+
+        std::shared_ptr<engine::DescriptorPool> descriptorPool;
+        VkDescriptorSet descriptorSet;
 
         tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
             tinyxml2::XMLElement* material = doc.NewElement("Material");
-            material->SetAttribute("albedoPath", albedoPath);
-            material->SetAttribute("normalPath", normalPath);
+            material->SetAttribute("albedoPath", albedo.path.c_str());
+            material->SetAttribute("normalPath", normal.path.c_str());
             return material;
         }
     };
