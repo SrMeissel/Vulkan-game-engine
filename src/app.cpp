@@ -68,9 +68,11 @@ namespace engine {
         assetSystem.RegisterComponent<ECS::Renderable>();
         assetSystem.RegisterComponent<ECS::Material>();
         assetSystem.RegisterComponent<ECS::Script>();
+        assetSystem.RegisterComponent<ECS::PointLight>();
 
         std::shared_ptr<MeshSystem> meshSystem = assetSystem.RegisterSystem<MeshSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
         std::shared_ptr<ScriptingSystem> scriptingSystem = assetSystem.RegisterSystem<ScriptingSystem>(window);
+        std::shared_ptr<PointLightSystem> pointLightSystem = assetSystem.RegisterSystem<PointLightSystem>(device, renderer.getRenderPass(0), globalSetLayout->getDescriptorSetLayout());
 
         ECS::Signature meshSignature;
         meshSignature.set(assetSystem.GetComponentType<ECS::Transform>());
@@ -94,8 +96,24 @@ namespace engine {
         scriptSignature.set(assetSystem.GetComponentType<ECS::Script>());
         assetSystem.SetSystemSignature<ScriptingSystem>(scriptSignature);
 
+        ECS::Signature pointLightSignature;
+        pointLightSignature.set(assetSystem.GetComponentType<ECS::Transform>());
+        pointLightSignature.set(assetSystem.GetComponentType<ECS::PointLight>());
+        assetSystem.SetSystemSignature<PointLightSystem>(pointLightSignature);
+
         ECS::SaveDataManager saveDataManager{device, *scriptingSystem, *materialSystem}; 
         saveDataManager.loadData("../../saveFiles/Test.xml", assetSystem);
+
+        ECS::Entity pointLight = assetSystem.CreateEntity();
+        assetSystem.AddComponent(pointLight, ECS::Transform{glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
+        assetSystem.AddComponent(pointLight, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain});
+        assetSystem.AddComponent(pointLight, ECS::PointLight{glm::vec3(1.0f, 1.0f, 1.0f)});
+
+        ECS::Entity pointLight2 = assetSystem.CreateEntity();
+        assetSystem.AddComponent(pointLight2, ECS::Transform{glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
+        assetSystem.AddComponent(pointLight2, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain});
+        assetSystem.AddComponent(pointLight2, ECS::PointLight{glm::vec3(1.0f, 1.0f, 1.0f)});
+
         //saveDataManager.saveData("../../saveFiles/Test.xml", assetSystem.getAllEntities());
 
 
@@ -133,6 +151,7 @@ namespace engine {
 
             //proccess user input =======================================================
 
+            
             scriptingSystem->update(frameTime, assetSystem);
 
             //take screenshot
@@ -176,6 +195,8 @@ namespace engine {
                 materialSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
 
                 vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
+
+                pointLightSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
 
 
                 renderer.endCurrentRenderPass(commandBuffer);
@@ -222,6 +243,9 @@ namespace engine {
         colorAttachmentRef[0].attachment = 0;
         colorAttachmentRef[0].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+        inputReference[0].attachment = 0;
+        inputReference[0].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
         //normal color attachment
         attachments[1].format = chooseSwapSurfaceFormat();
         attachments[1].samples = device.msaaSamples;
@@ -235,8 +259,8 @@ namespace engine {
         colorAttachmentRef[1].attachment = 1;
         colorAttachmentRef[1].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        inputReference[0].attachment = 1;
-        inputReference[0].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        inputReference[1].attachment = 1;
+        inputReference[1].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         //position color attachment
         attachments[2].format = chooseSwapSurfaceFormat();
@@ -251,8 +275,8 @@ namespace engine {
         colorAttachmentRef[2].attachment = 2;
         colorAttachmentRef[2].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        inputReference[1].attachment = 2;
-        inputReference[1].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        inputReference[2].attachment = 2;
+        inputReference[2].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         //depthAttachment
         attachments[3].format = device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
@@ -267,9 +291,6 @@ namespace engine {
         static VkAttachmentReference depthAttachmentRef = {};
         depthAttachmentRef.attachment = 3;
         depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-        inputReference[2].attachment = 3;
-        inputReference[2].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         //lighting attachment
         attachments[4].format = chooseSwapSurfaceFormat();
@@ -298,30 +319,30 @@ namespace engine {
             subpasses[1].pInputAttachments = inputReference.data();
             subpasses[1].pDepthStencilAttachment = &depthAttachmentRef;
 
-        static std::array<VkSubpassDependency, 3> dependency = {};
-            dependency[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-            dependency[0].dstSubpass = 0;
-            dependency[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-            dependency[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-            dependency[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-            dependency[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        static std::array<VkSubpassDependency, 1> dependency = {};
+            // dependency[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+            // dependency[0].dstSubpass = 0;
+            // dependency[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+            // dependency[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+            // dependency[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+            // dependency[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            // dependency[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+            // dependency[1].srcSubpass = 0;
+            // dependency[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+            // dependency[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            // dependency[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+            // dependency[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            // dependency[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+            // dependency[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+            dependency[0].srcSubpass = 0;
+            dependency[0].dstSubpass = 1;
+            dependency[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // Stage of writing to the color attachment
+            dependency[0].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT; // Stage of reading from the attachment in the shader
+            dependency[0].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // Access type for writing to the color attachment
+            dependency[0].dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT; 
             dependency[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-            dependency[1].srcSubpass = 0;
-            dependency[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-            dependency[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-            dependency[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-            dependency[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-            dependency[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-            dependency[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-            dependency[2].srcSubpass = 0;
-            dependency[2].dstSubpass = 1;
-            dependency[2].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-            dependency[2].dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
-            dependency[2].srcStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
-            dependency[2].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-            dependency[2].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         VkRenderPassCreateInfo* renderPassInfo = new VkRenderPassCreateInfo();
         renderPassInfo->sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;

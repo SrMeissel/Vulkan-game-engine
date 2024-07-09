@@ -4,6 +4,7 @@
 #include "ECS/Components.hpp"
 #include "Pipeline/pipeline.hpp"
 #include "Pipeline/deviceManager.hpp"
+#include "../Pipeline/RenderPass.hpp"
 #include <descriptorManager.hpp>
 
 #include <glm/glm.hpp>
@@ -11,7 +12,7 @@
 namespace engine {
     class PointLightSystem : public ECS::System {
     public:
-        PointLightSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
+        PointLightSystem(Device& device, RenderPass* renderPass, VkDescriptorSetLayout globalSetLayout);
         ~PointLightSystem() { vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); }
 
         void Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager);
@@ -26,5 +27,12 @@ namespace engine {
 
         std::unique_ptr<Pipeline> pipeline;
         VkPipelineLayout pipelineLayout;
+
+        VkSampler sampler;
+        std::shared_ptr<engine::DescriptorPool> descriptorPool;
+        VkDescriptorSet descriptorSet;
+        std::unique_ptr<DescriptorSetLayout> setLayout;
+        std::array<VkDescriptorSetLayout, 1> setLayoutData{};
+        std::array<VkDescriptorImageInfo, 3> descriptors{};
     };
 }

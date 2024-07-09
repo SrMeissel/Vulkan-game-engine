@@ -80,7 +80,14 @@ namespace ECS {
                             pComponent->QueryStringAttribute("normalPath", &normalPath);
                             
                             assetSystem.AddComponent(entity, ECS::Material(albedoPath, normalPath, device, materialSystem.getSampler(), materialSystem.getMaterialSetLayout()));
-                        } 
+                        } else if (strcmp(componentName, "PointLight") == 0) {
+                            PointLight pointLight;
+                            pComponent->QueryFloatAttribute("R", &pointLight.color.r);
+                            pComponent->QueryFloatAttribute("G", &pointLight.color.g);
+                            pComponent->QueryFloatAttribute("B", &pointLight.color.b);
+                            
+                            assetSystem.AddComponent(entity, pointLight);
+                        }
                         else {
                             std::cout << "Component not found" << std::endl;
                         }

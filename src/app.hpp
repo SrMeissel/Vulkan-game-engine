@@ -12,6 +12,8 @@
 #include "ECS/Components.hpp"
 
 #include "systems/ScriptingSystem.hpp"
+#include "systems/MaterialSystem.hpp"
+#include "systems/PointLightSystem.hpp"
 
 #include "ECS/SavedataManager.hpp"
 

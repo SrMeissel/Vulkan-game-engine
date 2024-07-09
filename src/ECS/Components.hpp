@@ -173,8 +173,19 @@ namespace ECS {
     };
 
     //this seems, too simple
-    struct PointLight {
+    struct PointLight : public Component{
+        PointLight() = default;
+        PointLight(glm::vec3 color) : color(color) {}
+
         glm::vec3 color;
+
+        tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
+            tinyxml2::XMLElement* pointLight = doc.NewElement("PointLight");
+            pointLight->SetAttribute("R", color.r);
+            pointLight->SetAttribute("G", color.g);
+            pointLight->SetAttribute("B", color.b);
+            return pointLight;
+        }
     };
 
     struct Transform : public Component {
