@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Numerics;
-
+using System.Runtime;
 
 namespace GameEngine
 {
@@ -19,20 +19,7 @@ namespace GameEngine
 
         public float deltaTime;
 
-        [StructLayout(LayoutKind.Sequential)]
-        public struct Vec3
-        {
-            public float x;
-            public float y;
-            public float z;
 
-            public Vec3(float x, float y, float z)
-            {
-                this.x = x;
-                this.y = y;
-                this.z = z;
-            }
-        }
         [StructLayout(LayoutKind.Sequential)]
         public struct Transform
         {

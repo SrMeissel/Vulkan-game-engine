@@ -32,6 +32,11 @@ namespace engine {
             return false;
         }
 
+        struct Object {
+            glm::vec3 position;
+            glm::vec3 rotation;
+        };
+
         Window& window;
 
         MonoDomain* domain;

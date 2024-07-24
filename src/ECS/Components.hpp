@@ -289,6 +289,17 @@ namespace ECS {
         MonoObject* scriptObject;
         MonoClass* objectClass;
 
+        typedef void (__stdcall *Update)(MonoObject*, MonoException**);
+        MonoMethod* updateMethod;
+        Update update;
+
+        typedef void (__stdcall *LoadTransform)(MonoObject*, float, float, float, float, float, float, MonoException**);
+        MonoMethod* loadTransformMethod;
+        LoadTransform loadTransform;
+
+        MonoClass* parentClass;
+        MonoImage* image;
+
         Script() {
             scriptClass = nullptr;
             scriptObject = nullptr;
@@ -298,7 +309,7 @@ namespace ECS {
         // I might want to find a way to make the assembly and domain accessible differently.
         Script(const char* name, MonoAssembly* assembly, MonoDomain* appDomain) {
             className = name;
-            MonoImage* image = mono_assembly_get_image(assembly);
+            image = mono_assembly_get_image(assembly);
             scriptClass = mono_class_from_name(image, "", name);
             if(scriptClass == nullptr) std::cout << "Failed to get class!" << std::endl;
 
@@ -308,6 +319,16 @@ namespace ECS {
             mono_runtime_object_init(scriptObject); // constructor
 
             objectClass = mono_object_get_class(scriptObject);
+            parentClass = mono_class_get_parent(objectClass);
+
+            loadTransformMethod = mono_class_get_method_from_name(parentClass, "loadTransform", 6);
+            loadTransform = (LoadTransform)mono_method_get_unmanaged_thunk(loadTransformMethod);
+
+            updateMethod = mono_class_get_method_from_name(objectClass, "update", 0);
+            update = (Update)mono_method_get_unmanaged_thunk(updateMethod);
+
+            std::cout << "Script Created!" << std::endl;    
+
         }
 
         tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {

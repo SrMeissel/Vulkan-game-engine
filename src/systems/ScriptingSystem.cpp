@@ -1,9 +1,18 @@
 #include "ScriptingSystem.hpp"
 #include <fstream>
+#include <cstdlib>
+
+// https://mono.github.io/mail-archives/mono-list/2015-November/051922.html
+// WHY TF IS THIS THE BEST DOCS I CAN FIND
+
+//replacement if needed
+//https://github.com/dotnet/runtime/discussions/79309
 
 namespace engine {
     ScriptingSystem::ScriptingSystem(Window& window) : window{window} {
         std::cout << "Initializing Mono runtime..." << std::endl;
+    
+        //_putenv_s("MONO_GC_PARAMS", "nursery-size=64m");
 
         mono_set_assemblies_path("C:/Program Files/mono/lib/mono/4.5");
         domain = mono_jit_init("engine");
@@ -35,41 +44,27 @@ namespace engine {
             MonoClassField* scriptThingy = mono_class_get_field_from_name(script.objectClass, "thingy");
             mono_field_set_value(script.scriptObject, scriptThingy, (char*)this); 
 
-            MonoObject* exception = nullptr;
-            void* params[] = {
-                &transform.translation.x,
-                &transform.translation.y,
-                &transform.translation.z,
-                &transform.rotation.x,
-                &transform.rotation.y,
-                &transform.rotation.z
-            };  
-            
-            MonoClass* parentClass = mono_class_get_parent(script.objectClass);
-
-            MonoMethod* sendTransformMethod = mono_class_get_method_from_name(parentClass, "loadTransform", 6);
-            mono_runtime_invoke(sendTransformMethod, script.scriptObject, params, &exception);
+            //unmanaged thunks
+            MonoException* loadTransformException = NULL;
+            script.loadTransform(script.scriptObject, transform.translation.x, transform.translation.y, transform.translation.z, transform.rotation.x, transform.rotation.y, transform.rotation.z, &loadTransformException);
 
             //do thing ==================================================
-            MonoMethod* method = mono_class_get_method_from_name(script.objectClass, "update", 0);
-            if(method == nullptr) std::cout << "Failed to get method!" << std::endl;
 
-            mono_runtime_invoke(method, script.scriptObject, nullptr, &exception);
-            if(exception != nullptr) std::cout << "Exception thrown!" << std::endl;
+            MonoException* updateException = NULL;
+            script.update(script.scriptObject, &updateException);
+            if(updateException != nullptr) std::cout << "Exception thrown!" << std::endl;
 
             //get data ==================================================
-            MonoMethod* getPositionMethod = mono_class_get_method_from_name(parentClass, "returnPosition", 0);
-            MonoObject* result = mono_runtime_invoke(getPositionMethod, script.scriptObject, nullptr, &exception);
-            if(exception != nullptr) std::cout << "Exception thrown!" << std::endl;
 
-            MonoMethod* getRotationMethod = mono_class_get_method_from_name(parentClass, "returnRotation", 0);
-            MonoObject* result2 = mono_runtime_invoke(getRotationMethod, script.scriptObject, nullptr, &exception);
-            if(exception != nullptr) std::cout << "Exception thrown!" << std::endl;
-
-            transform.translation = *(glm::vec3*)mono_object_unbox(result);
-            transform.rotation = *(glm::vec3*)mono_object_unbox(result2);
+            MonoClassField* objectField = mono_class_get_field_from_name(script.objectClass, "Object");
+            Object object;
+            mono_field_get_value(script.scriptObject, objectField, &object);
+            transform.translation = object.position;
+            transform.rotation = object.rotation;
         }
     }
+
+
 
     //I like this error handling.
     MonoAssembly* ScriptingSystem::LoadAssembly(const std::string& assemblyPath) {
@@ -100,6 +95,7 @@ namespace engine {
 
     }
 
+    //this will become important.
     void ScriptingSystem::printAssemblyMetadata(MonoAssembly* assembly) {
         
         MonoImage* image = mono_assembly_get_image(assembly);
