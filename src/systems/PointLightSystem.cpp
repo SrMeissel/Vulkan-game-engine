@@ -1,4 +1,5 @@
 #include "PointLightSystem.hpp"
+
 #include <stdexcept>
 
 namespace engine {
@@ -10,18 +11,19 @@ namespace engine {
         pushConstantRange.offset = 0;
         pushConstantRange.size = sizeof(PushConstant);
 
+        std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout};
+
         setLayout = DescriptorSetLayout::Builder(device)
         .addBinding(0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT)
         .addBinding(1, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT)
         .addBinding(2, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT)
         .build();
-
-        setLayoutData[0] = setLayout->getDescriptorSetLayout();
+        descriptorSetLayouts.push_back(setLayout->getDescriptorSetLayout());
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = 1;
-        pipelineLayoutInfo.pSetLayouts = setLayoutData.data();
+        pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+        pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
         pipelineLayoutInfo.pushConstantRangeCount = 1;
         pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
         if(vkCreatePipelineLayout(device.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
@@ -87,16 +89,8 @@ namespace engine {
     void PointLightSystem::Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assets) {
         pipeline->bind(commandBuffer);
 
-        // std::array<VkWriteDescriptorSet, 1> writeDescriptorSets{};
-        // writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        // writeDescriptorSets[0].dstSet = descriptorSet;
-        // writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-        // writeDescriptorSets[0].descriptorCount = 3;
-        // writeDescriptorSets[0].dstBinding = 0;
-        // writeDescriptorSets[0].pImageInfo = descriptors.data();
-
-        // vkUpdateDescriptorSets(device.device(), 1, writeDescriptorSets.data(), 0, nullptr);
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &globalUBOSet, 0, nullptr);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &descriptorSet, 0, nullptr);
 
         for(auto const& entity : entities) {
             ECS::Transform& transform = assets.GetComponent<ECS::Transform>(entity);
@@ -107,8 +101,8 @@ namespace engine {
             PushConstant push{};
             push.color = pointLight.color;
             push.position = transform.translation;
-            vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstant), &push);
 
+            vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstant), &push);
 
             vkCmdDraw(commandBuffer, 3, 1, 0, 0);
         }

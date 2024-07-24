@@ -22,7 +22,7 @@
         <Transform>
             <Translation x="0" y="0.5" z="0"/>
             <Rotation x="0" y="0" z="0"/>
-            <Scale x="50" y="1" z="50"/>
+            <Scale x="20" y="-1" z="20"/>
         </Transform>
         <Renderable>../../models/quad.obj</Renderable>
         <Material albedoPath="../../textures/Experimental/Mossy_Ground_xiboab2r/Albedo_2K__xiboab2r.jpg" normalPath="../../textures/Experimental/Mossy_Ground_xiboab2r/Normal_2K__xiboab2r.jpg"/>

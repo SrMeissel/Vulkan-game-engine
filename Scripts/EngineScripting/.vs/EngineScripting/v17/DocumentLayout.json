@@ -3,12 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\mizer\\dev\\Vulkan-game-engine\\Scripts\\EngineScripting\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{01EBD0D3-4432-4AA0-A8EF-9298895A26F5}|EngineScripting.csproj|c:\\users\\mizer\\dev\\vulkan-game-engine\\scripts\\enginescripting\\enginecore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{01EBD0D3-4432-4AA0-A8EF-9298895A26F5}|EngineScripting.csproj|solutionrelative:enginecore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{01EBD0D3-4432-4AA0-A8EF-9298895A26F5}|EngineScripting.csproj|C:\\Users\\mizer\\dev\\Vulkan-game-engine\\Scripts\\EngineScripting\\Rotate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{01EBD0D3-4432-4AA0-A8EF-9298895A26F5}|EngineScripting.csproj|solutionrelative:Rotate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{01EBD0D3-4432-4AA0-A8EF-9298895A26F5}|EngineScripting.csproj|c:\\users\\mizer\\dev\\vulkan-game-engine\\scripts\\enginescripting\\enginecore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{01EBD0D3-4432-4AA0-A8EF-9298895A26F5}|EngineScripting.csproj|solutionrelative:enginecore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{01EBD0D3-4432-4AA0-A8EF-9298895A26F5}|EngineScripting.csproj|C:\\Users\\mizer\\dev\\Vulkan-game-engine\\Scripts\\EngineScripting\\scripttemplate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -30,17 +30,17 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "Rotate.cs",
               "DocumentMoniker": "C:\\Users\\mizer\\dev\\Vulkan-game-engine\\Scripts\\EngineScripting\\Rotate.cs",
               "RelativeDocumentMoniker": "Rotate.cs",
               "ToolTip": "C:\\Users\\mizer\\dev\\Vulkan-game-engine\\Scripts\\EngineScripting\\Rotate.cs",
               "RelativeToolTip": "Rotate.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAUAAAATAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAcAAAAIAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-06-21T15:11:25.085Z",
               "IsPinned": true,
@@ -60,13 +60,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "EngineCore.cs",
               "DocumentMoniker": "C:\\Users\\mizer\\dev\\Vulkan-game-engine\\Scripts\\EngineScripting\\EngineCore.cs",
               "RelativeDocumentMoniker": "EngineCore.cs",
               "ToolTip": "C:\\Users\\mizer\\dev\\Vulkan-game-engine\\Scripts\\EngineScripting\\EngineCore.cs",
               "RelativeToolTip": "EngineCore.cs",
-              "ViewState": "AQIAAB4AAAAAAAAAAAAowDYAAAAiAAAA",
+              "ViewState": "AQIAAB4AAAAAAAAAAAAowDYAAAAvAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-06-23T17:39:49.358Z",
               "EditorCaption": ""

@@ -106,13 +106,8 @@ namespace engine {
 
         ECS::Entity pointLight = assetSystem.CreateEntity();
         assetSystem.AddComponent(pointLight, ECS::Transform{glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
-        assetSystem.AddComponent(pointLight, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain});
+        //assetSystem.AddComponent(pointLight, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain});
         assetSystem.AddComponent(pointLight, ECS::PointLight{glm::vec3(1.0f, 1.0f, 1.0f)});
-
-        ECS::Entity pointLight2 = assetSystem.CreateEntity();
-        assetSystem.AddComponent(pointLight2, ECS::Transform{glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
-        assetSystem.AddComponent(pointLight2, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain});
-        assetSystem.AddComponent(pointLight2, ECS::PointLight{glm::vec3(1.0f, 1.0f, 1.0f)});
 
         //saveDataManager.saveData("../../saveFiles/Test.xml", assetSystem.getAllEntities());
 
@@ -247,7 +242,7 @@ namespace engine {
         inputReference[0].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         //normal color attachment
-        attachments[1].format = chooseSwapSurfaceFormat();
+        attachments[1].format = VK_FORMAT_R32G32B32A32_SFLOAT; // <================== device specific
         attachments[1].samples = device.msaaSamples;
         attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -263,7 +258,7 @@ namespace engine {
         inputReference[1].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         //position color attachment
-        attachments[2].format = chooseSwapSurfaceFormat();
+        attachments[2].format = VK_FORMAT_R32G32B32A32_SFLOAT;  // <================== device specific
         attachments[2].samples = device.msaaSamples;
         attachments[2].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         attachments[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
