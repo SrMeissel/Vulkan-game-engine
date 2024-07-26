@@ -4,6 +4,7 @@ layout (location = 0) in vec3 fragColor;
 layout (location = 1) in vec3 fragPosWorld;
 layout (location = 2) in vec3 fragNormalWorld;
 layout (location = 3) in vec2 fragUv;
+layout (location = 4) in mat3 TBN;
 
 layout (location = 0) out vec4 outColor;
 layout (location = 1) out vec4 outNormal;
@@ -26,7 +27,15 @@ layout(push_constant) uniform Push {
 } push;
 
 void main() {
-    outNormal = vec4(fragNormalWorld, 1.0) * (texture(sampler2D(normalValue, Sampler), fragUv) * 2 - 1);
+    vec3 VkNormal = (texture(sampler2D(normalValue, Sampler), fragUv).xyz);
+    // VkNormal.x = -VkNormal.x;
+    VkNormal.y = -VkNormal.y;
+    
+    vec3 Normal = normalize(TBN * VkNormal * 2.0 - 1.0);
+    // Normal.x = -Normal.x;
+    //Normal.y = -Normal.y;
+
+    outNormal = vec4(Normal, 1.0);
 
     outPosition = vec4(fragPosWorld, 1.0);
 

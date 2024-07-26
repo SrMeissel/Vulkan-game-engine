@@ -69,6 +69,41 @@ namespace ECS {
                 }
             }
 
+        //here is where I would calculate the tangents, maybe
+        //copilot copied from https://learnopengl.com/Advanced-Lighting/Normal-Mapping
+        // I want to get lighting working before I implement this       P.S. I did
+        for(int i = 0; i < indices.size(); i+=3){
+            engine::Vertex& v0 = vertices[indices[i]];
+            engine::Vertex& v1 = vertices[indices[i+1]];
+            engine::Vertex& v2 = vertices[indices[i+2]];
+
+            glm::vec3 edge1 = v1.position - v0.position;
+            glm::vec3 edge2 = v2.position - v0.position;
+
+            glm::vec2 deltaUV1 = v1.uv - v0.uv;
+            glm::vec2 deltaUV2 = v2.uv - v0.uv;
+
+            float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+            glm::vec3 tangent;
+            tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+            tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+            tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+
+            v0.tangent += tangent;
+            v1.tangent += tangent;
+            v2.tangent += tangent;
+
+            glm::vec3 biTangent;
+            biTangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+            biTangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+            biTangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+
+            v0.biTangent += biTangent;
+            v1.biTangent += biTangent;
+            v2.biTangent += biTangent;
+        }
+
             Path = filepath;
             // create vertex buffer ========================================================================================
             std::cout << "Vertex Count: " << vertices.size() << "\n";

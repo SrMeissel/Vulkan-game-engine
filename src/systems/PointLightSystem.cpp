@@ -99,8 +99,8 @@ namespace engine {
             //push constants ==================================================
 
             PushConstant push{};
-            push.color = pointLight.color;
-            push.position = transform.translation;
+            push.color = glm::vec4(pointLight.color, 1.0);
+            push.position = glm::vec4(transform.translation, 1.0);
 
             vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstant), &push);
 

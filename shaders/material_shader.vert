@@ -3,12 +3,15 @@
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 color;
 layout(location = 2) in vec3 normal;
-layout(location = 3) in vec2 uv;
+layout(location = 3) in vec3 tangent;
+layout(location = 4) in vec3 bitangent;
+layout(location = 5) in vec2 uv;
 
 layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec3 fragPosWorld;
 layout(location = 2) out vec3 fragNormalWorld;
 layout(location = 3) out vec2 fragUv;
+layout(location = 4) out mat3 TBN;
 
 layout(set = 0, binding = 0) uniform GlobalUbo {
     mat4 projection;
@@ -29,7 +32,14 @@ void main() {
     vec4 worldPosition = push.modelMatrix * vec4(position, 1.0);
     gl_Position = ubo.projection * ubo.view * worldPosition;
         
-    fragNormalWorld = normalize(mat3(push.normalMatrix) * normal);
+    //fragNormalWorld = normalize(mat3(push.normalMatrix) * normal);
+    fragNormalWorld = normal;
+
+    vec3 T = normalize(vec3(push.normalMatrix * vec4(tangent,   0.0)));
+    vec3 B = normalize(vec3(push.normalMatrix * vec4(bitangent, 0.0)));
+    vec3 N = normalize(vec3(push.normalMatrix * vec4(normal,    0.0)));
+    TBN = mat3(T, B, N);
+
     fragPosWorld = worldPosition.xyz;
     fragColor = color; 
 }

@@ -106,15 +106,19 @@ namespace engine {
 
         ECS::Entity pointLight = assetSystem.CreateEntity();
         assetSystem.AddComponent(pointLight, ECS::Transform{glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
-        //assetSystem.AddComponent(pointLight, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain});
+        assetSystem.AddComponent(pointLight, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain});
         assetSystem.AddComponent(pointLight, ECS::PointLight{glm::vec3(1.0f, 1.0f, 1.0f)});
+
+        ECS::Entity vase = assetSystem.CreateEntity();
+        assetSystem.AddComponent(vase, ECS::Transform{glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
+        assetSystem.AddComponent(vase, ECS::Renderable{"../../models/smooth_vase.obj", device});
 
         //saveDataManager.saveData("../../saveFiles/Test.xml", assetSystem.getAllEntities());
 
 
         //=======================================================================
 
-        sceneEditor.configureViewport(renderer.getRenderPass(0)->getAttachmentImageView(4), textureManager.getTextureSampler(), renderer.getRenderPass(0)->extent);
+        sceneEditor.configureViewport(renderer.getRenderPass(0)->getAttachmentImageView(4), renderer.getRenderPass(0)->getAttachmentImageView(1), textureManager.getTextureSampler(), renderer.getRenderPass(0)->extent);
  
         //Initialize Camera object ===================================
 

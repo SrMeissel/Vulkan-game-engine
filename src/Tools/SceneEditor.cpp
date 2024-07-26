@@ -63,8 +63,12 @@ namespace engine {
         ImGui::NewFrame();
 
         //Viewport Window ===========================================================================================================================================
-        ImGui::Begin("Viewport", (bool*)false, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground);
+        ImGui::Begin("main", (bool*)false, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground);
         ImGui::Image((ImTextureID)viewportDescriptorSet, ImVec2(viewportExtent.width, viewportExtent.height));
+        ImGui::End();
+
+        ImGui::Begin("secondary", (bool*)false, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground);
+        ImGui::Image((ImTextureID)secondaryViewportDescriptorSet, ImVec2(viewportExtent.width, viewportExtent.height));
         ImGui::End();
 
         //mess with object Window ====================================================
@@ -78,8 +82,9 @@ namespace engine {
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
     }
 
-    void SceneEditor::configureViewport(VkImageView imageView, VkSampler sampler, VkExtent2D extent) {
+    void SceneEditor::configureViewport(VkImageView imageView, VkImageView secondaryView, VkSampler sampler, VkExtent2D extent) {
         viewportDescriptorSet = ImGui_ImplVulkan_AddTexture(sampler, imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        secondaryViewportDescriptorSet = ImGui_ImplVulkan_AddTexture(sampler, secondaryView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         viewportExtent = extent;
     }
 

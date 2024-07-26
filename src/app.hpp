@@ -23,8 +23,8 @@
 namespace engine {
     class app {
         public:
-            static constexpr int WIDTH = 1200;
-            static constexpr int HEIGHT = 800;
+            static constexpr int WIDTH = 1920;
+            static constexpr int HEIGHT = 1080;
 
             app();
             ~app();
