@@ -28,12 +28,9 @@ layout(push_constant) uniform Push {
 
 void main() {
     vec3 VkNormal = (texture(sampler2D(normalValue, Sampler), fragUv).xyz);
-    // VkNormal.x = -VkNormal.x;
-    VkNormal.y = -VkNormal.y;
+    VkNormal = normalize(VkNormal * 2.0 - 1.0);
     
-    vec3 Normal = normalize(TBN * VkNormal * 2.0 - 1.0);
-    // Normal.x = -Normal.x;
-    //Normal.y = -Normal.y;
+    vec3 Normal = normalize(TBN * VkNormal);
 
     outNormal = vec4(Normal, 1.0);
 

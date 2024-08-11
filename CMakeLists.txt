@@ -11,6 +11,7 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/libs/glfw-3.3.8)
 add_subdirectory(${CMAKE_SOURCE_DIR}/libs/tinyobjloader-release)
+add_subdirectory(${CMAKE_SOURCE_DIR}/libs/assimp-5.4.2)
 
 find_package(Vulkan REQUIRED)
 
@@ -21,9 +22,7 @@ ${PROJECT_SOURCE_DIR}/src/*.cpp
 # I dont think this does what I think it does...
 ${PROJECT_SOURCE_DIR}/src/*.hpp
 ${PROJECT_SOURCE_DIR}/src/*.h
-
 ${PROJECT_SOURCE_DIR}/libs/tinyXML/*.cpp
-
 )
 
 add_executable(engine
@@ -33,6 +32,7 @@ add_executable(engine
 target_include_directories(engine PUBLIC
     ${PROJECT_SOURCE_DIR}/src  
     "C:/Program Files/Mono/include/mono-2.0"
+    ${PROJECT_SOURCE_DIR}/libs/assimp-5.4.2/include
 )
 
 target_sources(engine PRIVATE
@@ -53,6 +53,7 @@ target_link_libraries(engine glfw)
 target_link_libraries(engine tinyobjloader)
 target_link_libraries(engine Vulkan::Vulkan)
 target_link_libraries(engine "C:/Program Files/mono/msvc/build/sgen/x64/lib/Debug/mono-2.0-sgen.lib")
+target_link_libraries(engine assimp)
 
 # Build Shaders !!! doesnt work!
 # find_program(GLSL_VALIDATOR glslangValidator HINTS

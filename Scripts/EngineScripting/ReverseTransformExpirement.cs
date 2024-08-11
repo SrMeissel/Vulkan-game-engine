@@ -1,13 +1,13 @@
 ﻿using GameEngine;
 using System;
 
-public class TransformExpirement : EngineCore
+public class ReverseTransformExpirement : EngineCore
 {
 
     public double elapsedTime;
     public float radius = 5;
     public void update()
-    {   
+    {
         elapsedTime += deltaTime;
         if (elapsedTime > (2 * Math.PI))
         {

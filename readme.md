@@ -5,6 +5,7 @@ This project is dedicated to the development of a custom game engine, focusing o
 
 ![Textures Showcase](Images/ScreenShots/BindedTextures.JPG)
 ![Position Image](Images/ScreenShots/PositionImage.JPG)
+![Normal/Importing Image](Images/ScreenShots/SuccessfulNormalsANDImporting.png)
 
 ## Scripting API
 The engine can now run scripts attached to game objects. The scripting engine uses Mono and scripts can currently process user input and access the properties of the parent entity.
@@ -45,6 +46,7 @@ Sources:
 - <https://www.alexhyett.com/stack-vs-heap-memory/>
 - <https://www.youtube.com/watch?v=NRnj_lnpORU>
 - <https://jose-villegas.github.io/post/deferred_voxel_shading/>
+- <http://www.codinglabs.net/>
 
 ### Atmosphere and clouds
 
@@ -77,5 +79,6 @@ built in variables for frag shaders:
 - tinyobjloader - <https://github.com/tinyobjloader/tinyobjloader>
 - imgui - <https://github.com/ocornut/imgui.git>
 - Mono - <https://www.mono-project.com/>
+- Assimp 5.4.2 <https://github.com/assimp/assimp>
 
 I started this engine following [Vulkan (c++) Game Engine Tutorials](https://www.youtube.com/playlist?list=PL8327DO66nu9qYVKLDmdLW_84-yE4auCR) by Brendan Galea. This was intrumental on getting the ball rolling and I am very grateful that he took the time to make the series.

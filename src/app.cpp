@@ -4,7 +4,7 @@
 #include "bufferManager.hpp"
 #include "systems/meshSystem.hpp"
 #include "systems/materialSystem.hpp"
-#include "Importer.hpp"
+#include "ECS/Importer.hpp"
 #include "frameInfo.hpp"
 
 #include <iostream>
@@ -102,18 +102,21 @@ namespace engine {
         assetSystem.SetSystemSignature<PointLightSystem>(pointLightSignature);
 
         ECS::SaveDataManager saveDataManager{device, *scriptingSystem, *materialSystem}; 
-        saveDataManager.loadData("../../saveFiles/Test.xml", assetSystem);
+        saveDataManager.loadData("../../saveFiles/statuette.xml", assetSystem);
+
+        // ECS::Entity pointLight2 = assetSystem.CreateEntity();
+        // assetSystem.AddComponent(pointLight2, ECS::Transform{glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.5f), glm::vec3(0.0f)});
+        // assetSystem.AddComponent(pointLight2, ECS::Renderable("../../models/sphere.obj", device));
+        // assetSystem.AddComponent(pointLight2, ECS::PointLight{glm::vec3(1.0f, 0.0f, 0.0f)});
+
 
         ECS::Entity pointLight = assetSystem.CreateEntity();
-        assetSystem.AddComponent(pointLight, ECS::Transform{glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
+        assetSystem.AddComponent(pointLight, ECS::Transform{glm::vec3(0.0f, -0.5f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
         assetSystem.AddComponent(pointLight, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain});
-        assetSystem.AddComponent(pointLight, ECS::PointLight{glm::vec3(1.0f, 1.0f, 1.0f)});
+        assetSystem.AddComponent(pointLight, ECS::PointLight{glm::vec3(1.0f, 0.96f, 0.71f)});
 
-        ECS::Entity vase = assetSystem.CreateEntity();
-        assetSystem.AddComponent(vase, ECS::Transform{glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
-        assetSystem.AddComponent(vase, ECS::Renderable{"../../models/smooth_vase.obj", device});
 
-        //saveDataManager.saveData("../../saveFiles/Test.xml", assetSystem.getAllEntities());
+        //saveDataManager.saveData("../../saveFiles/statuette.xml", assetSystem.getAllEntities());
 
 
         //=======================================================================
@@ -294,7 +297,7 @@ namespace engine {
         //lighting attachment
         attachments[4].format = chooseSwapSurfaceFormat();
         attachments[4].samples = device.msaaSamples;
-        attachments[4].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachments[4].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         attachments[4].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         attachments[4].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         attachments[4].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;

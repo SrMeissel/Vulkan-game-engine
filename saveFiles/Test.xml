@@ -3,11 +3,10 @@
         <Transform>
             <Translation x="0" y="0" z="0"/>
             <Rotation x="0" y="0" z="0"/>
-            <Scale x="1" y="1" z="1"/>
+            <Scale x="5" y="5" z="5"/>
         </Transform>
-        <Renderable>../../models/colored_cube.obj</Renderable>
+        <Renderable>../../models/smooth_vase.obj</Renderable>
         <Script>Rotate</Script>
-        <Material albedoPath="../../textures/Experimental/Oak Bark_vmcjdbyfw/Albedo_2K__vmcjdbyfw.jpg" normalPath="../../textures/Experimental/Oak Bark_vmcjdbyfw/Normal_2K__vmcjdbyfw.jpg"/>
     </Entity>
     <Entity>
         <Transform>
@@ -21,18 +20,17 @@
         <Transform>
             <Translation x="-1" y="-0.5" z="2.5"/>
             <Rotation x="0" y="0" z="0"/>
-            <Scale x="1" y="1" z="1"/>
+            <Scale x="0.5" y="0.5" z="0.5"/>
         </Transform>
         <Renderable>../../models/sphere.obj</Renderable>
         <Script>TransformExpirement</Script>
     </Entity>
     <Entity>
         <Transform>
-            <Translation x="0" y="0.5" z="0"/>
+            <Translation x="0" y="0" z="0"/>
             <Rotation x="0" y="0" z="0"/>
             <Scale x="20" y="1" z="20"/>
         </Transform>
         <Renderable>../../models/quad.obj</Renderable>
-        <Material albedoPath="../../textures/Experimental/Mossy_Ground_xiboab2r/Albedo_2K__xiboab2r.jpg" normalPath="../../textures/Experimental/Mossy_Ground_xiboab2r/Normal_2K__xiboab2r.jpg"/>
     </Entity>
 </Collection>

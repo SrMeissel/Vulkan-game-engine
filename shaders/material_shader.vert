@@ -32,12 +32,11 @@ void main() {
     vec4 worldPosition = push.modelMatrix * vec4(position, 1.0);
     gl_Position = ubo.projection * ubo.view * worldPosition;
         
-    //fragNormalWorld = normalize(mat3(push.normalMatrix) * normal);
-    fragNormalWorld = normal;
+    fragNormalWorld = normalize(mat3(push.normalMatrix) * normal);
 
-    vec3 T = normalize(vec3(push.normalMatrix * vec4(tangent,   0.0)));
-    vec3 B = normalize(vec3(push.normalMatrix * vec4(bitangent, 0.0)));
-    vec3 N = normalize(vec3(push.normalMatrix * vec4(normal,    0.0)));
+    vec3 T = normalize(vec3(push.modelMatrix * vec4(tangent,   0.0)));
+    vec3 N = normalize(vec3(push.modelMatrix * vec4(normal,    0.0)));
+    vec3 B = normalize(cross(N, T));
     TBN = mat3(T, B, N);
 
     fragPosWorld = worldPosition.xyz;

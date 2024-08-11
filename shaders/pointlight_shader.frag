@@ -34,17 +34,17 @@ void main() {
     lightDirection = normalize(lightDirection);
 
     float cosangIncidence = max(dot(Normal.xyz, lightDirection), 0);
-    vec3 intensity = push.color * attenuation * 25.0;
+    vec3 intensity = push.color * attenuation * 70.0;
 
     diffuseLight += intensity * cosangIncidence;
 
     //specular Lighting
     vec3 halfAngle = normalize(lightDirection + viewDirection);
-    float blinnTerm = dot(Normal.xyz, halfAngle);
-    blinnTerm = clamp(blinnTerm, 0, 1);
-    blinnTerm = pow(blinnTerm, 32.0); //higher values = sharper light
+    float blinnTerm = max(dot(Normal.xyz, halfAngle), 0.0);
+    blinnTerm = pow(blinnTerm, 16.0); //higher values = sharper light
     specularLight += intensity * blinnTerm;
 
-    outColor = vec4(diffuseLight * Color.xyz + specularLight * Color.xyz, 1.0);
+    vec4 THELIGHT = vec4(diffuseLight + specularLight, 1.0);
+    outColor = THELIGHT * Color;
     //outColor = subpassLoad(inNormal);
 }

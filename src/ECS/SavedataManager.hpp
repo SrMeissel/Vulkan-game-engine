@@ -4,7 +4,7 @@
 #include "AssetManager.hpp"
 #include "../systems/MaterialSystem.hpp"
 #include "../../libs/tinyXML/tinyxml2.h"
-#include "../Importer.hpp"
+#include "Importer.hpp"
 #include "../Pipeline/deviceManager.hpp"
 
 #include <vector>
@@ -70,7 +70,7 @@ namespace ECS {
                             assetSystem.AddComponent(entity, transform);
                             
                         } else if (strcmp(componentName, "Renderable") == 0) {
-                            assetSystem.AddComponent(entity, Renderable(pComponent->GetText(), device));
+                            assetSystem.AddComponent(entity, Importer::loadMesh(pComponent->GetText(), device));
                         } else if (strcmp(componentName, "Script") == 0) {
                             assetSystem.AddComponent(entity, Script{pComponent->GetText(), scriptingSystem.assembly, scriptingSystem.appDomain });
                         } else if (strcmp(componentName, "Material") == 0) {
@@ -79,7 +79,7 @@ namespace ECS {
                             const char* normalPath;
                             pComponent->QueryStringAttribute("normalPath", &normalPath);
                             
-                            assetSystem.AddComponent(entity, ECS::Material(albedoPath, normalPath, device, materialSystem.getSampler(), materialSystem.getMaterialSetLayout()));
+                            assetSystem.AddComponent(entity, Importer::loadMaterial(albedoPath, normalPath, device, materialSystem.getSampler(), materialSystem.getMaterialSetLayout()));
                         } else if (strcmp(componentName, "PointLight") == 0) {
                             PointLight pointLight;
                             pComponent->QueryFloatAttribute("R", &pointLight.color.r);
