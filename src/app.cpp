@@ -1,9 +1,6 @@
 #include "app.hpp"
 #include "cameraManager.hpp"
-#include "keyboard_movement_controller.hpp"
 #include "bufferManager.hpp"
-#include "systems/meshSystem.hpp"
-#include "systems/materialSystem.hpp"
 #include "ECS/Importer.hpp"
 #include "frameInfo.hpp"
 
@@ -27,7 +24,6 @@ namespace engine {
     app::app() {
     }
     app::~app() {
-
     }
 
     void app::run() {
@@ -55,6 +51,7 @@ namespace engine {
             writer.build(globalDescriptorSets[i]);
         }
 
+        createSamplers();
 
         //Initialize render systems ======================================
 
@@ -73,6 +70,7 @@ namespace engine {
         std::shared_ptr<MeshSystem> meshSystem = assetSystem.RegisterSystem<MeshSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
         std::shared_ptr<ScriptingSystem> scriptingSystem = assetSystem.RegisterSystem<ScriptingSystem>(window);
         std::shared_ptr<PointLightSystem> pointLightSystem = assetSystem.RegisterSystem<PointLightSystem>(device, renderer.getRenderPass(0), globalSetLayout->getDescriptorSetLayout());
+        SkyboxSystem skyboxSystem{device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
 
         ECS::Signature meshSignature;
         meshSignature.set(assetSystem.GetComponentType<ECS::Transform>());
@@ -113,7 +111,7 @@ namespace engine {
         ECS::Entity pointLight = assetSystem.CreateEntity();
         assetSystem.AddComponent(pointLight, ECS::Transform{glm::vec3(0.0f, -0.5f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
         assetSystem.AddComponent(pointLight, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain});
-        assetSystem.AddComponent(pointLight, ECS::PointLight{glm::vec3(1.0f, 0.96f, 0.71f)});
+        assetSystem.AddComponent(pointLight, ECS::PointLight{glm::vec3(1.0f, 0.96f, 0.71f), 1.0f});
 
 
         //saveDataManager.saveData("../../saveFiles/statuette.xml", assetSystem.getAllEntities());
@@ -121,7 +119,7 @@ namespace engine {
 
         //=======================================================================
 
-        sceneEditor.configureViewport(renderer.getRenderPass(0)->getAttachmentImageView(4), renderer.getRenderPass(0)->getAttachmentImageView(1), textureManager.getTextureSampler(), renderer.getRenderPass(0)->extent);
+        sceneEditor.configureViewport(renderer.getRenderPass(0)->getAttachmentImageView(4), renderer.getRenderPass(0)->getAttachmentImageView(1), sampler, renderer.getRenderPass(0)->extent);
  
         //Initialize Camera object ===================================
 
@@ -130,7 +128,6 @@ namespace engine {
         ECS::Entity viewerObject = assetSystem.CreateEntity();
         assetSystem.AddComponent(viewerObject, ECS::Transform{glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
         assetSystem.AddComponent(viewerObject, ECS::Script{"CameraControl", scriptingSystem->assembly, scriptingSystem->appDomain });
-        keyboardMovementController cameraController{};
 
         //Main system loop ============================================
 
@@ -199,7 +196,8 @@ namespace engine {
                 vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
 
                 pointLightSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
-
+                // skyboxSystem.Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem, {0.0f, 0.0f, 1.0f, 1.0f});
+                // skyboxSystem.Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem, {1.0f, 0.0f, 0.0f, 1.0f});
 
                 renderer.endCurrentRenderPass(commandBuffer);
                 renderer.beginSwapChainRenderPass(commandBuffer);
@@ -220,6 +218,9 @@ namespace engine {
         //nvm im a genius
 
         materialSystem->cleanup(assetSystem);
+
+        vkDestroySampler(device.device(), sampler, nullptr);
+        vkDestroySampler(device.device(), cubeSampler, nullptr);
 
     }
 
@@ -297,7 +298,7 @@ namespace engine {
         //lighting attachment
         attachments[4].format = chooseSwapSurfaceFormat();
         attachments[4].samples = device.msaaSamples;
-        attachments[4].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachments[4].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         attachments[4].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         attachments[4].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         attachments[4].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -369,4 +370,52 @@ namespace engine {
 
         return availableFormats[0].format;
         }
+
+    void app::createSamplers() {
+        VkPhysicalDeviceProperties properties{};
+        vkGetPhysicalDeviceProperties(device.physicalDevice, &properties);
+        VkSamplerCreateInfo samplerInfo{};
+
+        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerInfo.magFilter = VK_FILTER_LINEAR;
+        samplerInfo.minFilter = VK_FILTER_LINEAR;
+        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.anisotropyEnable = VK_TRUE;
+        samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+        samplerInfo.unnormalizedCoordinates = VK_FALSE;
+        samplerInfo.compareEnable = VK_FALSE;
+        samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        samplerInfo.mipLodBias = 0.0f;
+        samplerInfo.minLod = 0.0f;
+        samplerInfo.maxLod = 0.0f;
+        
+        if (vkCreateSampler(device.device(), &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create texture sampler!");
+        }
+
+        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerInfo.magFilter = VK_FILTER_LINEAR;
+        samplerInfo.minFilter = VK_FILTER_LINEAR;
+        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.anisotropyEnable = VK_TRUE;
+        samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+        samplerInfo.unnormalizedCoordinates = VK_FALSE;
+        samplerInfo.compareEnable = VK_FALSE;
+        samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        samplerInfo.mipLodBias = 0.0f;
+        samplerInfo.minLod = 0.0f;
+        samplerInfo.maxLod = 0.0f;
+        
+        if (vkCreateSampler(device.device(), &samplerInfo, nullptr, &cubeSampler) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create texture sampler!");
+        }
+    }
 }

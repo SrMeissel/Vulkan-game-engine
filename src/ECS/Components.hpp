@@ -61,12 +61,17 @@ namespace ECS {
         }
     };
 
-    //this seems, too simple
     struct PointLight : public Component{
         PointLight() = default;
-        PointLight(glm::vec3 color) : color(color) {}
+        PointLight(glm::vec3 color, float intensity) : color(color), intensity(intensity) {}
+        PointLight(glm::vec3 color, float intensity, bool hasShadow) : color(color), intensity(intensity), hasShadow(hasShadow) {
+            if(hasShadow) {        
+
+            }
+        }
 
         glm::vec3 color;
+        float intensity;
 
         bool hasShadow = false;
         engine::AllocatedImage shadowMap;

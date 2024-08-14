@@ -18,7 +18,7 @@ namespace engine {
         (hashCombine(seed, rest), ...);
     };
 
-    //global structs
+    //global structs ==========================================================
 
     struct Vertex{
         glm::vec3 position{};
@@ -32,7 +32,21 @@ namespace engine {
             return position == other.position && color == other.color && normal == other.normal && uv == other.uv;
         }
     };
-        
+
+    struct AllocatedImage {
+
+        std::string path;
+
+        VkImage image;
+        VkImageView imageView;
+
+        VkDeviceMemory memory;
+        VkExtent3D imageExtent;
+        VkFormat imageFormat;
+    };
+
+    //vulkan generic functions =====================================================================
+
     static std::vector<VkVertexInputBindingDescription> getBindingDescriptions() {
         std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
         bindingDescriptions[0].binding = 0;
@@ -54,19 +68,9 @@ namespace engine {
         return attributeDescriptions;
     }
 
-    struct AllocatedImage {
-
-        std::string path;
-
-        VkImage image;
-        VkImageView imageView;
-
-        VkDeviceMemory memory;
-        VkExtent3D imageExtent;
-        VkFormat imageFormat;
-    };
-
 }
+
+//whatever the hell this is =====================================================================
 
 namespace std {
     template<>

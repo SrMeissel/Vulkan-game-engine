@@ -5,15 +5,16 @@
 #include "Pipeline/Renderer.hpp"
 #include "descriptorManager.hpp"
 #include "screenshotTool.hpp"
-#include "Components/textureManager.hpp"
 #include "Tools/SceneEditor.hpp"
 
 #include "ECS/AssetManager.hpp"
 #include "ECS/Components.hpp"
 
 #include "systems/ScriptingSystem.hpp"
+#include "systems/meshSystem.hpp"
 #include "systems/MaterialSystem.hpp"
 #include "systems/PointLightSystem.hpp"
+#include "systems/skyboxSystem.hpp"
 
 #include "ECS/SavedataManager.hpp"
 
@@ -35,6 +36,7 @@ namespace engine {
             void run();
         private:
             VkRenderPassCreateInfo* configureRenderPass();
+            void createSamplers();
             VkFormat chooseSwapSurfaceFormat();
 
             Window window{WIDTH, HEIGHT, "Hello there"};
@@ -43,11 +45,13 @@ namespace engine {
 
             SceneEditor sceneEditor{device, window, renderer};
 
-            TextureManager textureManager{device}; 
             ScreenshotTool screenshotTool;
 
             std::shared_ptr<DescriptorPool> globalPool;
             
             ECS::AssetSystem assetSystem;
+
+            VkSampler sampler;
+            VkSampler cubeSampler;
     };
 }

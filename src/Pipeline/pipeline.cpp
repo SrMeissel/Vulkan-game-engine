@@ -197,32 +197,32 @@ namespace engine {
         configInfo.attributeDescriptions = getAttributeDescriptions();
 
         //testing alpha blending as default value
-        configInfo.colorBlendAttachment[0].blendEnable = VK_TRUE;
-        configInfo.colorBlendAttachment[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        configInfo.colorBlendAttachment[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA; 
-        configInfo.colorBlendAttachment[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-        configInfo.colorBlendAttachment[0].colorBlendOp = VK_BLEND_OP_ADD;            
-        configInfo.colorBlendAttachment[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; 
-        configInfo.colorBlendAttachment[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-        configInfo.colorBlendAttachment[0].alphaBlendOp = VK_BLEND_OP_ADD; 
+        // configInfo.colorBlendAttachment[0].blendEnable = VK_TRUE;
+        // configInfo.colorBlendAttachment[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        // configInfo.colorBlendAttachment[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA; 
+        // configInfo.colorBlendAttachment[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        // configInfo.colorBlendAttachment[0].colorBlendOp = VK_BLEND_OP_ADD;            
+        // configInfo.colorBlendAttachment[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; 
+        // configInfo.colorBlendAttachment[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        // configInfo.colorBlendAttachment[0].alphaBlendOp = VK_BLEND_OP_ADD; 
 
-        configInfo.colorBlendAttachment[1].blendEnable = VK_TRUE;
-        configInfo.colorBlendAttachment[1].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        configInfo.colorBlendAttachment[1].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA; 
-        configInfo.colorBlendAttachment[1].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-        configInfo.colorBlendAttachment[1].colorBlendOp = VK_BLEND_OP_ADD;            
-        configInfo.colorBlendAttachment[1].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; 
-        configInfo.colorBlendAttachment[1].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-        configInfo.colorBlendAttachment[1].alphaBlendOp = VK_BLEND_OP_ADD; 
+        // configInfo.colorBlendAttachment[1].blendEnable = VK_TRUE;
+        // configInfo.colorBlendAttachment[1].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        // configInfo.colorBlendAttachment[1].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA; 
+        // configInfo.colorBlendAttachment[1].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        // configInfo.colorBlendAttachment[1].colorBlendOp = VK_BLEND_OP_ADD;            
+        // configInfo.colorBlendAttachment[1].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; 
+        // configInfo.colorBlendAttachment[1].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        // configInfo.colorBlendAttachment[1].alphaBlendOp = VK_BLEND_OP_ADD; 
 
-        configInfo.colorBlendAttachment[2].blendEnable = VK_TRUE;
-        configInfo.colorBlendAttachment[2].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        configInfo.colorBlendAttachment[2].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA; 
-        configInfo.colorBlendAttachment[2].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-        configInfo.colorBlendAttachment[2].colorBlendOp = VK_BLEND_OP_ADD;            
-        configInfo.colorBlendAttachment[2].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; 
-        configInfo.colorBlendAttachment[2].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-        configInfo.colorBlendAttachment[2].alphaBlendOp = VK_BLEND_OP_ADD; 
+        // configInfo.colorBlendAttachment[2].blendEnable = VK_TRUE;
+        // configInfo.colorBlendAttachment[2].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        // configInfo.colorBlendAttachment[2].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA; 
+        // configInfo.colorBlendAttachment[2].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        // configInfo.colorBlendAttachment[2].colorBlendOp = VK_BLEND_OP_ADD;            
+        // configInfo.colorBlendAttachment[2].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; 
+        // configInfo.colorBlendAttachment[2].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        // configInfo.colorBlendAttachment[2].alphaBlendOp = VK_BLEND_OP_ADD; 
     }
 
     void Pipeline::bind(VkCommandBuffer commandBuffer) {

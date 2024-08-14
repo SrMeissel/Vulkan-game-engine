@@ -7,4 +7,7 @@ C:\Users\mizer\dev\Development-Kits\VulkanSDK\Bin\glslc.exe shaders\material_sha
 C:\Users\mizer\dev\Development-Kits\VulkanSDK\Bin\glslc.exe shaders\mesh_shader.vert -o shaders\mesh.vert.spv
 C:\Users\mizer\dev\Development-Kits\VulkanSDK\Bin\glslc.exe shaders\mesh_shader.frag -o shaders\mesh.frag.spv
 
+C:\Users\mizer\dev\Development-Kits\VulkanSDK\Bin\glslc.exe shaders\skybox_shader.vert -o shaders\skybox.vert.spv
+C:\Users\mizer\dev\Development-Kits\VulkanSDK\Bin\glslc.exe shaders\skybox_shader.frag -o shaders\skybox.frag.spv
+
 pause
