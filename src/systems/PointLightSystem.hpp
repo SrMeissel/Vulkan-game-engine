@@ -9,6 +9,8 @@
 
 #include <glm/glm.hpp>
 
+// http://www.cemyuksel.com/research/pointlightattenuation/
+
 namespace engine {
     class PointLightSystem : public ECS::System {
     public:

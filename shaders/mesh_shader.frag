@@ -20,7 +20,6 @@ layout(push_constant) uniform Push {
 } push;
 
 void main() {
-    //vec3 surfaceNormal = normalize(fragNormalWorld);
     outNormal = vec4(fragNormalWorld, 1.0);
     outPosition = vec4(fragPosWorld, 1.0);
 

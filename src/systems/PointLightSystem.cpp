@@ -37,6 +37,8 @@ namespace engine {
         pipelineConfig.renderPass = renderPass->getRenderPass();
         pipelineConfig.subpass = 1;
 
+        pipelineConfig.depthStencilInfo.depthTestEnable = VK_FALSE;
+
         VkPipelineColorBlendAttachmentState colorBlendAttachment{};
         colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
         colorBlendAttachment.blendEnable = VK_TRUE;
@@ -55,11 +57,6 @@ namespace engine {
         std::vector<std::string> files = {"../../shaders/pointlight.vert.spv", "../../shaders/pointlight.frag.spv"};
         std::vector<VkShaderStageFlagBits> flags = { VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_FRAGMENT_BIT};
         pipeline = std::make_unique<Pipeline>(device, files, flags, pipelineConfig);
-
-        //create Sampler ==============================================================================
-        VkPhysicalDeviceProperties properties{};
-        vkGetPhysicalDeviceProperties(device.physicalDevice, &properties);
-
 
         //create Descriptor Set ==============================================================================
 

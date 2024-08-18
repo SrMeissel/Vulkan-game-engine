@@ -47,6 +47,8 @@ Sources:
 - <https://www.youtube.com/watch?v=NRnj_lnpORU>
 - <https://jose-villegas.github.io/post/deferred_voxel_shading/>
 - <http://www.codinglabs.net/>
+- <http://alexcpeterson.com/spacescape/>
+- <http://www.cemyuksel.com/research/>
 
 ### Atmosphere and clouds
 

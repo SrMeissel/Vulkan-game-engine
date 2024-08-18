@@ -14,6 +14,8 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
 layout(push_constant) uniform Push {
     vec3 position;
     vec3 color;
+    float radius; // 2
+    float intensity; // 5
 } push;
 
 
@@ -29,22 +31,25 @@ void main() {
     vec3 viewDirection = normalize(cameraPosWorld - Position.xyz);
 
     vec3 lightDirection = push.position.xyz - Position.xyz;
-    float attenuation = 1.0 / dot(lightDirection, lightDirection); // dot of the same matrix gives the length squared, i guess
+    //float attenuation = 1.0 / (dot(lightDirection, lightDirection) * 5.0);
     
+    float attenuation = (2/(push.radius*push.radius))*(1 - (sqrt(dot(lightDirection, lightDirection))/sqrt(dot(lightDirection, lightDirection)+(push.radius*push.radius))));
+ 
     lightDirection = normalize(lightDirection);
 
     float cosangIncidence = max(dot(Normal.xyz, lightDirection), 0);
-    vec3 intensity = push.color * attenuation * 70.0;
+    vec3 intensity = push.color * attenuation * push.intensity;
 
     diffuseLight += intensity * cosangIncidence;
 
     //specular Lighting
     vec3 halfAngle = normalize(lightDirection + viewDirection);
     float blinnTerm = max(dot(Normal.xyz, halfAngle), 0.0);
-    blinnTerm = pow(blinnTerm, 16.0); //higher values = sharper light
+    blinnTerm = pow(blinnTerm, 8.0); //higher values = sharper light
     specularLight += intensity * blinnTerm;
 
     vec4 THELIGHT = vec4(diffuseLight + specularLight, 1.0);
     outColor = THELIGHT * Color;
+    //vec4(specularLight, 1.0);
     //outColor = subpassLoad(inNormal);
 }

@@ -18,7 +18,7 @@
     </Entity>
     <Entity>
         <Transform>
-            <Translation x="-1" y="-0.5" z="2.5"/>
+            <Translation x="-1" y="-1.0" z="2.5"/>
             <Rotation x="0" y="0" z="0"/>
             <Scale x="0.5" y="0.5" z="0.5"/>
         </Transform>

@@ -109,10 +109,9 @@ namespace engine {
 
 
         ECS::Entity pointLight = assetSystem.CreateEntity();
-        assetSystem.AddComponent(pointLight, ECS::Transform{glm::vec3(0.0f, -0.5f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
+        assetSystem.AddComponent(pointLight, ECS::Transform{glm::vec3(0.0f, -1.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
         assetSystem.AddComponent(pointLight, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain});
         assetSystem.AddComponent(pointLight, ECS::PointLight{glm::vec3(1.0f, 0.96f, 0.71f), 1.0f});
-
 
         //saveDataManager.saveData("../../saveFiles/statuette.xml", assetSystem.getAllEntities());
 
@@ -233,7 +232,7 @@ namespace engine {
         static std::array<VkAttachmentReference, 3> inputReference = {};
 
 
-        //colorAttachment (Attachment 0 must be swapchain image, this is constant every time)
+        //colorAttachment
         attachments[0].format = chooseSwapSurfaceFormat();
         attachments[0].samples = device.msaaSamples;
         attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;

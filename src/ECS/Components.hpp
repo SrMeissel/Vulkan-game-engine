@@ -64,17 +64,15 @@ namespace ECS {
     struct PointLight : public Component{
         PointLight() = default;
         PointLight(glm::vec3 color, float intensity) : color(color), intensity(intensity) {}
-        PointLight(glm::vec3 color, float intensity, bool hasShadow) : color(color), intensity(intensity), hasShadow(hasShadow) {
-            if(hasShadow) {        
+        PointLight(glm::vec3 color, float intensity, bool hasShadow) : color(color), intensity(intensity) {
 
-            }
         }
 
         glm::vec3 color;
         float intensity;
 
-        bool hasShadow = false;
         engine::AllocatedImage shadowMap;
+        VkFramebuffer shadowMapFrameBuffer;
 
         tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
             tinyxml2::XMLElement* pointLight = doc.NewElement("PointLight");
