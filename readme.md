@@ -49,6 +49,10 @@ Sources:
 - <http://www.codinglabs.net/>
 - <http://alexcpeterson.com/spacescape/>
 - <http://www.cemyuksel.com/research/>
+- it seems Cem Tuskel is a total chad  
+- <https://taidaesal.github.io/vulkano_tutorial/>
+- <https://raytracing-docs.nvidia.com/mdl/api/mi_neuray_example_df_vulkan.html>
+- <https://www.youtube.com/@GetIntoGameDev/featured>
 
 ### Atmosphere and clouds
 

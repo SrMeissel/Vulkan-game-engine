@@ -45,6 +45,11 @@ namespace engine {
         VkFormat imageFormat;
     };
 
+    // I hope I don't regret this
+    struct CubeMap : public AllocatedImage {
+        std::string tags; // the base filepath for all images should be the same, but these tags differentiate each face :)
+    };
+
     //vulkan generic functions =====================================================================
 
     static std::vector<VkVertexInputBindingDescription> getBindingDescriptions() {

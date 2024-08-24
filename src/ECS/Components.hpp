@@ -61,14 +61,33 @@ namespace ECS {
         }
     };
 
-    struct PointLight : public Component{
-        PointLight() = default;
-        PointLight(glm::vec3 color, float intensity) : color(color), intensity(intensity) {}
-        PointLight(glm::vec3 color, float intensity, bool hasShadow) : color(color), intensity(intensity) {
+    struct SkyBox : public Component {
+        // https://satellitnorden.wordpress.com/2018/01/23/vulkan-adventures-cube-map-tutorial/
+        SkyBox() = default;
+        SkyBox(std::string path) : Path(path) {}
 
+        std::string Path;
+        std::vector<std::string> tags;
+
+        engine::CubeMap skyBoxImage;
+
+        VkDescriptorImageInfo imageInfo;
+        std::shared_ptr<engine::DescriptorPool> descriptorPool;
+        VkDescriptorSet descriptorSet;
+
+        tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
+            tinyxml2::XMLElement* skyBox = doc.NewElement("SkyBox");
+            skyBox->SetText(Path.c_str());
+            return skyBox;
         }
+    };
+
+    struct PointLight : public Component {
+        PointLight() = default;
+        PointLight(glm::vec3 color, float intensity, float radius) : color(color), intensity(intensity), radius(radius) {}
 
         glm::vec3 color;
+        float radius;
         float intensity;
 
         engine::AllocatedImage shadowMap;
@@ -79,6 +98,8 @@ namespace ECS {
             pointLight->SetAttribute("R", color.r);
             pointLight->SetAttribute("G", color.g);
             pointLight->SetAttribute("B", color.b);
+            pointLight->SetAttribute("intensity", intensity);
+            pointLight->SetAttribute("radius", radius);
             return pointLight;
         }
     };
@@ -179,7 +200,7 @@ namespace ECS {
     };
 
     struct Script : public Component {
-        const char* className;
+        std::string className;
         MonoClass* scriptClass;
         MonoObject* scriptObject;
         MonoClass* objectClass;
@@ -201,7 +222,6 @@ namespace ECS {
             objectClass = nullptr;
         }
 
-        // I might want to find a way to make the assembly and domain accessible differently.
         Script(const char* name, MonoAssembly* assembly, MonoDomain* appDomain) {
             className = name;
             image = mono_assembly_get_image(assembly);
@@ -228,7 +248,8 @@ namespace ECS {
 
         tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
             tinyxml2::XMLElement* script = doc.NewElement("Script");
-            script->SetText(className);
+            std::cout << "Saving Script: " << className << std::endl;
+            script->SetText(className.c_str());
             return script;
         }
 

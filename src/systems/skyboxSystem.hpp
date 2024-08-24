@@ -13,16 +13,23 @@ namespace engine {
         SkyboxSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
         ~SkyboxSystem() { vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); }
 
-        void Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager, glm::vec4 color);
+        void Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager);
+
+        void SkyboxSystem::cleanup(ECS::AssetSystem& assetManager);
+
+        std::unique_ptr<DescriptorSetLayout>& getSetLayout() { return setLayout; }
 
     private:
         struct PushConstant {
-            glm::vec4 color;
+	        glm::mat4 rotation;
         };
 
         Device &device;
 
         std::unique_ptr<Pipeline> pipeline;
         VkPipelineLayout pipelineLayout;
+
+        std::unique_ptr<DescriptorSetLayout> setLayout;
+
     };
 }

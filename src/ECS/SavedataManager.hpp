@@ -71,8 +71,10 @@ namespace ECS {
                             
                         } else if (strcmp(componentName, "Renderable") == 0) {
                             assetSystem.AddComponent(entity, Importer::loadMesh(pComponent->GetText(), device));
+
                         } else if (strcmp(componentName, "Script") == 0) {
                             assetSystem.AddComponent(entity, Script{pComponent->GetText(), scriptingSystem.assembly, scriptingSystem.appDomain });
+
                         } else if (strcmp(componentName, "Material") == 0) {
                             const char* albedoPath;
                             pComponent->QueryStringAttribute("albedoPath", &albedoPath);
@@ -80,13 +82,17 @@ namespace ECS {
                             pComponent->QueryStringAttribute("normalPath", &normalPath);
                             
                             assetSystem.AddComponent(entity, Importer::loadMaterial(albedoPath, normalPath, device, materialSystem.getSampler(), materialSystem.getMaterialSetLayout()));
+                            
                         } else if (strcmp(componentName, "PointLight") == 0) {
                             PointLight pointLight;
                             pComponent->QueryFloatAttribute("R", &pointLight.color.r);
                             pComponent->QueryFloatAttribute("G", &pointLight.color.g);
                             pComponent->QueryFloatAttribute("B", &pointLight.color.b);
+                            pComponent->QueryFloatAttribute("intensity", &pointLight.intensity);
+                            pComponent->QueryFloatAttribute("radius", &pointLight.radius);
                             
                             assetSystem.AddComponent(entity, pointLight);
+
                         }
                         else {
                             std::cout << "Component not found" << std::endl;

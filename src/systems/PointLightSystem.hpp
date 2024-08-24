@@ -23,6 +23,8 @@ namespace engine {
         struct PushConstant {
             glm::vec4 position;
             glm::vec4 color;
+            float intensity;
+            float radius;
         };
 
         Device &device;

@@ -6,7 +6,6 @@
             <Scale x="5" y="5" z="5"/>
         </Transform>
         <Renderable>../../models/smooth_vase.obj</Renderable>
-        <Script>Rotate</Script>
     </Entity>
     <Entity>
         <Transform>
@@ -15,15 +14,6 @@
             <Scale x="1" y="1" z="1"/>
         </Transform>
         <Renderable>../../models/colored_cube.obj</Renderable>
-    </Entity>
-    <Entity>
-        <Transform>
-            <Translation x="-1" y="-1.0" z="2.5"/>
-            <Rotation x="0" y="0" z="0"/>
-            <Scale x="0.5" y="0.5" z="0.5"/>
-        </Transform>
-        <Renderable>../../models/sphere.obj</Renderable>
-        <Script>TransformExpirement</Script>
     </Entity>
     <Entity>
         <Transform>
@@ -80,10 +70,20 @@
     </Entity>
     <Entity>
         <Transform>
-            <Translation x="0" y="-1.0" z="-4"/>
+            <Translation x="2" y="-1.5" z="-3"/>
+            <Rotation x="0" y="0" z="0"/>
+            <Scale x="0.5" y="0.5" z="0.5"/>
+        </Transform>
+        <PointLight R="1" G="1" B="0" intensity="10" radius="4"/>
+        <Script>ReverseTransformExpirement</Script>
+    </Entity>
+    <Entity>
+        <Transform>
+            <Translation x="-2" y="-1.5" z="-3"/>
             <Rotation x="0" y="0" z="0"/>
             <Scale x="1" y="1" z="1"/>
         </Transform>
-        <PointLight R="1" G="0.96" B="0.51" intensity="10" radius="4"/>
+        <PointLight R="0" G="1" B="0" intensity="10" radius="4"/>
+        <Script>TransformExpirement</Script>
     </Entity>
 </Collection>

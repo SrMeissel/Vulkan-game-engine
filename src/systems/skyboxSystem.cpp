@@ -3,6 +3,12 @@
 #include <iostream>
 #include <stdexcept>
 
+// https://www.youtube.com/watch?v=iRepdTM8oqI
+// this was helpful
+
+// https://gamedev.stackexchange.com/questions/60313/implementing-a-skybox-with-glsl-version-330?newreg=ea7231270e514471ac6dcc7370d80bef
+// this was awesome
+
 namespace engine {
     SkyboxSystem::SkyboxSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout): device{device} {
         //create Pipeline Layout ==================================================
@@ -12,10 +18,14 @@ namespace engine {
         pushConstantRange.offset = 0;
         pushConstantRange.size = sizeof(PushConstant);
 
+        std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout};
+        setLayout = DescriptorSetLayout::Builder(device).addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT).build();
+        descriptorSetLayouts.push_back(setLayout->getDescriptorSetLayout());
+
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = 0;
-        pipelineLayoutInfo.pSetLayouts = nullptr;
+        pipelineLayoutInfo.setLayoutCount = descriptorSetLayouts.size();
+        pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
         pipelineLayoutInfo.pushConstantRangeCount = 1;
         pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
         if(vkCreatePipelineLayout(device.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
@@ -32,35 +42,66 @@ namespace engine {
         VkPipelineColorBlendAttachmentState colorBlendAttachment{};
         colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
         colorBlendAttachment.blendEnable = VK_TRUE;
-        colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+        colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
         colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
         colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
         colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-        colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
         colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
         pipelineConfig.colorBlendInfo.pAttachments = &colorBlendAttachment;
         pipelineConfig.colorBlendInfo.attachmentCount = 1;
 
 
-        pipelineConfig.depthStencilInfo.depthTestEnable = VK_FALSE;
+        pipelineConfig.depthStencilInfo.depthTestEnable = VK_TRUE;
+        pipelineConfig.depthStencilInfo.depthWriteEnable = VK_FALSE; // Disable depth writes
+        pipelineConfig.depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 
         pipelineConfig.pipelineLayout = pipelineLayout;
 
         std::vector<std::string> files = {"../../shaders/skybox.vert.spv", "../../shaders/skybox.frag.spv"};
         std::vector<VkShaderStageFlagBits> flags = { VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_FRAGMENT_BIT};
         pipeline = std::make_unique<Pipeline>(device, files, flags, pipelineConfig);
+
     }
 
-    void SkyboxSystem::Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assets, glm::vec4 color) {
-        pipeline->bind(commandBuffer);
+    void SkyboxSystem::Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assets) {
+        assert(entities.size() == 1 && "Why are there more than one skybox?");
 
+        pipeline->bind(commandBuffer);
+        
+        ECS::SkyBox& skybox = ECS::SkyBox();
+        ECS::Transform& transform = ECS::Transform();
+        for(auto& entity : entities) {
+            skybox = assets.GetComponent<ECS::SkyBox>(entity);
+            transform = assets.GetComponent<ECS::Transform>(entity);
+        }
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &globalUBOSet, 0, nullptr);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &skybox.descriptorSet, 0, nullptr);
+
+        glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+        glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 rotationZ = glm::rotate(glm::mat4(1.0f), glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::mat4 rotationMatrix = rotationX * rotationY * rotationZ;
+        
         PushConstant push{};
-        push.color = color;
+        push.rotation = rotationX;
 
         vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstant), &push);
 
         vkCmdDraw(commandBuffer, 3, 1, 0, 0);
         
+    }
+
+    void SkyboxSystem::cleanup(ECS::AssetSystem& assetManager) {
+        for(auto& entity : entities) {
+            ECS::SkyBox& skybox = assetManager.GetComponent<ECS::SkyBox>(entity);
+            vkDestroyImageView(device.device(), skybox.skyBoxImage.imageView, nullptr);
+            vkDestroyImage(device.device(), skybox.skyBoxImage.image, nullptr);
+            vkFreeMemory(device.device(), skybox.skyBoxImage.memory, nullptr);
+
+            //dont need to destroy descriptor things since the abstraction takes care of it already :)
+            //already destroying the descriptor set layout and sampler in the destructor
+        }
     }
 }

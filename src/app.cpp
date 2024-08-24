@@ -55,7 +55,7 @@ namespace engine {
 
         //Initialize render systems ======================================
 
-        RenderPass scenePass{device, window, configureRenderPass(), false, {800, 600}};
+        RenderPass scenePass{device, window, configureRenderPass(), false, {800, 600}}; // 1280, 720 is 720p
         renderer.appendRenderPass(& scenePass);
 
         //Initialize asset system ======================================
@@ -66,11 +66,13 @@ namespace engine {
         assetSystem.RegisterComponent<ECS::Material>();
         assetSystem.RegisterComponent<ECS::Script>();
         assetSystem.RegisterComponent<ECS::PointLight>();
+        assetSystem.RegisterComponent<ECS::SkyBox>();
 
         std::shared_ptr<MeshSystem> meshSystem = assetSystem.RegisterSystem<MeshSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
+        std::shared_ptr<MaterialSystem> materialSystem = assetSystem.RegisterSystem<MaterialSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
         std::shared_ptr<ScriptingSystem> scriptingSystem = assetSystem.RegisterSystem<ScriptingSystem>(window);
         std::shared_ptr<PointLightSystem> pointLightSystem = assetSystem.RegisterSystem<PointLightSystem>(device, renderer.getRenderPass(0), globalSetLayout->getDescriptorSetLayout());
-        SkyboxSystem skyboxSystem{device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout()};
+        std::shared_ptr<SkyboxSystem> skyboxSystem = assetSystem.RegisterSystem<SkyboxSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
 
         ECS::Signature meshSignature;
         meshSignature.set(assetSystem.GetComponentType<ECS::Transform>());
@@ -80,8 +82,6 @@ namespace engine {
         ECS::Signature meshAntiSignature;
         meshAntiSignature.set(assetSystem.GetComponentType<ECS::Material>());
         assetSystem.SetSystemAntiSignature<MeshSystem>(meshAntiSignature);
-
-        std::shared_ptr<MaterialSystem> materialSystem = assetSystem.RegisterSystem<MaterialSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
 
         ECS::Signature materialSignature;
         materialSignature.set(assetSystem.GetComponentType<ECS::Transform>());
@@ -99,22 +99,21 @@ namespace engine {
         pointLightSignature.set(assetSystem.GetComponentType<ECS::PointLight>());
         assetSystem.SetSystemSignature<PointLightSystem>(pointLightSignature);
 
+        ECS::Signature skyboxSigniture;
+        pointLightSignature.set(assetSystem.GetComponentType<ECS::Transform>());
+        skyboxSigniture.set(assetSystem.GetComponentType<ECS::SkyBox>());
+        assetSystem.SetSystemSignature<SkyboxSystem>(skyboxSigniture);
+
         ECS::SaveDataManager saveDataManager{device, *scriptingSystem, *materialSystem}; 
         saveDataManager.loadData("../../saveFiles/statuette.xml", assetSystem);
 
-        // ECS::Entity pointLight2 = assetSystem.CreateEntity();
-        // assetSystem.AddComponent(pointLight2, ECS::Transform{glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.5f), glm::vec3(0.0f)});
-        // assetSystem.AddComponent(pointLight2, ECS::Renderable("../../models/sphere.obj", device));
-        // assetSystem.AddComponent(pointLight2, ECS::PointLight{glm::vec3(1.0f, 0.0f, 0.0f)});
-
-
-        ECS::Entity pointLight = assetSystem.CreateEntity();
-        assetSystem.AddComponent(pointLight, ECS::Transform{glm::vec3(0.0f, -1.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
-        assetSystem.AddComponent(pointLight, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain});
-        assetSystem.AddComponent(pointLight, ECS::PointLight{glm::vec3(1.0f, 0.96f, 0.71f), 1.0f});
-
-        //saveDataManager.saveData("../../saveFiles/statuette.xml", assetSystem.getAllEntities());
-
+        // saveDataManager.saveData("../../saveFiles/statuetteGG.xml", assetSystem.getAllEntities());
+        
+        ECS::Entity skyboxEntity = assetSystem.CreateEntity();
+        assetSystem.AddComponent(skyboxEntity, ECS::Transform{glm::vec3{0.0f}, glm::vec3{1.0f}, glm::vec3{0.0f}});
+        assetSystem.AddComponent(skyboxEntity, Importer::loadSkyBox("../../textures/Skybox/space-Bright.jpg", std::vector<std::string>{"RT", "LF", "UP", "DN", "FT", "BK"}, device, cubeSampler, skyboxSystem->getSetLayout()));
+        assetSystem.AddComponent(skyboxEntity, ECS::Script("RotateControl", scriptingSystem->assembly, scriptingSystem->appDomain));
+        std::cout << "Made skybox object" << std::endl;
 
         //=======================================================================
 
@@ -195,8 +194,7 @@ namespace engine {
                 vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
 
                 pointLightSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
-                // skyboxSystem.Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem, {0.0f, 0.0f, 1.0f, 1.0f});
-                // skyboxSystem.Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem, {1.0f, 0.0f, 0.0f, 1.0f});
+                skyboxSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
 
                 renderer.endCurrentRenderPass(commandBuffer);
                 renderer.beginSwapChainRenderPass(commandBuffer);
@@ -217,6 +215,7 @@ namespace engine {
         //nvm im a genius
 
         materialSystem->cleanup(assetSystem);
+        skyboxSystem->cleanup(assetSystem);
 
         vkDestroySampler(device.device(), sampler, nullptr);
         vkDestroySampler(device.device(), cubeSampler, nullptr);

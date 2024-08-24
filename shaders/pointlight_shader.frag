@@ -12,11 +12,13 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
 } ubo;
 
 layout(push_constant) uniform Push {
-    vec3 position;
-    vec3 color;
+    vec4 position;
+    vec4 color;
+    float intensity; // 5    
     float radius; // 2
-    float intensity; // 5
+    // intensity can be color.w, radius can be position.w just saying
 } push;
+
 
 
 void main() {
@@ -38,7 +40,7 @@ void main() {
     lightDirection = normalize(lightDirection);
 
     float cosangIncidence = max(dot(Normal.xyz, lightDirection), 0);
-    vec3 intensity = push.color * attenuation * push.intensity;
+    vec3 intensity = push.color.xyz * attenuation * push.intensity;
 
     diffuseLight += intensity * cosangIncidence;
 

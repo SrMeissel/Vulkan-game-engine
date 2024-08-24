@@ -80,6 +80,180 @@ namespace Importer {
         return image;
     };
 
+    static engine::CubeMap loadCubeMap(const std::string filepath, std::vector<std::string> tags, engine::Device& device, VkFormat format) {
+        assert(tags.size() == 6 && "not all cube faces are filled, dumbass" );
+
+        engine::CubeMap cubeMap{};
+
+        size_t index = filepath.find_last_of('.');
+        std::string fileName = filepath.substr(0, index);
+        std::string extention = filepath.substr(index);
+        std::string imagePath = fileName + tags[0] + extention;
+
+        int texWidth, texHeight, texChannels;
+        std::cout << "loading cube face: " << imagePath << std::endl;
+        stbi_uc* pixels = stbi_load(imagePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+        if(!pixels) throw std::runtime_error("failed to load texture image!"); 
+
+        VkDeviceSize imageSize = texWidth * texHeight * 4;
+        engine::Buffer stagingBuffer{device, sizeof(pixels[0]), static_cast<uint32_t>(imageSize * 6), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
+
+        stagingBuffer.map(imageSize);
+        stagingBuffer.writeToBuffer((void*)pixels, imageSize);
+        stagingBuffer.unmap();
+
+        stbi_image_free(pixels);
+
+        for(int i=1; i < 6; i++) {
+            imagePath = fileName + tags[i] + extention;
+            std::cout << "loading cube face: " << imagePath << std::endl;
+
+            pixels = stbi_load(imagePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+            if(!pixels) throw std::runtime_error("failed to load texture image!"); 
+
+            stagingBuffer.map(imageSize, imageSize * i);
+            stagingBuffer.writeToBuffer((void*)pixels, imageSize);
+            stagingBuffer.unmap();
+
+            stbi_image_free(pixels);
+        }
+
+        VkImageCreateInfo imageInfo{};
+        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageInfo.extent.width = texWidth;
+        imageInfo.extent.height = texHeight;
+        imageInfo.extent.depth = 1;
+        imageInfo.mipLevels = 1;
+        imageInfo.arrayLayers = 6; // <------------------------
+        imageInfo.format = format;
+        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;    
+        imageInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;    
+        device.createImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, cubeMap.image, cubeMap.memory);
+
+        //this is a custom version of the Device::transitionImageLayout function =================================================================
+            VkCommandBuffer commandBuffer = device.beginSingleTimeCommands();
+
+            VkImageMemoryBarrier barrier{};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+            barrier.image = cubeMap.image;
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            barrier.subresourceRange.baseMipLevel = 0;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 6;
+
+            VkPipelineStageFlags sourceStage;
+            VkPipelineStageFlags destinationStage;
+
+            barrier.srcAccessMask = 0;
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+
+            vkCmdPipelineBarrier(
+            commandBuffer,
+            sourceStage, destinationStage,
+            0,
+            0, nullptr,
+            0, nullptr,
+            1, &barrier
+            );
+            device.endSingleTimeCommands(commandBuffer);
+        // ==============================================================================================================================
+
+        device.copyBufferToImage(stagingBuffer.getBuffer(), cubeMap.image, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 6);
+
+        // another unique copy of the function ==========================================================================================
+            VkCommandBuffer commandBuffer2 = device.beginSingleTimeCommands();
+
+            //VkImageMemoryBarrier barrier{};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+            barrier.image = cubeMap.image;
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            barrier.subresourceRange.baseMipLevel = 0;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 6;
+
+            //VkPipelineStageFlags sourceStage;
+            //VkPipelineStageFlags destinationStage;
+
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+
+            vkCmdPipelineBarrier(
+            commandBuffer2,
+            sourceStage, destinationStage,
+            0,
+            0, nullptr,
+            0, nullptr,
+            1, &barrier
+            );
+
+            device.endSingleTimeCommands(commandBuffer2);
+        // ================================================================================================================================
+
+        VkImageViewCreateInfo viewInfo{};
+        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        viewInfo.image = cubeMap.image;
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+        viewInfo.format = format;
+        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        viewInfo.subresourceRange.baseMipLevel = 0;
+        viewInfo.subresourceRange.levelCount = 1;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount = 6;
+
+        if (vkCreateImageView(device.device(), &viewInfo, nullptr, &cubeMap.imageView) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create texture image view!");
+        }
+
+        return cubeMap;
+
+    }
+
+    static ECS::SkyBox loadSkyBox(const std::string filepath, std::vector<std::string> tags, engine::Device& device, VkSampler sampler , std::unique_ptr<engine::DescriptorSetLayout>& skyboxSetLayout) {
+        ECS::SkyBox skybox;
+        skybox.Path = filepath;
+        skybox.tags = tags;
+
+        skybox.skyBoxImage = loadCubeMap(filepath, tags, device, VK_FORMAT_R8G8B8A8_SRGB);
+        std::cout << "made cubeMap" << std::endl;
+
+        skybox.descriptorPool = engine::DescriptorPool::Builder(device).setMaxSets(3)
+        .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
+        .build();
+
+        engine::DescriptorWriter writer(*skyboxSetLayout, *skybox.descriptorPool);
+        skybox.imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        skybox.imageInfo.imageView = skybox.skyBoxImage.imageView;
+        skybox.imageInfo.sampler = sampler;
+        std::cout << "about to write descriptors" << std::endl;
+        if(writer.writeImage(0, &skybox.imageInfo, 1).build(skybox.descriptorSet) == false) std::cout << "\n failed to write set \n";
+        std::cout << "wrote descriptors" << std::endl;
+
+        return skybox;
+    }
+
     static ECS::Material loadMaterial(std::string albedoPath, std::string normalPath, engine::Device& device, VkSampler sampler, std::unique_ptr<engine::DescriptorSetLayout>& materialSetLayout) {
             ECS::Material material{};
 
