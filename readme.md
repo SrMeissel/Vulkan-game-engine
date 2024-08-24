@@ -3,7 +3,7 @@
 This project is dedicated to the development of a custom game engine, focusing on the exploration and implementation of advanced rendering techniques and physics simulations. The initiative stems from a desire to deeply understand the mechanics behind game engines and to apply this knowledge in creating visually rich and interactive scenes. While navigating the complexities of game engine architecture, this project also serves as a practical learning journey, aiming to bridge theoretical concepts with real-world application.
 
 
-![Textures Showcase](Images/ScreenShots/multiplelights.png)
+![Textures Showcase](Images/ScreenShots/multipleLights.png)
 ![Position Image](Images/ScreenShots/stars.JPG)
 ![Normal/Importing Image](Images/ScreenShots/SuccessfulNormalsANDImporting.png)
 
