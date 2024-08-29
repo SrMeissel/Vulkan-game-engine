@@ -36,7 +36,6 @@ namespace engine {
             void run();
         private:
             VkRenderPassCreateInfo* configureRenderPass();
-            void createSamplers();
             VkFormat chooseSwapSurfaceFormat();
 
             Window window{WIDTH, HEIGHT, "Hello there"};
@@ -50,8 +49,5 @@ namespace engine {
             std::shared_ptr<DescriptorPool> globalPool;
             
             ECS::AssetSystem assetSystem;
-
-            VkSampler sampler;
-            VkSampler cubeSampler;
     };
 }

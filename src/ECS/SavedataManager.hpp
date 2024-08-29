@@ -16,7 +16,7 @@
 namespace ECS {
     class SaveDataManager {
         public:
-            SaveDataManager(engine::Device& device, engine::ScriptingSystem& scriptingSystem, engine::MaterialSystem& materialSystem) : device(device), scriptingSystem(scriptingSystem), materialSystem(materialSystem) {};
+            SaveDataManager(engine::Device& device, engine::ScriptingSystem& scriptingSystem, engine::MaterialSystem& materialSystem, engine::SkyboxSystem& skyboxSystem) : device(device), scriptingSystem(scriptingSystem), materialSystem(materialSystem), skyboxSystem{skyboxSystem} {};
 
             void saveData(const char* fileName, std::unordered_map<Entity, std::vector<Component*>>& savedComponents){
                 tinyxml2::XMLDocument doc;
@@ -93,6 +93,18 @@ namespace ECS {
                             
                             assetSystem.AddComponent(entity, pointLight);
 
+
+                        } else if (strcmp(componentName, "SkyBox") == 0) {
+                            std::vector<std::string> tags;
+                            tags.push_back(pComponent->Attribute("Right"));
+                            tags.push_back(pComponent->Attribute("Left"));
+                            tags.push_back(pComponent->Attribute("Up"));
+                            tags.push_back(pComponent->Attribute("Down"));
+                            tags.push_back(pComponent->Attribute("Front"));
+                            tags.push_back(pComponent->Attribute("Back"));
+
+                            SkyBox skybox = Importer::loadSkyBox(pComponent->GetText(), tags, device, skyboxSystem.getSampler(), skyboxSystem.getSetLayout());
+                            assetSystem.AddComponent(entity, skybox);
                         }
                         else {
                             std::cout << "Component not found" << std::endl;
@@ -107,5 +119,6 @@ namespace ECS {
             engine::Device& device;
             engine::ScriptingSystem& scriptingSystem;
             engine::MaterialSystem& materialSystem;
+            engine::SkyboxSystem& skyboxSystem;
     };
 }

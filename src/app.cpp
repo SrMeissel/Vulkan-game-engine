@@ -51,8 +51,6 @@ namespace engine {
             writer.build(globalDescriptorSets[i]);
         }
 
-        createSamplers();
-
         //Initialize render systems ======================================
 
         RenderPass scenePass{device, window, configureRenderPass(), false, {800, 600}}; // 1280, 720 is 720p
@@ -104,20 +102,12 @@ namespace engine {
         skyboxSigniture.set(assetSystem.GetComponentType<ECS::SkyBox>());
         assetSystem.SetSystemSignature<SkyboxSystem>(skyboxSigniture);
 
-        ECS::SaveDataManager saveDataManager{device, *scriptingSystem, *materialSystem}; 
-        saveDataManager.loadData("../../saveFiles/statuette.xml", assetSystem);
-
-        // saveDataManager.saveData("../../saveFiles/statuetteGG.xml", assetSystem.getAllEntities());
-        
-        ECS::Entity skyboxEntity = assetSystem.CreateEntity();
-        assetSystem.AddComponent(skyboxEntity, ECS::Transform{glm::vec3{0.0f}, glm::vec3{1.0f}, glm::vec3{0.0f}});
-        assetSystem.AddComponent(skyboxEntity, Importer::loadSkyBox("../../textures/Skybox/space-Bright.jpg", std::vector<std::string>{"RT", "LF", "UP", "DN", "FT", "BK"}, device, cubeSampler, skyboxSystem->getSetLayout()));
-        assetSystem.AddComponent(skyboxEntity, ECS::Script("RotateControl", scriptingSystem->assembly, scriptingSystem->appDomain));
-        std::cout << "Made skybox object" << std::endl;
+        ECS::SaveDataManager saveDataManager{device, *scriptingSystem, *materialSystem, *skyboxSystem}; 
+        saveDataManager.loadData("../../saveFiles/statuetteSkyBox.xml", assetSystem);
 
         //=======================================================================
 
-        sceneEditor.configureViewport(renderer.getRenderPass(0)->getAttachmentImageView(4), renderer.getRenderPass(0)->getAttachmentImageView(1), sampler, renderer.getRenderPass(0)->extent);
+        sceneEditor.configureViewport(renderer.getRenderPass(0)->getAttachmentImageView(4), renderer.getRenderPass(0)->getAttachmentImageView(1), materialSystem->getSampler(), renderer.getRenderPass(0)->extent);
  
         //Initialize Camera object ===================================
 
@@ -216,9 +206,6 @@ namespace engine {
 
         materialSystem->cleanup(assetSystem);
         skyboxSystem->cleanup(assetSystem);
-
-        vkDestroySampler(device.device(), sampler, nullptr);
-        vkDestroySampler(device.device(), cubeSampler, nullptr);
 
     }
 
@@ -367,53 +354,5 @@ namespace engine {
         }
 
         return availableFormats[0].format;
-        }
-
-    void app::createSamplers() {
-        VkPhysicalDeviceProperties properties{};
-        vkGetPhysicalDeviceProperties(device.physicalDevice, &properties);
-        VkSamplerCreateInfo samplerInfo{};
-
-        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-        samplerInfo.magFilter = VK_FILTER_LINEAR;
-        samplerInfo.minFilter = VK_FILTER_LINEAR;
-        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.anisotropyEnable = VK_TRUE;
-        samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
-        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-        samplerInfo.unnormalizedCoordinates = VK_FALSE;
-        samplerInfo.compareEnable = VK_FALSE;
-        samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        samplerInfo.mipLodBias = 0.0f;
-        samplerInfo.minLod = 0.0f;
-        samplerInfo.maxLod = 0.0f;
-        
-        if (vkCreateSampler(device.device(), &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create texture sampler!");
-        }
-
-        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-        samplerInfo.magFilter = VK_FILTER_LINEAR;
-        samplerInfo.minFilter = VK_FILTER_LINEAR;
-        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.anisotropyEnable = VK_TRUE;
-        samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
-        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-        samplerInfo.unnormalizedCoordinates = VK_FALSE;
-        samplerInfo.compareEnable = VK_FALSE;
-        samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        samplerInfo.mipLodBias = 0.0f;
-        samplerInfo.minLod = 0.0f;
-        samplerInfo.maxLod = 0.0f;
-        
-        if (vkCreateSampler(device.device(), &samplerInfo, nullptr, &cubeSampler) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create texture sampler!");
-        }
     }
 }

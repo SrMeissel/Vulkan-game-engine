@@ -11,12 +11,13 @@ namespace engine {
     class SkyboxSystem : public ECS::System {
     public:
         SkyboxSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
-        ~SkyboxSystem() { vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); }
+        ~SkyboxSystem() { vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); vkDestroySampler(device.device(), sampler, nullptr);}
 
         void Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager);
 
         void SkyboxSystem::cleanup(ECS::AssetSystem& assetManager);
 
+        VkSampler& getSampler() { return sampler; }
         std::unique_ptr<DescriptorSetLayout>& getSetLayout() { return setLayout; }
 
     private:
@@ -28,6 +29,8 @@ namespace engine {
 
         std::unique_ptr<Pipeline> pipeline;
         VkPipelineLayout pipelineLayout;
+         
+         VkSampler sampler;
 
         std::unique_ptr<DescriptorSetLayout> setLayout;
 

@@ -13,7 +13,7 @@ layout(push_constant) uniform Push {
 
 //https://gamedev.stackexchange.com/questions/60313/implementing-a-skybox-with-glsl-version-330
 void main() {
-    vec3 direction = (vec4(forwards, 0.0) * push.rotation).xyz;
+    vec3 direction = (push.rotation * vec4(forwards, 0.0)).xyz;
     vec4 sampledColor = texture(skybox, direction);
     outColor = sampledColor;
     gl_FragDepth = 1.0;

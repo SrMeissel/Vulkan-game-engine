@@ -53,6 +53,7 @@ Sources:
 - <https://taidaesal.github.io/vulkano_tutorial/>
 - <https://raytracing-docs.nvidia.com/mdl/api/mi_neuray_example_df_vulkan.html>
 - <https://www.youtube.com/@GetIntoGameDev/featured>
+- <https://www.reddit.com/r/IndieDev/comments/1735ofe/where_to_get_free_assets_for_game_cco/> assets
 
 ### Atmosphere and clouds
 

@@ -78,6 +78,12 @@ namespace ECS {
         tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
             tinyxml2::XMLElement* skyBox = doc.NewElement("SkyBox");
             skyBox->SetText(Path.c_str());
+            skyBox->SetAttribute("Right", tags[0].c_str());
+            skyBox->SetAttribute("Left", tags[1].c_str());
+            skyBox->SetAttribute("Up", tags[2].c_str());
+            skyBox->SetAttribute("Down", tags[3].c_str());
+            skyBox->SetAttribute("Front", tags[4].c_str());
+            skyBox->SetAttribute("Back", tags[5].c_str());
             return skyBox;
         }
     };
