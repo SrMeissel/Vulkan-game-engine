@@ -60,10 +60,12 @@ namespace engine {
         assetSystem.Init();
 
         assetSystem.RegisterComponent<ECS::Transform>();
+        assetSystem.RegisterComponent<ECS::Camera>();
         assetSystem.RegisterComponent<ECS::Renderable>();
         assetSystem.RegisterComponent<ECS::Material>();
         assetSystem.RegisterComponent<ECS::Script>();
         assetSystem.RegisterComponent<ECS::PointLight>();
+        assetSystem.RegisterComponent<ECS::SpotLight>();
         assetSystem.RegisterComponent<ECS::SkyBox>();
 
         std::shared_ptr<MeshSystem> meshSystem = assetSystem.RegisterSystem<MeshSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
@@ -105,17 +107,24 @@ namespace engine {
         ECS::SaveDataManager saveDataManager{device, *scriptingSystem, *materialSystem, *skyboxSystem}; 
         saveDataManager.loadData("../../saveFiles/statuetteSkyBox.xml", assetSystem);
 
+        ECS::Entity spotlight = assetSystem.CreateEntity();
+        assetSystem.AddComponent<ECS::SpotLight>(spotlight, ECS::SpotLight{device, window, {1.0f, 1.0f, 1.0f}, 1.0f, {800, 600}});
+        assetSystem.AddComponent<ECS::Camera>(spotlight, ECS::Camera{});
+
         //=======================================================================
 
         sceneEditor.configureViewport(renderer.getRenderPass(0)->getAttachmentImageView(4), renderer.getRenderPass(0)->getAttachmentImageView(1), materialSystem->getSampler(), renderer.getRenderPass(0)->extent);
  
         //Initialize Camera object ===================================
 
-        CameraManager camera{};
-        camera.setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
         ECS::Entity viewerObject = assetSystem.CreateEntity();
-        assetSystem.AddComponent(viewerObject, ECS::Transform{glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
+        assetSystem.AddComponent(viewerObject, ECS::Transform{glm::vec3(0.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
+        assetSystem.AddComponent(viewerObject, ECS::Camera{});
         assetSystem.AddComponent(viewerObject, ECS::Script{"CameraControl", scriptingSystem->assembly, scriptingSystem->appDomain });
+
+        ECS::Camera& viewerCamera = assetSystem.GetComponent<ECS::Camera>(viewerObject);
+        CameraManager camera{}; // <- going to make this static :l
+        viewerCamera.viewMatrix = camera.setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
 
         //Main system loop ============================================
 
@@ -152,10 +161,12 @@ namespace engine {
 
             //update camera from user input
             ECS::Transform& viewerTransform = assetSystem.GetComponent<ECS::Transform>(viewerObject);
+            ECS::Camera& viewerCamera = assetSystem.GetComponent<ECS::Camera>(viewerObject);
             //cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerTransform);
-            camera.setViewYXZ(viewerTransform.translation, viewerTransform.rotation);            
+            viewerCamera.viewMatrix = camera.setViewYXZ(viewerTransform.translation, viewerTransform.rotation);            
             float aspect = renderer.getRenderPass(0)->getAspectRatio();
-            camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 500.0f);
+            viewerCamera.projectionMatrix = camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 500.0f);
+            viewerCamera.inverseViewMatrix = glm::inverse(viewerCamera.viewMatrix);
 
             //new frame ready, runs every frame ===============================================
             if(auto commandBuffer = renderer.beginFrame()) {
@@ -167,9 +178,9 @@ namespace engine {
 
                 //update graphics memory objects =====================================
                 GlobalUbo ubo{};
-                ubo.projection = camera.getProjection();
-                ubo.view = camera.getView();
-                ubo.inverseView = camera.getInverseView();
+                ubo.projection = viewerCamera.projectionMatrix;
+                ubo.view = viewerCamera.viewMatrix;
+                ubo.inverseView = viewerCamera.inverseViewMatrix;
 
                 uboBuffers[frameIndex]->writeToBuffer(&ubo);
                 uboBuffers[frameIndex]->flush();

@@ -20,11 +20,25 @@ namespace engine {
         createFrameBuffer();
     }
 
+    RenderPass::RenderPass(Device& device, Window& window, VkRenderPassCreateInfo* info, std::vector<AllocatedImage> images, bool isWindowExtent, VkExtent2D customExtent) :
+    device{device}, window{window}, info{info}, isWindowExtent{isWindowExtent}, images{images} {
+        if(isWindowExtent) {
+            extent = window.getExtent();
+        } else {
+            extent = customExtent;
+        }
+        
+        if (vkCreateRenderPass(device.device(), info, nullptr, &renderPass) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create render pass!");
+        }
+        createFrameBuffer();
+    }
+
     RenderPass::~RenderPass() {
-        for (size_t i = 0; i < attachmentImageViews.size(); i++) {
-            vkDestroyImageView(device.device(), attachmentImageViews[i], nullptr);
-            vkDestroyImage(device.device(), attachmentImages[i], nullptr);
-            vkFreeMemory(device.device(), attachmentMemory[i], nullptr);
+        for (size_t i = 0; i < images.size(); i++) {
+            vkDestroyImageView(device.device(), images[i].imageView, nullptr);
+            vkDestroyImage(device.device(), images[i].image, nullptr);
+            vkFreeMemory(device.device(), images[i].memory, nullptr);
         }
         vkDestroyFramebuffer(device.device(), frameBuffer, nullptr);
         vkDestroyRenderPass(device.device(), renderPass, nullptr);
@@ -32,9 +46,7 @@ namespace engine {
     //copilot wrote this, it actually looks good.
 
     void RenderPass::createImageResources() {
-        attachmentMemory.resize(info->attachmentCount);
-        attachmentImages.resize(info->attachmentCount);
-        attachmentImageViews.resize(info->attachmentCount);
+        images.resize(info->attachmentCount);
 
         VkFormat depthFormat = device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
@@ -73,12 +85,12 @@ namespace engine {
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             imageInfo.flags = 0;
 
-            device.createImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, attachmentImages[i], attachmentMemory[i]);
+            device.createImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, images[i].image, images[i].memory);
 
             //create image view ===========================================================
             VkImageViewCreateInfo viewInfo{};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            viewInfo.image = attachmentImages[i];
+            viewInfo.image = images[i].image;
             viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
             viewInfo.format = info->pAttachments[i].format;
 
@@ -95,16 +107,22 @@ namespace engine {
             viewInfo.subresourceRange.baseArrayLayer = 0;
             viewInfo.subresourceRange.layerCount = 1;
 
-            vkCreateImageView(device.device(), &viewInfo, nullptr, &attachmentImageViews[i]);
+            vkCreateImageView(device.device(), &viewInfo, nullptr, &images[i].imageView);
         }
     }
 
     void RenderPass::createFrameBuffer() {
+
+        std::vector<VkImageView> imageViews;
+        for(int i = 0; i < images.size(); i ++) {
+            imageViews.push_back(images[i].imageView);
+        }
+
         VkFramebufferCreateInfo framebufferInfo = {};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebufferInfo.renderPass = renderPass;
-        framebufferInfo.attachmentCount = static_cast<uint32_t>(attachmentImageViews.size());
-        framebufferInfo.pAttachments = attachmentImageViews.data();
+        framebufferInfo.attachmentCount = static_cast<uint32_t>(images.size());
+        framebufferInfo.pAttachments = imageViews.data();
 
         //does image have a custom extent or draws to window
         if(isWindowExtent) {

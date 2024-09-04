@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Pipeline/RenderPass.hpp"
 #include "bufferManager.hpp"
 #include "Utils.hpp"
 #include "../../libs/tinyXML/tinyxml2.h"
@@ -110,6 +111,108 @@ namespace ECS {
         }
     };
 
+    struct SpotLight : public Component {
+        SpotLight() = default;
+        SpotLight(engine::Device& device, engine::Window& window, glm::vec3 color, float intensity, glm::vec2 resolution) : 
+        color{color}, intensity{intensity}, resolution{resolution} {
+
+            // create images ===========================================================================
+
+            VkFormat depthFormat = device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+            VkImageCreateInfo imageInfo{};
+            imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            imageInfo.imageType = VK_IMAGE_TYPE_2D;
+            imageInfo.extent.width = static_cast<uint32_t>(resolution.x);
+            imageInfo.extent.height = static_cast<uint32_t>(resolution.y);
+            imageInfo.extent.depth = 1;
+            imageInfo.mipLevels = 1;
+            imageInfo.arrayLayers = 1;
+            imageInfo.format = depthFormat;
+            imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+            imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+            imageInfo.samples = device.msaaSamples;
+            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            imageInfo.flags = 0;
+
+            device.createImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, shadowMap.image, shadowMap.memory);
+
+            //create image view ===========================================================
+            
+            VkImageViewCreateInfo viewInfo{};
+            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            viewInfo.image = shadowMap.image;
+            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            viewInfo.format = depthFormat;
+            viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT; 
+            viewInfo.subresourceRange.baseMipLevel = 0;
+            viewInfo.subresourceRange.levelCount = 1;
+            viewInfo.subresourceRange.baseArrayLayer = 0;
+            viewInfo.subresourceRange.layerCount = 1;
+
+            vkCreateImageView(device.device(), &viewInfo, nullptr, &shadowMap.imageView);
+
+            std::vector<engine::AllocatedImage> images{shadowMap};
+
+            //define renderpass ===============================================
+
+            VkAttachmentDescription attachmentDescription = {};
+            attachmentDescription.format = depthFormat;
+            attachmentDescription.samples = device.msaaSamples;
+            attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            VkAttachmentReference attachmentRef = {};
+            attachmentRef.attachment = 0;
+            attachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+            VkSubpassDescription subpass = {};
+            subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+            subpass.colorAttachmentCount = 0;
+            subpass.pColorAttachments = nullptr;
+            subpass.pDepthStencilAttachment = &attachmentRef;
+
+            VkSubpassDependency dependency = {};
+            dependency.srcSubpass = 0;
+            dependency.dstSubpass = VK_SUBPASS_EXTERNAL;
+            dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // Stage of writing to the color attachment
+            dependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT; // Stage of reading from the attachment in the shader
+            dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // Access type for writing to the color attachment
+            dependency.dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT; 
+            dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+            VkRenderPassCreateInfo* renderPassInfo = new VkRenderPassCreateInfo();
+            renderPassInfo->sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+            renderPassInfo->attachmentCount = 1;
+            renderPassInfo->pAttachments = &attachmentDescription;
+            renderPassInfo->subpassCount = 1;
+            renderPassInfo->pSubpasses = &subpass;
+            renderPassInfo->dependencyCount = 1;
+            renderPassInfo->pDependencies = &dependency;
+
+            //final ====================================================================
+
+            shadowPass = std::make_shared<engine::RenderPass>(device, window, renderPassInfo, images, false, VkExtent2D{800, 600});
+
+        }
+
+        glm::vec3 color;
+        float intensity;
+
+        glm::vec2 resolution;
+        
+        engine::AllocatedImage shadowMap{};
+        std::shared_ptr<engine::RenderPass> shadowPass;
+
+        tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
+            return nullptr;
+        }
+    };
+
     struct Transform : public Component {
         Transform() = default;
         Transform(glm::vec3 translation, glm::vec3 scale, glm::vec3 rotation)
@@ -202,6 +305,16 @@ namespace ECS {
             transform->InsertEndChild(scale);
 
             return transform;
+        }
+    };
+
+    struct Camera : public Component {
+        glm::mat4 projectionMatrix{1.0f};
+        glm::mat4 viewMatrix{1.0f};
+        glm::mat4 inverseViewMatrix{1.0f};
+
+        tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
+            return doc.NewElement("Camera");
         }
     };
 

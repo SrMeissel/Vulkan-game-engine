@@ -1,6 +1,7 @@
 #pragma once
 
 #include "deviceManager.hpp"
+#include "../Utils.hpp"
 
 #include <vector>
 
@@ -8,6 +9,7 @@ namespace engine {
     class RenderPass {
         public:
             RenderPass(Device& device, Window& window, VkRenderPassCreateInfo* info, bool isWindowExtent, VkExtent2D extent = {0,0});
+            RenderPass(Device& device, Window& window, VkRenderPassCreateInfo* info, std::vector<AllocatedImage> images, bool isWindowExtent, VkExtent2D extent = {0,0});
             ~RenderPass(); // destroy everything.
 
             // Not copyable or movable
@@ -25,7 +27,7 @@ namespace engine {
             VkRenderPass getRenderPass() {return renderPass; }
             VkRenderPassCreateInfo getRenderPassInfo() {return *info; }
             VkFramebuffer getFrameBuffer() {return frameBuffer; }
-            VkImageView getAttachmentImageView(int i) {return attachmentImageViews[i]; }
+            VkImageView getAttachmentImageView(int i) {return images[i].imageView; }
 
         private:
         // create images
@@ -39,9 +41,12 @@ namespace engine {
         VkRenderPassCreateInfo* info;
         VkRenderPass renderPass;
         
-        std::vector<VkDeviceMemory> attachmentMemory; // the data of the image
-        std::vector<VkImage> attachmentImages; // defines format of image
-        std::vector<VkImageView> attachmentImageViews; // which part of image is relevant (Ex. mips)
+        // std::vector<VkDeviceMemory> attachmentMemory; // the data of the image
+        // std::vector<VkImage> attachmentImages; // defines format of image
+        // std::vector<VkImageView> attachmentImageViews; // which part of image is relevant (Ex. mips)
+        //now hear me out.
+        std::vector<AllocatedImage> images;
+
         VkFramebuffer frameBuffer; // connects image to attachment
 
         //swapchain gets its own custom renderpass not in this class.
