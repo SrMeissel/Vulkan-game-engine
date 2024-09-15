@@ -97,8 +97,8 @@ namespace ECS {
         float radius;
         float intensity;
 
-        engine::AllocatedImage shadowMap;
-        VkFramebuffer shadowMapFrameBuffer;
+        //engine::AllocatedImage shadowMap;
+        //VkFramebuffer shadowMapFrameBuffer;
 
         tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
             tinyxml2::XMLElement* pointLight = doc.NewElement("PointLight");
@@ -113,8 +113,8 @@ namespace ECS {
 
     struct SpotLight : public Component {
         SpotLight() = default;
-        SpotLight(engine::Device& device, engine::Window& window, glm::vec3 color, float intensity, glm::vec2 resolution) : 
-        color{color}, intensity{intensity}, resolution{resolution} {
+        SpotLight(engine::Device& device, engine::Window& window, glm::vec3 color, float intensity, glm::vec2 resolution, VkRenderPass pass, VkSampler sampler, std::unique_ptr<engine::DescriptorSetLayout>& setLayout) : 
+        color{color}, intensity{intensity}, resolution{resolution}, aspect{static_cast<float>(resolution.x) / static_cast<float>(resolution.y)} {
 
             // create images ===========================================================================
 
@@ -130,7 +130,7 @@ namespace ECS {
             imageInfo.format = depthFormat;
             imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
             imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+            imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
             imageInfo.samples = device.msaaSamples;
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             imageInfo.flags = 0;
@@ -152,61 +152,69 @@ namespace ECS {
 
             vkCreateImageView(device.device(), &viewInfo, nullptr, &shadowMap.imageView);
 
-            std::vector<engine::AllocatedImage> images{shadowMap};
+            //create framebuffer ===========================================
 
-            //define renderpass ===============================================
+            VkFramebufferAttachmentImageInfo attachmentInfo;
+            attachmentInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO;
+            attachmentInfo.pNext = nullptr;
+            attachmentInfo.flags = 0;
+            attachmentInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+            attachmentInfo.width = static_cast<uint32_t>(resolution.x);
+            attachmentInfo.height = static_cast<uint32_t>(resolution.y);
+            attachmentInfo.layerCount = 1;
+            attachmentInfo.viewFormatCount = 1;
+            attachmentInfo.pViewFormats = &depthFormat;
 
-            VkAttachmentDescription attachmentDescription = {};
-            attachmentDescription.format = depthFormat;
-            attachmentDescription.samples = device.msaaSamples;
-            attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            VkFramebufferAttachmentsCreateInfo attachmentsCreateInfo = {};
+            attachmentsCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO;
+            attachmentsCreateInfo.pNext = nullptr;
+            attachmentsCreateInfo.attachmentImageInfoCount = 1;
+            attachmentsCreateInfo.pAttachmentImageInfos = &attachmentInfo;
 
-            VkAttachmentReference attachmentRef = {};
-            attachmentRef.attachment = 0;
-            attachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            static VkFramebufferCreateInfo framebufferInfo;
+            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebufferInfo.pNext = &attachmentsCreateInfo;
+            framebufferInfo.renderPass = pass;
+            framebufferInfo.attachmentCount = 1;
+            framebufferInfo.pAttachments = nullptr;
+            framebufferInfo.width = static_cast<uint32_t>(resolution.x);
+            framebufferInfo.height =  static_cast<uint32_t>(resolution.y);
+            framebufferInfo.layers = 1;
+            framebufferInfo.flags |= VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT;
+            framebufferInfo.pAttachments = nullptr;
 
-            VkSubpassDescription subpass = {};
-            subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-            subpass.colorAttachmentCount = 0;
-            subpass.pColorAttachments = nullptr;
-            subpass.pDepthStencilAttachment = &attachmentRef;
+            if (vkCreateFramebuffer(device.device(), &framebufferInfo, nullptr, &frameBuffer) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create framebuffer!");
+            }
+            //create descriptor =======================================================================================
+            descriptorPool = engine::DescriptorPool::Builder(device).setMaxSets(2)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLER, 1)
+            .build();
 
-            VkSubpassDependency dependency = {};
-            dependency.srcSubpass = 0;
-            dependency.dstSubpass = VK_SUBPASS_EXTERNAL;
-            dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // Stage of writing to the color attachment
-            dependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT; // Stage of reading from the attachment in the shader
-            dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // Access type for writing to the color attachment
-            dependency.dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT; 
-            dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+            descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            descriptorImageInfo.imageView = shadowMap.imageView;
+            descriptorImageInfo.sampler = sampler;
 
-            VkRenderPassCreateInfo* renderPassInfo = new VkRenderPassCreateInfo();
-            renderPassInfo->sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-            renderPassInfo->attachmentCount = 1;
-            renderPassInfo->pAttachments = &attachmentDescription;
-            renderPassInfo->subpassCount = 1;
-            renderPassInfo->pSubpasses = &subpass;
-            renderPassInfo->dependencyCount = 1;
-            renderPassInfo->pDependencies = &dependency;
+            samplerInfo.sampler = sampler;
 
-            //final ====================================================================
-
-            shadowPass = std::make_shared<engine::RenderPass>(device, window, renderPassInfo, images, false, VkExtent2D{800, 600});
+            engine::DescriptorWriter writer(*setLayout, *descriptorPool);
+            if(writer.writeImage(0, &samplerInfo, 1).writeImage(1,&descriptorImageInfo, 1).build(descriptorSet) == false) std::cout << "\n failed to write set \n";
 
         }
 
         glm::vec3 color;
         float intensity;
-
         glm::vec2 resolution;
-        
+        float aspect;
+
         engine::AllocatedImage shadowMap{};
-        std::shared_ptr<engine::RenderPass> shadowPass;
+        VkFramebuffer frameBuffer;
+
+        VkDescriptorImageInfo descriptorImageInfo;
+        std::shared_ptr<engine::DescriptorPool> descriptorPool;
+        VkDescriptorSet descriptorSet;
+        VkDescriptorImageInfo samplerInfo;
 
         tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
             return nullptr;

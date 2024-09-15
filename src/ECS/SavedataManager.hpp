@@ -49,6 +49,7 @@ namespace ECS {
                     while(pComponent) {
                         const char* componentName = pComponent->Name();
 
+                        //at some point, when I feel like it, I will move these to be virtual functions in the component class.. I'm pretty sure I can do that without slowing down normal operation.
                         if (strcmp(componentName, "Transform") == 0) {
                             Transform transform;
 

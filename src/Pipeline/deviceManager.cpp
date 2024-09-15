@@ -152,17 +152,28 @@ void Device::createLogicalDevice() {
     queueCreateInfos.push_back(queueCreateInfo);
   }
 
+  VkPhysicalDeviceImagelessFramebufferFeaturesKHR imagelessFramebufferFeatures = {};
+  imagelessFramebufferFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES_KHR;
+  imagelessFramebufferFeatures.pNext = nullptr;
+  imagelessFramebufferFeatures.imagelessFramebuffer = VK_TRUE;
+
   VkPhysicalDeviceFeatures deviceFeatures = {};
   deviceFeatures.samplerAnisotropy = VK_TRUE;
-  deviceFeatures.sampleRateShading = VK_TRUE; // enable sample shading feature for the device
+  deviceFeatures.sampleRateShading = VK_TRUE;
+
+  VkPhysicalDeviceFeatures2 deviceFeatures2 = {};
+  deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+  deviceFeatures2.features = deviceFeatures;
+  deviceFeatures2.pNext = &imagelessFramebufferFeatures;
 
   VkDeviceCreateInfo createInfo = {};
   createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+  createInfo.pNext = &deviceFeatures2;
 
   createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
   createInfo.pQueueCreateInfos = queueCreateInfos.data();
 
-  createInfo.pEnabledFeatures = &deviceFeatures;
+  createInfo.pEnabledFeatures = NULL;
   createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
   createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 

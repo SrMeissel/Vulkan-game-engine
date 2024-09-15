@@ -13,6 +13,9 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/libs/glfw-3.3.8)
 add_subdirectory(${CMAKE_SOURCE_DIR}/libs/tinyobjloader-release)
 add_subdirectory(${CMAKE_SOURCE_DIR}/libs/assimp-5.4.2)
 
+set(Vulkan_LIBRARY C:/Users/mizer/dev/Development-Kits/VulkanSDK/1.3.290.0/Lib/vulkan-1.lib)
+set(Vulkan_INCLUDE_DIR C:/Users/mizer/dev/Development-Kits/VulkanSDK/1.3.290.0/Include)
+
 find_package(Vulkan REQUIRED)
 
 

@@ -1,5 +1,5 @@
 // https://blogs.igalia.com/itoral/2017/07/30/working-with-lights-and-shadows-part-ii-the-shadow-map/
-// I'm going to assume this system is very similar to the meshrenderer
+// https://stackoverflow.com/questions/9660959/how-to-use-a-single-shadow-map-for-multiple-point-light-sources
 
 #pragma once
 
@@ -7,27 +7,73 @@
 #include "ECS/Components.hpp"
 #include "Pipeline/pipeline.hpp"
 #include "Pipeline/deviceManager.hpp"
+#include "../cameraManager.hpp"
+
+#include "meshSystem.hpp"
 
 #include <glm/glm.hpp>
+
 
 namespace engine {
     class SpotLightSystem : public ECS::System {
     public:
-        SpotLightSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
-        ~SpotLightSystem() { vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); }
+        SpotLightSystem(Device& device, RenderPass* renderPass, VkDescriptorSetLayout globalSetLayout);
+        ~SpotLightSystem() { 
+            vkDestroyPipelineLayout(device.device(), shadowPipelineLayout, nullptr); 
+            vkDestroyRenderPass(device.device(), shadowPass, nullptr);
+            
+        }
 
-        void Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager);
+        void RenderShadows(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager, ECS::System& renderables);
+        void RenderLight(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager);
+
+        VkRenderPass getRenderPass() {return shadowPass; }
+        VkSampler& getSampler() { return sampler; }        
+        std::unique_ptr<DescriptorSetLayout>& getSetLayout() { return shadowSetLayout; }
+
+        void cleanup(ECS::AssetSystem& assetManager);
 
     private:
-        struct PushConstant {
+        struct ShadowPushConstant {
             glm::mat4 modelMatrix{1.f};
             glm::mat4 normalMatrix{1.f};
+        };
+        struct LightPushConstant {
+            glm::mat4 lightMatrix;
+            glm::vec4 position;
+            glm::vec4 color;
+            float intensity;
+            
+        };
+        struct ShadowUBO {
+            glm::mat4 projection{1.0f};
+            glm::mat4 view{1.0f};
+            glm::mat4 inverseView{1.0f};
         };
 
         Device &device;
 
-        std::unique_ptr<Pipeline> pipeline;
-        VkPipelineLayout pipelineLayout;
+        VkRenderPassCreateInfo* renderPassInfo = new VkRenderPassCreateInfo();
+        VkRenderPass shadowPass;
+        std::unique_ptr<Buffer> shadowUBO;
+        std::unique_ptr<DescriptorSetLayout> UBOSetLayout;
+        std::shared_ptr<engine::DescriptorPool> UBOPool;
+        VkDescriptorSet UBOSet;
+        std::unique_ptr<Pipeline> shadowPipeline;
+        VkPipelineLayout shadowPipelineLayout;
+
+        std::unique_ptr<DescriptorSetLayout> shadowSetLayout;
+        std::shared_ptr<engine::DescriptorPool> shadowPool;
+        VkDescriptorSet shadowSet;
+        std::unique_ptr<Pipeline> lightPipeline;
+        VkPipelineLayout lightPipelineLayout;
+        VkSampler sampler;
+
+        std::unique_ptr<DescriptorSetLayout> inputSetLayout;
+        std::array<VkDescriptorImageInfo, 3> descriptors{};
+        VkDescriptorSet inputSet;
 
     };
+
+    class Renderables : public ECS::System {};
 }

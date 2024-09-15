@@ -72,7 +72,15 @@ namespace engine {
         std::shared_ptr<MaterialSystem> materialSystem = assetSystem.RegisterSystem<MaterialSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
         std::shared_ptr<ScriptingSystem> scriptingSystem = assetSystem.RegisterSystem<ScriptingSystem>(window);
         std::shared_ptr<PointLightSystem> pointLightSystem = assetSystem.RegisterSystem<PointLightSystem>(device, renderer.getRenderPass(0), globalSetLayout->getDescriptorSetLayout());
+        std::shared_ptr<SpotLightSystem> spotLightSystem = assetSystem.RegisterSystem<SpotLightSystem>(device, renderer.getRenderPass(0), globalSetLayout->getDescriptorSetLayout());
         std::shared_ptr<SkyboxSystem> skyboxSystem = assetSystem.RegisterSystem<SkyboxSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
+
+        //I need a list of all renderable objects for shadows. This makes me want to detach the entity list from systems, It would be a lot more simple.
+        std::shared_ptr<Renderables> renderables = assetSystem.RegisterSystem<Renderables>();
+        ECS::Signature renderablesSignature;
+        renderablesSignature.set(assetSystem.GetComponentType<ECS::Renderable>());
+        renderablesSignature.set(assetSystem.GetComponentType<ECS::Transform>());
+        assetSystem.SetSystemSignature<Renderables>(renderablesSignature);
 
         ECS::Signature meshSignature;
         meshSignature.set(assetSystem.GetComponentType<ECS::Transform>());
@@ -99,6 +107,11 @@ namespace engine {
         pointLightSignature.set(assetSystem.GetComponentType<ECS::PointLight>());
         assetSystem.SetSystemSignature<PointLightSystem>(pointLightSignature);
 
+        ECS::Signature spotlightSignature;
+        spotlightSignature.set(assetSystem.GetComponentType<ECS::Transform>());
+        spotlightSignature.set(assetSystem.GetComponentType<ECS::SpotLight>());
+        assetSystem.SetSystemSignature<SpotLightSystem>(spotlightSignature);
+
         ECS::Signature skyboxSigniture;
         pointLightSignature.set(assetSystem.GetComponentType<ECS::Transform>());
         skyboxSigniture.set(assetSystem.GetComponentType<ECS::SkyBox>());
@@ -108,7 +121,9 @@ namespace engine {
         saveDataManager.loadData("../../saveFiles/statuetteSkyBox.xml", assetSystem);
 
         ECS::Entity spotlight = assetSystem.CreateEntity();
-        assetSystem.AddComponent<ECS::SpotLight>(spotlight, ECS::SpotLight{device, window, {1.0f, 1.0f, 1.0f}, 1.0f, {800, 600}});
+        //(engine::Device& device, engine::Window& window, glm::vec3 color, float intensity, glm::vec2 resolution, VkRenderPass pass, VkSampler sampler, std::unique_ptr<engine::DescriptorSetLayout>& setLayout
+        assetSystem.AddComponent<ECS::Transform>(spotlight, ECS::Transform{glm::vec3(0.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
+        assetSystem.AddComponent<ECS::SpotLight>(spotlight, ECS::SpotLight{device, window, glm::vec3{1.0f, 1.0f, 1.0f}, 1.0f, glm::vec2{800, 600}, spotLightSystem->getRenderPass(), spotLightSystem->getSampler(), spotLightSystem->getSetLayout()});
         assetSystem.AddComponent<ECS::Camera>(spotlight, ECS::Camera{});
 
         //=======================================================================
@@ -120,7 +135,7 @@ namespace engine {
         ECS::Entity viewerObject = assetSystem.CreateEntity();
         assetSystem.AddComponent(viewerObject, ECS::Transform{glm::vec3(0.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
         assetSystem.AddComponent(viewerObject, ECS::Camera{});
-        assetSystem.AddComponent(viewerObject, ECS::Script{"CameraControl", scriptingSystem->assembly, scriptingSystem->appDomain });
+        assetSystem.AddComponent(viewerObject, ECS::Script{"CameraControl", scriptingSystem->assembly, scriptingSystem->appDomain});
 
         ECS::Camera& viewerCamera = assetSystem.GetComponent<ECS::Camera>(viewerObject);
         CameraManager camera{}; // <- going to make this static :l
@@ -187,6 +202,10 @@ namespace engine {
 
                 //render =====================================================
 
+                //do shadows here
+
+                spotLightSystem->RenderShadows(commandBuffer, globalDescriptorSets[frameIndex], assetSystem, *renderables); // <==================================
+
                 renderer.beginNextRenderPass(commandBuffer);
 
                 meshSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
@@ -195,7 +214,9 @@ namespace engine {
                 vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
 
                 pointLightSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
+                spotLightSystem->RenderLight(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
                 skyboxSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
+
 
                 renderer.endCurrentRenderPass(commandBuffer);
                 renderer.beginSwapChainRenderPass(commandBuffer);
@@ -217,6 +238,7 @@ namespace engine {
 
         materialSystem->cleanup(assetSystem);
         skyboxSystem->cleanup(assetSystem);
+        spotLightSystem->cleanup(assetSystem);
 
     }
 

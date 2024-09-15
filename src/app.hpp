@@ -15,6 +15,7 @@
 #include "systems/MaterialSystem.hpp"
 #include "systems/PointLightSystem.hpp"
 #include "systems/skyboxSystem.hpp"
+#include "systems/SpotLightSystem.hpp"
 
 #include "ECS/SavedataManager.hpp"
 

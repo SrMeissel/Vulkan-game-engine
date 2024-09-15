@@ -43,6 +43,7 @@ namespace engine {
         VkDeviceMemory memory;
         VkExtent3D imageExtent;
         VkFormat imageFormat;
+
     };
 
     // I hope I don't regret this
