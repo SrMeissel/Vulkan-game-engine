@@ -1,4 +1,5 @@
 #version 450
+
 layout (location = 0) out vec4 outColor;
 
 layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput inColor;
@@ -21,20 +22,58 @@ layout(push_constant) uniform Push {
     float intensity;  
 } push;
 
+
 void main() {
+    // Light =====================================================================================================
+
+    vec4 Color = subpassLoad(inColor);
+    vec4 Position = subpassLoad(inPosition);
+    vec4 Normal = normalize(subpassLoad(inNormal));
+
+    vec3 diffuseLight = vec3(0.001);
+    vec3 specularLight = vec3(0.0);
+
+    vec3 cameraPosWorld = ubo.inverseView[3].xyz;
+    vec3 viewDirection = normalize(cameraPosWorld - Position.xyz);
+
+    vec3 lightDirection = push.position.xyz - Position.xyz;
+    float attenuation = 1.0 / (dot(lightDirection, lightDirection) * 5.0);
+ 
+    lightDirection = normalize(lightDirection);
+
+    float cosangIncidence = max(dot(Normal.xyz, lightDirection), 0);
+    vec3 intensity = push.color.xyz * attenuation * push.intensity;
+
+    diffuseLight += intensity * cosangIncidence;
+
+    //specular Lighting
+    vec3 halfAngle = normalize(lightDirection + viewDirection);
+    float blinnTerm = max(dot(Normal.xyz, halfAngle), 0.0);
+    blinnTerm = pow(blinnTerm, 8.0); //higher values = sharper light
+    specularLight += intensity * blinnTerm;
+
+    vec4 THELIGHT = vec4(diffuseLight + specularLight, 1.0);
+
+    // Shadow ====================================================================================================
+
     // Transform fragment position to light space
     vec4 fragPosLightSpace = push.lightMatrix * vec4(subpassLoad(inPosition).xyz, 1.0);
 
     // Perform perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    projCoords = projCoords * 0.5 + 0.5; // Transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
 
     // Sample shadow map
     float closestDepth = texture(sampler2D(shadowMap, Sampler), projCoords.xy).r;
-    float currentDepth = projCoords.z;
+    float currentDepth = ( fragPosLightSpace.z - 0.1 ) / ( 500.0 - 0.1 );
 
     // Shadow factor
-    float shadow = currentDepth > closestDepth + 0.005 ? 1.0 : 0.0; // Add bias to avoid shadow acne
+    //float bias = max(0.05 * (1.0 - dot(Normal.xyz, lightDirection.xyz)), 0.005);  
+    //float bias = 0.005;
+    float bias = 0.0001;
+    float shadow = currentDepth > closestDepth + bias ? 1.0 : 0.0;
+    if(projCoords.z >= 1.0) shadow = 1.0;
 
-    outColor = vec4(shadow);
+    outColor = THELIGHT * Color * vec4(max(1-shadow, 0));
+    //outColor = vec4(vec3(shadow), 1.0); 
 }

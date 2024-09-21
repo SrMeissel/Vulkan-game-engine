@@ -1,8 +1,6 @@
 #version 450
 
-layout (location = 0) in vec3 fragColor;
-layout (location = 1) in vec3 fragPosWorld;
-layout (location = 2) in vec3 fragNormalWorld;
+layout (location = 0) in vec4 fragPos;
 
 layout(set = 0, binding = 0) uniform GlobalUbo {
     mat4 projection;
@@ -16,5 +14,5 @@ layout(push_constant) uniform Push {
 } push;
 
 void main() {
-
+    gl_FragDepth = ( fragPos.z - 0.1 ) / ( 500.0 - 0.1 );
 }

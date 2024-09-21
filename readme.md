@@ -4,7 +4,8 @@ This project is dedicated to the development of a custom game engine, focusing o
 
 
 ![Textures Showcase](Images/ScreenShots/multipleLights.png)
-![Position Image](Images/ScreenShots/stars.JPG)
+![Stars](Images/ScreenShots/BetterStars.JPG)
+![Shadows](Images/ScreenShots/goodShadows.JPG)
 ![Normal/Importing Image](Images/ScreenShots/SuccessfulNormalsANDImporting.png)
 
 ## Scripting API

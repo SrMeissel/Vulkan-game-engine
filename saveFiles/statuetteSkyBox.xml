@@ -6,7 +6,6 @@
             <Scale x="5" y="5" z="5"/>
         </Transform>
         <Renderable>../../models/smooth_vase.obj</Renderable>
-        <Script>Rotate</Script>
     </Entity>
     <Entity>
         <Transform>
@@ -84,7 +83,7 @@
             <Rotation x="0" y="0" z="0"/>
             <Scale x="1" y="1" z="1"/>
         </Transform>
-        <PointLight R="1" G="0.95999998" B="0.50999999" intensity="10" radius="4"/>
+        <PointLight R="1" G="0.95999998" B="0.50999999" intensity="5" radius="4"/>
     </Entity>
     <Entity>
         <Transform>

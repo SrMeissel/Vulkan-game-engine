@@ -4,14 +4,8 @@
 #include <iostream>
 
 namespace engine {
-    RenderPass::RenderPass(Device& device, Window& window, VkRenderPassCreateInfo* info, bool isWindowExtent, VkExtent2D customExtent) : 
-    device{device}, window{window}, info{info}, isWindowExtent{isWindowExtent} {
-
-        if(isWindowExtent) {
-            extent = window.getExtent();
-        } else {
-            extent = customExtent;
-        }
+    RenderPass::RenderPass(Device& device, VkRenderPassCreateInfo* info, VkExtent2D customExtent) : 
+    device{device}, info{info}, extent{customExtent} {
         //creates the renderpass objects from info directly
         if (vkCreateRenderPass(device.device(), info, nullptr, &renderPass) != VK_SUCCESS) {
             throw std::runtime_error("failed to create render pass!");
@@ -20,14 +14,9 @@ namespace engine {
         createFrameBuffer();
     }
 
-    RenderPass::RenderPass(Device& device, Window& window, VkRenderPassCreateInfo* info, std::vector<AllocatedImage> images, bool isWindowExtent, VkExtent2D customExtent) :
-    device{device}, window{window}, info{info}, isWindowExtent{isWindowExtent}, images{images} {
-        if(isWindowExtent) {
-            extent = window.getExtent();
-        } else {
-            extent = customExtent;
-        }
-        
+    RenderPass::RenderPass(Device& device, VkRenderPassCreateInfo* info, std::vector<AllocatedImage> images, VkExtent2D customExtent) :
+    device{device}, info{info}, images{images}, extent{customExtent} {
+       
         if (vkCreateRenderPass(device.device(), info, nullptr, &renderPass) != VK_SUCCESS) {
             throw std::runtime_error("failed to create render pass!");
         }
@@ -58,13 +47,8 @@ namespace engine {
             imageInfo.imageType = VK_IMAGE_TYPE_2D;
 
             //does image have a custom extent or draws to window
-            if(isWindowExtent) {
-                imageInfo.extent.width = window.getExtent().width;
-                imageInfo.extent.height = window.getExtent().height;
-            } else {
-                imageInfo.extent.width = extent.width;
-                imageInfo.extent.height = extent.height;
-            }
+            imageInfo.extent.width = extent.width;
+            imageInfo.extent.height = extent.height;
 
             imageInfo.extent.depth = 1;
             imageInfo.mipLevels = 1;
@@ -125,13 +109,8 @@ namespace engine {
         framebufferInfo.pAttachments = imageViews.data();
 
         //does image have a custom extent or draws to window
-        if(isWindowExtent) {
-            framebufferInfo.width = window.getExtent().width;
-            framebufferInfo.height = window.getExtent().height;
-        } else {
-            framebufferInfo.width = extent.width;
-            framebufferInfo.height = extent.height;
-        }
+        framebufferInfo.width = extent.width;
+        framebufferInfo.height = extent.height;
         framebufferInfo.layers = 1;
 
         if (vkCreateFramebuffer(device.device(), &framebufferInfo, nullptr, &frameBuffer) != VK_SUCCESS) {

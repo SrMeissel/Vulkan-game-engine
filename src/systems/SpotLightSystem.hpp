@@ -1,5 +1,8 @@
 // https://blogs.igalia.com/itoral/2017/07/30/working-with-lights-and-shadows-part-ii-the-shadow-map/
 // https://stackoverflow.com/questions/9660959/how-to-use-a-single-shadow-map-for-multiple-point-light-sources
+// https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
+
+// https://developer.download.nvidia.com/shaderlibrary/docs/shadow_PCSS.pdf
 
 #pragma once
 
@@ -20,8 +23,10 @@ namespace engine {
         SpotLightSystem(Device& device, RenderPass* renderPass, VkDescriptorSetLayout globalSetLayout);
         ~SpotLightSystem() { 
             vkDestroyPipelineLayout(device.device(), shadowPipelineLayout, nullptr); 
+            vkDestroyPipelineLayout(device.device(), lightPipelineLayout, nullptr);
             vkDestroyRenderPass(device.device(), shadowPass, nullptr);
-            
+        
+            vkDestroySampler(device.device(), sampler, nullptr);    
         }
 
         void RenderShadows(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager, ECS::System& renderables);

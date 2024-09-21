@@ -8,8 +8,8 @@
 namespace engine {
     class RenderPass {
         public:
-            RenderPass(Device& device, Window& window, VkRenderPassCreateInfo* info, bool isWindowExtent, VkExtent2D extent = {0,0});
-            RenderPass(Device& device, Window& window, VkRenderPassCreateInfo* info, std::vector<AllocatedImage> images, bool isWindowExtent, VkExtent2D extent = {0,0});
+            RenderPass(Device& device, VkRenderPassCreateInfo* info, VkExtent2D extent = {0,0});
+            RenderPass(Device& device, VkRenderPassCreateInfo* info, std::vector<AllocatedImage> images, VkExtent2D extent = {0,0});
             ~RenderPass(); // destroy everything.
 
             // Not copyable or movable
@@ -20,7 +20,7 @@ namespace engine {
 
             //are images surface resolution? yes/no
             //if so, and window extent changes remake everything.
-            bool isWindowExtent;
+            
             VkExtent2D extent;
             float getAspectRatio() {return static_cast<float>(extent.width) / static_cast<float>(extent.height); }
 
@@ -36,7 +36,6 @@ namespace engine {
         void createFrameBuffer();
 
         Device& device;
-        Window& window;
 
         VkRenderPassCreateInfo* info;
         VkRenderPass renderPass;

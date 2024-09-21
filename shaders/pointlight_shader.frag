@@ -26,7 +26,7 @@ void main() {
     vec4 Position = subpassLoad(inPosition);
     vec4 Normal = normalize(subpassLoad(inNormal));
 
-    vec3 diffuseLight = vec3(0.01);
+    vec3 diffuseLight = vec3(0.001);
     vec3 specularLight = vec3(0.0);
 
     vec3 cameraPosWorld = ubo.inverseView[3].xyz;
