@@ -317,12 +317,19 @@ namespace ECS {
     };
 
     struct Camera : public Component {
+        Camera() = default;
+        Camera(float near, float far) : nearPlane{near}, farPlane{far} {}
         glm::mat4 projectionMatrix{1.0f};
         glm::mat4 viewMatrix{1.0f};
         glm::mat4 inverseViewMatrix{1.0f};
+        float nearPlane;
+        float farPlane;
 
         tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
-            return doc.NewElement("Camera");
+            tinyxml2::XMLElement* camera = doc.NewElement("Camera");
+            camera->SetAttribute("near", this->nearPlane);
+            camera->SetAttribute("far", this->farPlane);
+            return camera;
         }
     };
 

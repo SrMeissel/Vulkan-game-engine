@@ -120,15 +120,21 @@ namespace engine {
         ECS::SaveDataManager saveDataManager{device, *scriptingSystem, *materialSystem, *skyboxSystem}; 
         saveDataManager.loadData("../../saveFiles/statuetteSkyBox.xml", assetSystem);
 
-        // ECS::Entity backplane = assetSystem.CreateEntity();
-        // assetSystem.AddComponent<ECS::Transform>(backplane, ECS::Transform{glm::vec3(0.0f, 0.0f, 25.0f), glm::vec3(40.0f, 1.0f, 40.0f), glm::vec3{glm::radians(90.0f), 0.0f, 0.0f}});
-        // assetSystem.AddComponent<ECS::Renderable>(backplane, Importer::loadMesh("../../models/quad.obj", device));
+        ECS::Entity backplane = assetSystem.CreateEntity();
+        assetSystem.AddComponent<ECS::Transform>(backplane, ECS::Transform{glm::vec3(0.0f, 0.0f, 25.0f), glm::vec3(40.0f, 1.0f, 40.0f), glm::vec3{glm::radians(90.0f), 0.0f, 0.0f}});
+        assetSystem.AddComponent<ECS::Renderable>(backplane, Importer::loadMesh("../../models/quad.obj", device));
 
-        // ECS::Entity spotlight = assetSystem.CreateEntity();
-        // //(engine::Device& device, engine::Window& window, glm::vec3 color, float intensity, glm::vec2 resolution, VkRenderPass pass, VkSampler sampler, std::unique_ptr<engine::DescriptorSetLayout>& setLayout
-        // assetSystem.AddComponent<ECS::Transform>(spotlight, ECS::Transform{glm::vec3(0.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
-        // assetSystem.AddComponent<ECS::SpotLight>(spotlight, ECS::SpotLight{device, window, glm::vec3{1.0f, 0.0f, 0.0f}, 500.0f, glm::vec2{800, 600}, spotLightSystem->getRenderPass(), spotLightSystem->getSampler(), spotLightSystem->getSetLayout()});
-        // assetSystem.AddComponent<ECS::Camera>(spotlight, ECS::Camera{});
+ //<Translation x="0" y="-1.5" z="-3"/>
+ //glm::vec3(-4.0f, -3.5f, -12.0f)
+
+        glm::vec3 direction = glm::normalize(glm::vec3(0.0, -1.5, -3) - glm::vec3(-4.0, -3.5, -12.0));
+        float yaw = atan2(direction.z, direction.x);
+        float pitch = atan2(direction.y, sqrt((direction.x * direction.x) + (direction.z * direction.z)));
+
+        ECS::Entity spotlight = assetSystem.CreateEntity();
+        assetSystem.AddComponent<ECS::Transform>(spotlight, ECS::Transform{glm::vec3(-4.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(pitch, yaw, 0.0)});
+        assetSystem.AddComponent<ECS::SpotLight>(spotlight, ECS::SpotLight{device, window, glm::vec3{1.0f, 0.0f, 0.0f}, 500.0f, glm::vec2{800, 600}, spotLightSystem->getRenderPass(), spotLightSystem->getSampler(), spotLightSystem->getSetLayout()});
+        assetSystem.AddComponent<ECS::Camera>(spotlight, ECS::Camera{0.1, 500.0});
 
         //=======================================================================
 
@@ -138,7 +144,7 @@ namespace engine {
 
         ECS::Entity viewerObject = assetSystem.CreateEntity();
         assetSystem.AddComponent(viewerObject, ECS::Transform{glm::vec3(0.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
-        assetSystem.AddComponent(viewerObject, ECS::Camera{});
+        assetSystem.AddComponent(viewerObject, ECS::Camera{0.1, 5000});
         assetSystem.AddComponent(viewerObject, ECS::Script{"CameraControl", scriptingSystem->assembly, scriptingSystem->appDomain});
 
         ECS::Camera& viewerCamera = assetSystem.GetComponent<ECS::Camera>(viewerObject);
@@ -184,7 +190,7 @@ namespace engine {
             //cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerTransform);
             viewerCamera.viewMatrix = camera.setViewYXZ(viewerTransform.translation, viewerTransform.rotation);            
             float aspect = renderer.getRenderPass(0)->getAspectRatio();
-            viewerCamera.projectionMatrix = camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 5000.0f);
+            viewerCamera.projectionMatrix = camera.setPerspectiveProjection(glm::radians(50.0f), aspect, viewerCamera.nearPlane, viewerCamera.farPlane);
             viewerCamera.inverseViewMatrix = glm::inverse(viewerCamera.viewMatrix);
 
             //new frame ready, runs every frame ===============================================
@@ -218,7 +224,7 @@ namespace engine {
                 vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
 
                 pointLightSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
-                spotLightSystem->RenderLight(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
+                spotLightSystem->RenderLight(commandBuffer, viewerCamera, assetSystem);
                 skyboxSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
 
 

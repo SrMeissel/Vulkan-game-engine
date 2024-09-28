@@ -6,6 +6,8 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
     mat4 projection;
     mat4 view;
     mat4 inverseView;
+    float near;
+    float far;
 } ubo;
 
 layout(push_constant) uniform Push {
@@ -14,5 +16,5 @@ layout(push_constant) uniform Push {
 } push;
 
 void main() {
-    gl_FragDepth = ( fragPos.z - 0.1 ) / ( 500.0 - 0.1 );
+    gl_FragDepth = ( fragPos.z - ubo.near ) / ( ubo.far - ubo.near );
 }

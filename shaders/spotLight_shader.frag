@@ -2,15 +2,17 @@
 
 layout (location = 0) out vec4 outColor;
 
-layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput inColor;
-layout(input_attachment_index = 1, set = 1, binding = 1) uniform subpassInput inNormal;
-layout(input_attachment_index = 2, set = 1, binding = 2) uniform subpassInput inPosition;
-
 layout(set = 0, binding = 0) uniform GlobalUbo {
     mat4 projection;
     mat4 view;
     mat4 inverseView;
+    float nearPlane;
+    float farPlane;
 } ubo;
+
+layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput inColor;
+layout(input_attachment_index = 1, set = 1, binding = 1) uniform subpassInput inNormal;
+layout(input_attachment_index = 2, set = 1, binding = 2) uniform subpassInput inPosition;
 
 layout(set = 2, binding = 0) uniform sampler Sampler;
 layout(set = 2, binding = 1) uniform texture2D shadowMap;
@@ -65,7 +67,7 @@ void main() {
 
     // Sample shadow map
     float closestDepth = texture(sampler2D(shadowMap, Sampler), projCoords.xy).r;
-    float currentDepth = ( fragPosLightSpace.z - 0.1 ) / ( 500.0 - 0.1 );
+    float currentDepth = ( fragPosLightSpace.z - ubo.nearPlane ) / ( ubo.farPlane - ubo.nearPlane );
 
     // Shadow factor
     //float bias = max(0.05 * (1.0 - dot(Normal.xyz, lightDirection.xyz)), 0.005);  

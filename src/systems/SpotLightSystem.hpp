@@ -30,11 +30,11 @@ namespace engine {
         }
 
         void RenderShadows(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager, ECS::System& renderables);
-        void RenderLight(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager);
+        void RenderLight(VkCommandBuffer commandBuffer, ECS::Camera& viewerCamera, ECS::AssetSystem& assetManager);
 
         VkRenderPass getRenderPass() {return shadowPass; }
         VkSampler& getSampler() { return sampler; }        
-        std::unique_ptr<DescriptorSetLayout>& getSetLayout() { return shadowSetLayout; }
+        std::unique_ptr<DescriptorSetLayout>& getSetLayout() { return lightSetLayout; }
 
         void cleanup(ECS::AssetSystem& assetManager);
 
@@ -50,26 +50,32 @@ namespace engine {
             float intensity;
             
         };
-        struct ShadowUBO {
+        struct PointLightUBO {
             glm::mat4 projection{1.0f};
             glm::mat4 view{1.0f};
             glm::mat4 inverseView{1.0f};
+            float nearPlane;
+            float farPlane;
         };
 
         Device &device;
 
+        std::shared_ptr<engine::DescriptorPool> UBOPool;
+        std::unique_ptr<DescriptorSetLayout> UBOSetLayout;
+
+        // vulkan things required for the Shadow RenderPass ================================================
         VkRenderPassCreateInfo* renderPassInfo = new VkRenderPassCreateInfo();
         VkRenderPass shadowPass;
         std::unique_ptr<Buffer> shadowUBO;
-        std::unique_ptr<DescriptorSetLayout> UBOSetLayout;
-        std::shared_ptr<engine::DescriptorPool> UBOPool;
-        VkDescriptorSet UBOSet;
+        VkDescriptorSet shadowUBOSet;
         std::unique_ptr<Pipeline> shadowPipeline;
         VkPipelineLayout shadowPipelineLayout;
 
-        std::unique_ptr<DescriptorSetLayout> shadowSetLayout;
-        std::shared_ptr<engine::DescriptorPool> shadowPool;
-        VkDescriptorSet shadowSet;
+
+        // vulkan things required by the light RenderPass ==============================================
+        std::unique_ptr<Buffer> lightUBO;
+        VkDescriptorSet lightUBOSet;
+        std::unique_ptr<DescriptorSetLayout> lightSetLayout; // <= to spotLight component
         std::unique_ptr<Pipeline> lightPipeline;
         VkPipelineLayout lightPipelineLayout;
         VkSampler sampler;

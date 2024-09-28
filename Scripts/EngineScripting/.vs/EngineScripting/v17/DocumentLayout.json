@@ -3,16 +3,16 @@
   "WorkspaceRootPath": "C:\\Users\\mizer\\dev\\Vulkan-game-engine\\Scripts\\EngineScripting\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{01EBD0D3-4432-4AA0-A8EF-9298895A26F5}|EngineScripting.csproj|c:\\users\\mizer\\dev\\vulkan-game-engine\\scripts\\enginescripting\\rotatecontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{01EBD0D3-4432-4AA0-A8EF-9298895A26F5}|EngineScripting.csproj|solutionrelative:rotatecontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{01EBD0D3-4432-4AA0-A8EF-9298895A26F5}|EngineScripting.csproj|c:\\users\\mizer\\dev\\vulkan-game-engine\\scripts\\enginescripting\\cameracontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{01EBD0D3-4432-4AA0-A8EF-9298895A26F5}|EngineScripting.csproj|solutionrelative:cameracontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{01EBD0D3-4432-4AA0-A8EF-9298895A26F5}|EngineScripting.csproj|C:\\Users\\mizer\\dev\\Vulkan-game-engine\\Scripts\\EngineScripting\\rotate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{01EBD0D3-4432-4AA0-A8EF-9298895A26F5}|EngineScripting.csproj|solutionrelative:rotate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{01EBD0D3-4432-4AA0-A8EF-9298895A26F5}|EngineScripting.csproj|C:\\Users\\mizer\\dev\\Vulkan-game-engine\\Scripts\\EngineScripting\\cameracontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{01EBD0D3-4432-4AA0-A8EF-9298895A26F5}|EngineScripting.csproj|solutionrelative:cameracontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{01EBD0D3-4432-4AA0-A8EF-9298895A26F5}|EngineScripting.csproj|C:\\Users\\mizer\\dev\\Vulkan-game-engine\\Scripts\\EngineScripting\\rotatecontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{01EBD0D3-4432-4AA0-A8EF-9298895A26F5}|EngineScripting.csproj|solutionrelative:rotatecontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -22,7 +22,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
@@ -39,28 +39,28 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "RotateControl.cs",
               "DocumentMoniker": "C:\\Users\\mizer\\dev\\Vulkan-game-engine\\Scripts\\EngineScripting\\RotateControl.cs",
               "RelativeDocumentMoniker": "RotateControl.cs",
               "ToolTip": "C:\\Users\\mizer\\dev\\Vulkan-game-engine\\Scripts\\EngineScripting\\RotateControl.cs",
               "RelativeToolTip": "RotateControl.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAABMAAABTAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABEAAAACAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-08-24T04:16:00.079Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-08-24T04:16:00.079Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "CameraControl.cs",
               "DocumentMoniker": "C:\\Users\\mizer\\dev\\Vulkan-game-engine\\Scripts\\EngineScripting\\CameraControl.cs",
               "RelativeDocumentMoniker": "CameraControl.cs",
               "ToolTip": "C:\\Users\\mizer\\dev\\Vulkan-game-engine\\Scripts\\EngineScripting\\CameraControl.cs",
               "RelativeToolTip": "CameraControl.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAACoAAABuAAAA",
+              "ViewState": "AQIAABMAAAAAAAAAAAAgwCgAAAAyAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-06-24T03:04:37.274Z"
+              "WhenOpened": "2024-06-24T03:04:37.274Z",
+              "EditorCaption": ""
             }
           ]
         }

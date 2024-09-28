@@ -49,13 +49,15 @@ namespace engine {
 
         //init camera buffer descriptor set ===========================================
 
-        std::cout << "about to create shadow buffer \n";
-        shadowUBO = std::make_unique<Buffer>(device, sizeof(ShadowUBO), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+        shadowUBO = std::make_unique<Buffer>(device, sizeof(PointLightUBO), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
         shadowUBO->map();
+
+        lightUBO = std::make_unique<Buffer>(device, sizeof(PointLightUBO), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+        lightUBO->map();
 
         UBOPool = DescriptorPool::Builder(device)
         .addPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 3) // <==================
-        .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1)
+        .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2)
         .build();
 
         UBOSetLayout = DescriptorSetLayout::Builder(device)
@@ -65,9 +67,13 @@ namespace engine {
 
         DescriptorWriter writer(*UBOSetLayout, *UBOPool);
 
-        auto bufferInfo = shadowUBO->descriptorInfo();
-        writer.writeBuffer(0, &bufferInfo);
-        writer.build(UBOSet);
+        auto shadowBufferInfo = shadowUBO->descriptorInfo();
+        writer.writeBuffer(0, &shadowBufferInfo);
+        writer.build(shadowUBOSet);
+
+        auto lightBufferInfo = lightUBO->descriptorInfo();
+        writer.writeBuffer(0, &lightBufferInfo);
+        writer.build(lightUBOSet);
 
         std::cout << "created shadow set \n";
 
@@ -110,7 +116,7 @@ namespace engine {
         pushConstantRange.offset = 0;
         pushConstantRange.size = sizeof(LightPushConstant);
 
-        std::vector<VkDescriptorSetLayout> lightDescriptorSetLayouts{globalSetLayout};
+        std::vector<VkDescriptorSetLayout> lightDescriptorSetLayouts{UBOSetLayout->getDescriptorSetLayout()};
 
         inputSetLayout = DescriptorSetLayout::Builder(device)
         .addBinding(0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -120,11 +126,11 @@ namespace engine {
         lightDescriptorSetLayouts.push_back(inputSetLayout->getDescriptorSetLayout());
 
 
-        shadowSetLayout = DescriptorSetLayout::Builder(device)
+        lightSetLayout = DescriptorSetLayout::Builder(device)
         .addBinding(0, VK_DESCRIPTOR_TYPE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
         .addBinding(1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
         .build();
-        lightDescriptorSetLayouts.push_back(shadowSetLayout->getDescriptorSetLayout());
+        lightDescriptorSetLayouts.push_back(lightSetLayout->getDescriptorSetLayout());
 
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(lightDescriptorSetLayouts.size());
@@ -222,7 +228,7 @@ namespace engine {
             //update camera ================================================================================================
 
             camera.viewMatrix = cameraManager.setViewYXZ(transform.translation, transform.rotation);             
-            camera.projectionMatrix = cameraManager.setPerspectiveProjection(glm::radians(50.0f), spotlight.aspect, 0.1f, 500.0f);
+            camera.projectionMatrix = cameraManager.setPerspectiveProjection(glm::radians(50.0f), spotlight.aspect, camera.nearPlane, camera.farPlane);
             camera.inverseViewMatrix = glm::inverse(camera.viewMatrix);
 
             //start shadow renderpass =============================================================================
@@ -262,14 +268,16 @@ namespace engine {
 
             shadowPipeline->bind(commandBuffer);
 
-            ShadowUBO ubo{};
+            PointLightUBO ubo{};
             ubo.projection = camera.projectionMatrix;
             ubo.view = camera.viewMatrix;
             ubo.inverseView = camera.inverseViewMatrix;
+            ubo.farPlane = camera.farPlane;
+            ubo.nearPlane = camera.nearPlane;
             shadowUBO->writeToBuffer(&ubo);
             shadowUBO->flush();
 
-            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowPipelineLayout, 0, 1, &UBOSet, 0, nullptr);
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowPipelineLayout, 0, 1, &shadowUBOSet, 0, nullptr);
 
             for(auto const& meshEntity : renderables.entities) {
 
@@ -307,15 +315,25 @@ namespace engine {
         }
     }
 
-    void SpotLightSystem::RenderLight(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assets) {
+    void SpotLightSystem::RenderLight(VkCommandBuffer commandBuffer, ECS::Camera& viewerCamera, ECS::AssetSystem& assets) {
         lightPipeline->bind(commandBuffer);
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lightPipelineLayout, 0, 1, &globalUBOSet, 0, nullptr);
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lightPipelineLayout, 1, 1, &inputSet, 0, nullptr);
 
         for(const auto& Entity : entities) {
             ECS::Transform& transform = assets.GetComponent<ECS::Transform>(Entity);
             ECS::SpotLight& spotlight = assets.GetComponent<ECS::SpotLight>(Entity);
             ECS::Camera& camera = assets.GetComponent<ECS::Camera>(Entity);
+
+            PointLightUBO ubo{};
+            ubo.projection = viewerCamera.projectionMatrix;
+            ubo.view = viewerCamera.viewMatrix;
+            ubo.inverseView = viewerCamera.inverseViewMatrix;
+            ubo.farPlane = camera.farPlane;
+            ubo.nearPlane = camera.nearPlane;
+            lightUBO->writeToBuffer(&ubo);
+            lightUBO->flush();
+
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lightPipelineLayout, 0, 1, &lightUBOSet, 0, nullptr);
 
             LightPushConstant push{};
             push.lightMatrix = camera.projectionMatrix * camera.viewMatrix;
