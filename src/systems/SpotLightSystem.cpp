@@ -227,7 +227,7 @@ namespace engine {
 
             //update camera ================================================================================================
 
-            camera.viewMatrix = cameraManager.setViewYXZ(transform.translation, transform.rotation);             
+            camera.viewMatrix = cameraManager.setViewTarget(transform.translation, glm::vec3(0.0, -3, -3));             
             camera.projectionMatrix = cameraManager.setPerspectiveProjection(glm::radians(50.0f), spotlight.aspect, camera.nearPlane, camera.farPlane);
             camera.inverseViewMatrix = glm::inverse(camera.viewMatrix);
 

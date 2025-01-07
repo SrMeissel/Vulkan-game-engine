@@ -1,6 +1,6 @@
 out
+outShared
 textures/*
-libs/*
 docs
 *.vscode
 *.vsgit

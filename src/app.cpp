@@ -23,6 +23,7 @@ namespace engine {
 
     app::app() {
     }
+
     app::~app() {
     }
 
@@ -135,6 +136,7 @@ namespace engine {
         assetSystem.AddComponent<ECS::Transform>(spotlight, ECS::Transform{glm::vec3(-4.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(pitch, yaw, 0.0)});
         assetSystem.AddComponent<ECS::SpotLight>(spotlight, ECS::SpotLight{device, window, glm::vec3{1.0f, 0.0f, 0.0f}, 500.0f, glm::vec2{800, 600}, spotLightSystem->getRenderPass(), spotLightSystem->getSampler(), spotLightSystem->getSetLayout()});
         assetSystem.AddComponent<ECS::Camera>(spotlight, ECS::Camera{0.1, 500.0});
+        assetSystem.AddComponent<ECS::Script>(spotlight, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain});
 
         //=======================================================================
 
