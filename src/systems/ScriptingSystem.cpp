@@ -74,7 +74,7 @@ namespace engine {
         
         std::streampos end = stream.tellg();
         stream.seekg(0, std::ios::beg);
-        int size = end - stream.tellg();
+        int size = (int)(end - stream.tellg());
         if(size == 0) return nullptr;
 
         char* buffer = new char[size];

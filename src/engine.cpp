@@ -1,4 +1,4 @@
-#include "app.hpp"
+#include "engine.hpp"
 #include "cameraManager.hpp"
 #include "bufferManager.hpp"
 #include "ECS/Importer.hpp"
@@ -21,13 +21,13 @@
 
 namespace engine {
 
-    app::app() {
+    engine::engine() {
     }
 
-    app::~app() {
+    engine::~engine() {
     }
 
-    void app::run() {
+    void engine::run() {
         //initiliaze GPU memory objects ==================================================
 
         globalPool = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT).build();
@@ -255,7 +255,7 @@ namespace engine {
     }
 
     //this works, vkcreateRenderPass uses pointer. The static keywords are used to prevent the objects from deleteing because their referenced.
-    VkRenderPassCreateInfo* app::configureRenderPass() {
+    VkRenderPassCreateInfo* engine::configureRenderPass() {
 
         static std::array<VkAttachmentDescription, 5> attachments;
 
@@ -341,14 +341,14 @@ namespace engine {
 
         static std::array<VkSubpassDescription, 2> subpasses {};
             subpasses[0].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-            subpasses[0].colorAttachmentCount = colorAttachmentRef.size();
+            subpasses[0].colorAttachmentCount = (int)colorAttachmentRef.size();
             subpasses[0].pColorAttachments = colorAttachmentRef.data();
             subpasses[0].pDepthStencilAttachment = &depthAttachmentRef;
 
             subpasses[1].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
             subpasses[1].colorAttachmentCount = 1;
             subpasses[1].pColorAttachments = &lightingAttachmentRef;
-            subpasses[1].inputAttachmentCount = inputReference.size();
+            subpasses[1].inputAttachmentCount = (int)inputReference.size();
             subpasses[1].pInputAttachments = inputReference.data();
             subpasses[1].pDepthStencilAttachment = &depthAttachmentRef;
 
@@ -381,15 +381,15 @@ namespace engine {
         renderPassInfo->sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
         renderPassInfo->attachmentCount = static_cast<uint32_t>(attachments.size());
         renderPassInfo->pAttachments = attachments.data();
-        renderPassInfo->subpassCount = subpasses.size();
+        renderPassInfo->subpassCount = (int)subpasses.size();
         renderPassInfo->pSubpasses = subpasses.data();
-        renderPassInfo->dependencyCount = dependency.size();
+        renderPassInfo->dependencyCount = (int)dependency.size();
         renderPassInfo->pDependencies = dependency.data();
 
         return renderPassInfo;
     }
 
-    VkFormat app::chooseSwapSurfaceFormat() {
+    VkFormat engine::chooseSwapSurfaceFormat() {
         std::vector<VkSurfaceFormatKHR> availableFormats = device.getSwapChainSupport().formats;
         for (const auto &availableFormat : availableFormats) {
             if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&

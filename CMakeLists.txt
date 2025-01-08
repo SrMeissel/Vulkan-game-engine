@@ -8,9 +8,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C Compiler: ${CMAKE_C_COMPILER}")
 
+
 set(Vulkan_LIBRARY C:/Users/mizer/dev/Development-Kits/VulkanSDK/1.3.290.0/Lib/vulkan-1.lib)
 set(Vulkan_INCLUDE_DIR C:/Users/mizer/dev/Development-Kits/VulkanSDK/1.3.290.0/Include)
-
 find_package(Vulkan REQUIRED)
 
 # add_subdirectory(${CMAKE_SOURCE_DIR}/../Debelopment-Kits/assimp-5.4.2)
@@ -20,6 +20,7 @@ find_package(assimp REQUIRED)
 # add_subdirectory(${CMAKE_SOURCE_DIR}/../Development-Kits/glfw-3.3.8)
 set (glfw3_DIR "C:/Program Files (x86)/GLFW/lib/cmake/glfw3") # I hate this, but I don't want to spend more time on it, it accomplishes what I wanted to do...
 find_package(glfw3 3.3 REQUIRED)
+
 
 option(IS_SHARED_LIB "build as dll" OFF)
 

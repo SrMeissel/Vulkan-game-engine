@@ -64,11 +64,11 @@ namespace engine {
 
         //Viewport Window ===========================================================================================================================================
         ImGui::Begin("main", (bool*)false, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground);
-        ImGui::Image((ImTextureID)viewportDescriptorSet, ImVec2(viewportExtent.width, viewportExtent.height));
+        ImGui::Image((ImTextureID)viewportDescriptorSet, ImVec2((float)viewportExtent.width, (float)viewportExtent.height));
         ImGui::End();
 
         ImGui::Begin("secondary", (bool*)false, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground);
-        ImGui::Image((ImTextureID)secondaryViewportDescriptorSet, ImVec2(viewportExtent.width, viewportExtent.height));
+        ImGui::Image((ImTextureID)secondaryViewportDescriptorSet, ImVec2((float)viewportExtent.width, (float)viewportExtent.height));
         ImGui::End();
 
         //mess with object Window ====================================================
@@ -174,9 +174,9 @@ namespace engine {
         renderPassInfo->sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
         renderPassInfo->attachmentCount = static_cast<uint32_t>(attachments.size());
         renderPassInfo->pAttachments = attachments.data();
-        renderPassInfo->subpassCount = subpasses.size();
+        renderPassInfo->subpassCount = (int)subpasses.size();
         renderPassInfo->pSubpasses = subpasses.data();
-        renderPassInfo->dependencyCount = dependency.size();
+        renderPassInfo->dependencyCount = (int)dependency.size();
         renderPassInfo->pDependencies = dependency.data();
 
         return renderPassInfo;

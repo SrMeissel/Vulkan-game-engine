@@ -222,7 +222,7 @@ void DescriptorWriter::overwrite(VkDescriptorSet &set) {
     write.dstSet = set;
   }
   //std::cout << "descriptor writes size " << writes.size() << "\n";
-  vkUpdateDescriptorSets(pool.device.device(), writes.size(), writes.data(), 0, nullptr);
+  vkUpdateDescriptorSets(pool.device.device(), (int)writes.size(), writes.data(), 0, nullptr);
 }
  
 } 

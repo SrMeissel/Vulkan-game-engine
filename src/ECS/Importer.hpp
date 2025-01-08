@@ -1,11 +1,10 @@
 #pragma once
 
-#include <tiny_obj_loader.h>
 #include <../libs/stb/stb_image.h>
 
-#include <assimp/scene.h>
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
+#include "assimp/scene.h"
+#include "assimp/Importer.hpp"
+#include "assimp/postprocess.h"
 
 #include <stdexcept>
 #include <iostream>

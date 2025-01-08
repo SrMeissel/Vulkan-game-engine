@@ -23,16 +23,16 @@
 #include <vector>
 
 namespace engine {
-    class app {
+    class engine {
         public:
             static constexpr int WIDTH = 1200;
             static constexpr int HEIGHT = 800;
 
-            app();
-            ~app();
+            engine();
+            ~engine();
 
-            app(const app &) = delete;
-            app &operator=(const app &) = delete;
+            engine(const engine &) = delete;
+            engine &operator=(const engine &) = delete;
 
             void run();
         private:

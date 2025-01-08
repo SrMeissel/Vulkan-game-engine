@@ -1,14 +1,14 @@
-#include "app.hpp"
+#include "engine.hpp"
 
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
 
 int main() {
-    engine::app app{};
+    engine::engine engine{};
  
     try{
-        app.run();
+        engine.run();
     } catch(const std::exception &e) {
         std::cerr << e.what() << '\n';
         return EXIT_FAILURE;
