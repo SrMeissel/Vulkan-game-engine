@@ -5,7 +5,7 @@
 #include <iostream>
 #include <stdexcept>
  
-namespace engine {
+namespace renderer {
  
 // *************** Descriptor Set Layout Builder *********************
  

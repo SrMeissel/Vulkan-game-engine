@@ -8,12 +8,12 @@
 
 namespace engine {
 
-    SceneEditor::SceneEditor(Device& device,  Window& window, Renderer& renderer) 
-    : device(device), window(window), renderer{renderer} {
+    SceneEditor::SceneEditor(Window& window, renderer::Renderer& renderer) 
+    : window(window), renderer{renderer} {
 
         //seems extremely overkill
         //only modified once per launch
-        imguiPool = DescriptorPool::Builder(device)
+        imguiPool = renderer::DescriptorPool::Builder(renderer.device)
         .setMaxSets(1000)
         .setPoolFlags(VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT)
 
@@ -37,14 +37,14 @@ namespace engine {
         ImGui_ImplGlfw_InitForVulkan(window.getGLFWwindow(), true);
 
         ImGui_ImplVulkan_InitInfo initInfo = {};
-        initInfo.Instance = device.getInstance();
-        initInfo.PhysicalDevice = device.physicalDevice;
-        initInfo.Device = device.device();
-        initInfo.Queue = device.graphicsQueue();
+        initInfo.Instance =renderer.device.getInstance();
+        initInfo.PhysicalDevice =renderer.device.physicalDevice;
+        initInfo.Device =renderer.device.device();
+        initInfo.Queue =renderer.device.graphicsQueue();
         initInfo.DescriptorPool = imguiPool->getDescriptorPool();
         initInfo.MinImageCount = 3;
         initInfo.ImageCount = 3;
-        initInfo.MSAASamples = device.msaaSamples;
+        initInfo.MSAASamples =renderer.device.msaaSamples;
         
         ImGui_ImplVulkan_Init(&initInfo, *renderer.getSwapchainRenderPass());
         ImGui_ImplVulkan_CreateFontsTexture();
@@ -89,7 +89,7 @@ namespace engine {
     }
 
     VkRenderPassCreateInfo* SceneEditor::configureRenderPass() {
-        std::vector<VkSurfaceFormatKHR> availableFormats = device.getSwapChainSupport().formats;
+        std::vector<VkSurfaceFormatKHR> availableFormats =renderer.device.getSwapChainSupport().formats;
         VkFormat swapFormat;
         for (const auto &availableFormat : availableFormats) {
             if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
@@ -103,7 +103,7 @@ namespace engine {
         static std::array<VkAttachmentDescription, 2> attachments;
         //colorAttachment (Attachment 0 must be swapchain image, this is constant every time)
             attachments[0].format = swapFormat;
-            attachments[0].samples = device.msaaSamples;
+            attachments[0].samples =renderer.device.msaaSamples;
             attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -111,8 +111,8 @@ namespace engine {
             attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
         //depthAttachment
-            attachments[1].format = device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
-            attachments[1].samples = device.msaaSamples;
+            attachments[1].format =renderer.device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+            attachments[1].samples =renderer.device.msaaSamples;
             attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;

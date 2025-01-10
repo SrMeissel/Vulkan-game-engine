@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <vector>
  
-namespace engine {
+namespace renderer {
  
     class DescriptorSetLayout {
     public:

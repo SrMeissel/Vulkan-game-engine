@@ -5,11 +5,32 @@
 #include <array>
 
 
-namespace engine {
+namespace renderer {
 
-    Renderer::Renderer(Window& window, Device& device) : window{window}, device{device} {
+    Renderer::Renderer(Window& window) : window{window} {
         recreateSwapChain();
         createCommandBuffers();
+        
+        globalPool = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT).build();
+
+        //init UBO
+         for(int i=0; i < uboBuffers.size(); i++) {
+            uboBuffers[i] = std::make_unique<Buffer>(device, sizeof(GlobalUbo), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+            uboBuffers[i]->map();
+        }
+        // add UBO to descriptor
+        globalSetLayout = DescriptorSetLayout::Builder(device)
+        .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+        .build();
+
+         for(int i=0; i < globalDescriptorSets.size(); i++){
+            DescriptorWriter writer(*globalSetLayout, *globalPool);
+
+            auto bufferInfo = uboBuffers[i]->descriptorInfo();
+            writer.writeBuffer(0, &bufferInfo);
+            writer.build(globalDescriptorSets[i]);
+        }
+
     }
     Renderer::~Renderer() {
         freeCommandBuffers();

@@ -3,16 +3,21 @@
 #include "windowManager.hpp" 
 #include "deviceManager.hpp"
 #include "swapchainManager.hpp"
-#include "RenderPass.hpp" // <===========
+#include "RenderPass.hpp"
+#include "descriptorManager.hpp"
+
+#include "bufferManager.hpp"
+
+#include "frameInfo.hpp"
 
 #include <memory>
 #include <vector>
 #include <cassert>
 
-namespace engine {
+namespace renderer {
     class Renderer {
         public:
-            Renderer(Window& window, Device& device);
+            Renderer(Window& window);
             ~Renderer();
 
             Renderer(const Renderer &) = delete;
@@ -46,15 +51,20 @@ namespace engine {
             void beginNextRenderPass(VkCommandBuffer commandBuffer);
             void endCurrentRenderPass(VkCommandBuffer commandBuffer);
 
+           //maybe should be moved to private 
+            Device device{window};
+            std::shared_ptr<DescriptorPool> globalPool;
+            std::unique_ptr<DescriptorSetLayout> globalSetLayout;
+            std::vector<std::unique_ptr<Buffer>> uboBuffers{SwapChain::MAX_FRAMES_IN_FLIGHT};
+            std::vector<VkDescriptorSet> globalDescriptorSets{SwapChain::MAX_FRAMES_IN_FLIGHT};
+
+            Window& window;
         private:
             void createCommandBuffers();
             void freeCommandBuffers();
 
             void recreateSwapChain();
             void ResizeRenderPasses(); // if renderpass uses window extent that needs to be resizes with the window
-
-            Window& window;
-            Device& device;
 
             std::unique_ptr<SwapChain> swapchain;
             std::vector<VkCommandBuffer> commandBuffers;

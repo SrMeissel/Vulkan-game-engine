@@ -5,7 +5,7 @@
 
 #include <vector>
 
-namespace engine {
+namespace renderer {
     class RenderPass {
         public:
             RenderPass(Device& device, VkRenderPassCreateInfo* info, VkExtent2D extent = {0,0});

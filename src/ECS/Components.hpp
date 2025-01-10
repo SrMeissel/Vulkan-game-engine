@@ -43,8 +43,8 @@ namespace ECS {
     struct Material : public Component {
         Material() = default;
 
-        engine::AllocatedImage albedo;
-        engine::AllocatedImage normal;
+        renderer::AllocatedImage albedo;
+        renderer::AllocatedImage normal;
 
         VkDescriptorImageInfo albedoImageInfo;
         VkDescriptorImageInfo normalImageInfo;
@@ -70,7 +70,7 @@ namespace ECS {
         std::string Path;
         std::vector<std::string> tags;
 
-        engine::CubeMap skyBoxImage;
+        renderer::CubeMap skyBoxImage;
 
         VkDescriptorImageInfo imageInfo;
         std::shared_ptr<engine::DescriptorPool> descriptorPool;
@@ -97,7 +97,7 @@ namespace ECS {
         float radius;
         float intensity;
 
-        //engine::AllocatedImage shadowMap;
+        //renderer::AllocatedImage shadowMap;
         //VkFramebuffer shadowMapFrameBuffer;
 
         tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
@@ -113,7 +113,7 @@ namespace ECS {
 
     struct SpotLight : public Component {
         SpotLight() = default;
-        SpotLight(engine::Device& device, engine::Window& window, glm::vec3 color, float intensity, glm::vec2 resolution, VkRenderPass pass, VkSampler sampler, std::unique_ptr<engine::DescriptorSetLayout>& setLayout) : 
+        SpotLight(renderer::Device& device, Window& window, glm::vec3 color, float intensity, glm::vec2 resolution, VkRenderPass pass, VkSampler sampler, std::unique_ptr<engine::DescriptorSetLayout>& setLayout) : 
         color{color}, intensity{intensity}, resolution{resolution}, aspect{static_cast<float>(resolution.x) / static_cast<float>(resolution.y)} {
 
             // create images ===========================================================================
@@ -208,7 +208,7 @@ namespace ECS {
         glm::vec2 resolution;
         float aspect;
 
-        engine::AllocatedImage shadowMap{};
+        renderer::AllocatedImage shadowMap{};
         VkFramebuffer frameBuffer;
 
         VkDescriptorImageInfo descriptorImageInfo;

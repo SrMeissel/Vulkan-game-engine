@@ -28,7 +28,7 @@ namespace engine {
             static constexpr int WIDTH = 1200;
             static constexpr int HEIGHT = 800;
 
-            engine();
+            engine(renderer::Renderer& renderer, ECS::AssetSystem& assetSystem);
             ~engine();
 
             engine(const engine &) = delete;
@@ -39,16 +39,10 @@ namespace engine {
             VkRenderPassCreateInfo* configureRenderPass();
             VkFormat chooseSwapSurfaceFormat();
 
-            Window window{WIDTH, HEIGHT, "Hello there"};
-            Device device{window};
-            Renderer renderer{window, device};
-
-            SceneEditor sceneEditor{device, window, renderer};
+            renderer::Renderer& renderer;
 
             ScreenshotTool screenshotTool;
 
-            std::shared_ptr<DescriptorPool> globalPool;
-            
-            ECS::AssetSystem assetSystem;
+            ECS::AssetSystem& assetSystem;
     };
 }

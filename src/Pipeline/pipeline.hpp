@@ -7,7 +7,7 @@
 #include <vector>
 #include <array>
 
-namespace engine{
+namespace renderer {
 
     struct PipelineConfigInfo {
         PipelineConfigInfo() = default;

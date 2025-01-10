@@ -15,46 +15,18 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 
-#ifndef ENGINE_PATH
-#define ENGINE_PATH "C:/Users/mizer/dev/vulkan-game-engine/"
-#endif
-
 namespace engine {
 
-    engine::engine() {
+    engine::engine(renderer::Renderer& renderer, ECS::AssetSystem& assetSystem) : renderer{renderer}, assetSystem{assetSystem} {
     }
 
     engine::~engine() {
     }
 
     void engine::run() {
-        //initiliaze GPU memory objects ==================================================
-
-        globalPool = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT).build();
-
-        //init UBO
-        std::vector<std::unique_ptr<Buffer>> uboBuffers(SwapChain::MAX_FRAMES_IN_FLIGHT);
-        for(int i=0; i < uboBuffers.size(); i++) {
-            uboBuffers[i] = std::make_unique<Buffer>(device, sizeof(GlobalUbo), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-            uboBuffers[i]->map();
-        }
-        // add UBO to descriptor
-        auto globalSetLayout = DescriptorSetLayout::Builder(device)
-        .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-        .build();
-
-        std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
-        for(int i=0; i < globalDescriptorSets.size(); i++){
-            DescriptorWriter writer(*globalSetLayout, *globalPool);
-
-            auto bufferInfo = uboBuffers[i]->descriptorInfo();
-            writer.writeBuffer(0, &bufferInfo);
-            writer.build(globalDescriptorSets[i]);
-        }
-
         //Initialize render systems ======================================
 
-        RenderPass scenePass{device, configureRenderPass(), {800, 600}}; // 1280, 720 is 720p
+        renderer::RenderPass scenePass{renderer.device, configureRenderPass(), {800, 600}}; // 1280, 720 is 720p
         renderer.appendRenderPass(& scenePass);
 
         //Initialize asset system ======================================
@@ -69,12 +41,12 @@ namespace engine {
         assetSystem.RegisterComponent<ECS::SpotLight>();
         assetSystem.RegisterComponent<ECS::SkyBox>();
 
-        std::shared_ptr<MeshSystem> meshSystem = assetSystem.RegisterSystem<MeshSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
-        std::shared_ptr<MaterialSystem> materialSystem = assetSystem.RegisterSystem<MaterialSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
-        std::shared_ptr<ScriptingSystem> scriptingSystem = assetSystem.RegisterSystem<ScriptingSystem>(window);
-        std::shared_ptr<PointLightSystem> pointLightSystem = assetSystem.RegisterSystem<PointLightSystem>(device, renderer.getRenderPass(0), globalSetLayout->getDescriptorSetLayout());
-        std::shared_ptr<SpotLightSystem> spotLightSystem = assetSystem.RegisterSystem<SpotLightSystem>(device, renderer.getRenderPass(0), globalSetLayout->getDescriptorSetLayout());
-        std::shared_ptr<SkyboxSystem> skyboxSystem = assetSystem.RegisterSystem<SkyboxSystem>(device, renderer.getRenderPass(0)->getRenderPass(), globalSetLayout->getDescriptorSetLayout());
+        std::shared_ptr<MeshSystem> meshSystem = assetSystem.RegisterSystem<MeshSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
+        std::shared_ptr<MaterialSystem> materialSystem = assetSystem.RegisterSystem<MaterialSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
+        std::shared_ptr<ScriptingSystem> scriptingSystem = assetSystem.RegisterSystem<ScriptingSystem>(renderer.window);
+        std::shared_ptr<PointLightSystem> pointLightSystem = assetSystem.RegisterSystem<PointLightSystem>(renderer.device, renderer.getRenderPass(0), renderer.globalSetLayout->getDescriptorSetLayout());
+        std::shared_ptr<SpotLightSystem> spotLightSystem = assetSystem.RegisterSystem<SpotLightSystem>(renderer.device, renderer.getRenderPass(0), renderer.globalSetLayout->getDescriptorSetLayout());
+        std::shared_ptr<SkyboxSystem> skyboxSystem = assetSystem.RegisterSystem<SkyboxSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
 
         //I need a list of all renderable objects for shadows. This makes me want to detach the entity list from systems, It would be a lot more simple.
         std::shared_ptr<Renderables> renderables = assetSystem.RegisterSystem<Renderables>();
@@ -118,12 +90,12 @@ namespace engine {
         skyboxSigniture.set(assetSystem.GetComponentType<ECS::SkyBox>());
         assetSystem.SetSystemSignature<SkyboxSystem>(skyboxSigniture);
 
-        ECS::SaveDataManager saveDataManager{device, *scriptingSystem, *materialSystem, *skyboxSystem}; 
+        ECS::SaveDataManager saveDataManager{renderer.device, *scriptingSystem, *materialSystem, *skyboxSystem}; 
         saveDataManager.loadData("../../saveFiles/statuetteSkyBox.xml", assetSystem);
 
         ECS::Entity backplane = assetSystem.CreateEntity();
         assetSystem.AddComponent<ECS::Transform>(backplane, ECS::Transform{glm::vec3(0.0f, 0.0f, 25.0f), glm::vec3(40.0f, 1.0f, 40.0f), glm::vec3{glm::radians(90.0f), 0.0f, 0.0f}});
-        assetSystem.AddComponent<ECS::Renderable>(backplane, Importer::loadMesh("../../models/quad.obj", device));
+        assetSystem.AddComponent<ECS::Renderable>(backplane, Importer::loadMesh("../../models/quad.obj", renderer.device));
 
  //<Translation x="0" y="-1.5" z="-3"/>
  //glm::vec3(-4.0f, -3.5f, -12.0f)
@@ -134,7 +106,7 @@ namespace engine {
 
         ECS::Entity spotlight = assetSystem.CreateEntity();
         assetSystem.AddComponent<ECS::Transform>(spotlight, ECS::Transform{glm::vec3(-4.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(pitch, yaw, 0.0)});
-        assetSystem.AddComponent<ECS::SpotLight>(spotlight, ECS::SpotLight{device, window, glm::vec3{1.0f, 0.0f, 0.0f}, 500.0f, glm::vec2{800, 600}, spotLightSystem->getRenderPass(), spotLightSystem->getSampler(), spotLightSystem->getSetLayout()});
+        assetSystem.AddComponent<ECS::SpotLight>(spotlight, ECS::SpotLight{renderer.device, renderer.window, glm::vec3{1.0f, 0.0f, 0.0f}, 500.0f, glm::vec2{800, 600}, spotLightSystem->getRenderPass(), spotLightSystem->getSampler(), spotLightSystem->getSetLayout()});
         assetSystem.AddComponent<ECS::Camera>(spotlight, ECS::Camera{0.1, 500.0});
         assetSystem.AddComponent<ECS::Script>(spotlight, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain});
 
@@ -158,7 +130,7 @@ namespace engine {
         auto currentTime = std::chrono::high_resolution_clock::now();
         bool screenshotSaved = false; // <=====
         //int frames = 0; // <=== useful for debugging (add to while condition)
-        while(!window.shouldClose()){
+        while(!renderer.window.shouldClose()){
             glfwPollEvents();
 
             //Updates scene editor frame, should not stay here.
@@ -178,11 +150,11 @@ namespace engine {
             scriptingSystem->update(frameTime, assetSystem);
 
             //take screenshot
-            int stateKeyP = glfwGetKey(window.getGLFWwindow(), GLFW_KEY_P);
+            int stateKeyP = glfwGetKey(renderer.window.getGLFWwindow(), GLFW_KEY_P);
             if(stateKeyP == GLFW_PRESS && screenshotSaved == false) {
                 std::vector<VkImage> images = renderer.getSwapchainImages();
                 VkImage srcImage = images[renderer.getCurrentImageIndex()]; 
-                screenshotTool.takeScreenshot(srcImage, "testScreenshot.jpg", device, window.getExtent());
+                screenshotTool.takeScreenshot(srcImage, "testScreenshot.jpg", renderer.device, renderer.window.getExtent());
                 screenshotSaved = true;
             }
 
@@ -199,35 +171,35 @@ namespace engine {
             if(auto commandBuffer = renderer.beginFrame()) {
                 int frameIndex = renderer.getFrameIndex();
 
-                frameInfo frameInfo{
-                    frameIndex, frameTime, commandBuffer, camera, globalDescriptorSets[frameIndex]
-                };
+                // frameInfo frameInfo{
+                //     frameIndex, frameTime, commandBuffer, camera, renderer.globalDescriptorSets[frameIndex]
+                // };
 
                 //update graphics memory objects =====================================
-                GlobalUbo ubo{};
+                renderer::GlobalUbo ubo{};
                 ubo.projection = viewerCamera.projectionMatrix;
                 ubo.view = viewerCamera.viewMatrix;
                 ubo.inverseView = viewerCamera.inverseViewMatrix;
 
-                uboBuffers[frameIndex]->writeToBuffer(&ubo);
-                uboBuffers[frameIndex]->flush();
+                renderer.uboBuffers[frameIndex]->writeToBuffer(&ubo);
+                renderer.uboBuffers[frameIndex]->flush();
 
                 //render =====================================================
 
                 //do shadows here
 
-                spotLightSystem->RenderShadows(commandBuffer, globalDescriptorSets[frameIndex], assetSystem, *renderables); // <==================================
+                spotLightSystem->RenderShadows(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem, *renderables); // <==================================
 
                 renderer.beginNextRenderPass(commandBuffer);
 
-                meshSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
-                materialSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
+                meshSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
+                materialSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
 
                 vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
 
-                pointLightSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
+                pointLightSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
                 spotLightSystem->RenderLight(commandBuffer, viewerCamera, assetSystem);
-                skyboxSystem->Render(commandBuffer, globalDescriptorSets[frameIndex], assetSystem);
+                skyboxSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
 
 
                 renderer.endCurrentRenderPass(commandBuffer);
@@ -242,7 +214,7 @@ namespace engine {
                 renderer.endFrame();
             }
         }
-        vkDeviceWaitIdle(device.device());
+        vkDeviceWaitIdle(renderer.device.device());
 
         //DESTROY EVERYTHING ==================================================================================================
         //I don't know how.
@@ -265,7 +237,7 @@ namespace engine {
 
         //colorAttachment
         attachments[0].format = chooseSwapSurfaceFormat();
-        attachments[0].samples = device.msaaSamples;
+        attachments[0].samples = renderer.device.msaaSamples;
         attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -280,8 +252,8 @@ namespace engine {
         inputReference[0].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         //normal color attachment
-        attachments[1].format = VK_FORMAT_R32G32B32A32_SFLOAT; // <================== device specific
-        attachments[1].samples = device.msaaSamples;
+        attachments[1].format = VK_FORMAT_R32G32B32A32_SFLOAT; // <================== renderer.device specific
+        attachments[1].samples = renderer.device.msaaSamples;
         attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -296,8 +268,8 @@ namespace engine {
         inputReference[1].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         //position color attachment
-        attachments[2].format = VK_FORMAT_R32G32B32A32_SFLOAT;  // <================== device specific
-        attachments[2].samples = device.msaaSamples;
+        attachments[2].format = VK_FORMAT_R32G32B32A32_SFLOAT;  // <================== renderer.device specific
+        attachments[2].samples = renderer.device.msaaSamples;
         attachments[2].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         attachments[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         attachments[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -312,8 +284,8 @@ namespace engine {
         inputReference[2].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         //depthAttachment
-        attachments[3].format = device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
-        attachments[3].samples = device.msaaSamples;
+        attachments[3].format = renderer.device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+        attachments[3].samples = renderer.device.msaaSamples;
         attachments[3].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         attachments[3].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         attachments[3].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -327,7 +299,7 @@ namespace engine {
 
         //lighting attachment
         attachments[4].format = chooseSwapSurfaceFormat();
-        attachments[4].samples = device.msaaSamples;
+        attachments[4].samples = renderer.device.msaaSamples;
         attachments[4].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         attachments[4].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         attachments[4].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -390,7 +362,7 @@ namespace engine {
     }
 
     VkFormat engine::chooseSwapSurfaceFormat() {
-        std::vector<VkSurfaceFormatKHR> availableFormats = device.getSwapChainSupport().formats;
+        std::vector<VkSurfaceFormatKHR> availableFormats = renderer.device.getSwapChainSupport().formats;
         for (const auto &availableFormat : availableFormats) {
             if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
                 availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {

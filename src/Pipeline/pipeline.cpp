@@ -7,9 +7,9 @@
 #include <iostream>
 #include <cassert>
 
-namespace engine {
+namespace renderer {
     
-    Pipeline::Pipeline(engine::Device& device,std::vector<std::string> files, std::vector<VkShaderStageFlagBits> flags, const PipelineConfigInfo& configInfo) : device{device} {
+    Pipeline::Pipeline(Device& device,std::vector<std::string> files, std::vector<VkShaderStageFlagBits> flags, const PipelineConfigInfo& configInfo) : device{device} {
         createGraphicsPipeline(files, flags, configInfo);
     }
 
@@ -117,7 +117,7 @@ namespace engine {
         }
     }
 
-    void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo, engine::Device& device) {
+    void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo, Device& device) {
 
         //copied from https://pastebin.com/EmsJWHzb
 
@@ -193,8 +193,8 @@ namespace engine {
         configInfo.dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
         configInfo.dynamicStateInfo.flags = 0;
 
-        configInfo.bindingDescriptions = getBindingDescriptions();
-        configInfo.attributeDescriptions = getAttributeDescriptions();
+        configInfo.bindingDescriptions = engine::getBindingDescriptions();
+        configInfo.attributeDescriptions = engine::getAttributeDescriptions();
 
         //testing alpha blending as default value
         // configInfo.colorBlendAttachment[0].blendEnable = VK_TRUE;
