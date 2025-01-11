@@ -34,7 +34,10 @@ namespace engine {
             engine(const engine &) = delete;
             engine &operator=(const engine &) = delete;
 
-            void run();
+            void init();
+            void updateGameState(float deltaTime);
+            void renderGameState(VkCommandBuffer commandBuffer);
+            void cleanUp();
         private:
             VkRenderPassCreateInfo* configureRenderPass();
             VkFormat chooseSwapSurfaceFormat();
@@ -44,5 +47,12 @@ namespace engine {
             ScreenshotTool screenshotTool;
 
             ECS::AssetSystem& assetSystem;
+
+            std::shared_ptr<MeshSystem> meshSystem;
+            std::shared_ptr<MaterialSystem> materialSystem;
+            std::shared_ptr<ScriptingSystem> scriptingSystem;
+            std::shared_ptr<PointLightSystem> pointLightSystem;
+            std::shared_ptr<SpotLightSystem> spotLightSystem;
+            std::shared_ptr<SkyboxSystem> skyboxSystem;
     };
 }

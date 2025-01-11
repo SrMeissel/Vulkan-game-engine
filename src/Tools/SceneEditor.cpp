@@ -56,7 +56,7 @@ namespace engine {
         ImGui_ImplVulkan_Shutdown();
     }
 
-    void SceneEditor::run(VkCommandBuffer commandBuffer) {
+    void SceneEditor::runOnce(VkCommandBuffer commandBuffer) {
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         

@@ -7,6 +7,8 @@
 #include "../../libs/imgui/imgui_impl_vulkan.h"
 #include "../../libs/imgui/imgui_impl_glfw.h"
 
+#include "ECS/AssetManager.hpp"
+
 #include <vector>
 #include <array>
 
@@ -16,9 +18,11 @@ class SceneEditor {
         SceneEditor(Window& window, renderer::Renderer& renderer);
         ~SceneEditor();
 
-        void run(VkCommandBuffer commandBuffer);
+        void runOnce(VkCommandBuffer commandBuffer);
 
         void configureViewport(VkImageView imageView, VkImageView secondaryView, VkSampler sampler, VkExtent2D extent);
+
+        ECS::Entity viewportCamera;
 
     private:
         Window& window;

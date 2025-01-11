@@ -23,7 +23,7 @@ namespace engine {
     engine::~engine() {
     }
 
-    void engine::run() {
+    void engine::init() {
         //Initialize render systems ======================================
 
         renderer::RenderPass scenePass{renderer.device, configureRenderPass(), {800, 600}}; // 1280, 720 is 720p
@@ -41,12 +41,12 @@ namespace engine {
         assetSystem.RegisterComponent<ECS::SpotLight>();
         assetSystem.RegisterComponent<ECS::SkyBox>();
 
-        std::shared_ptr<MeshSystem> meshSystem = assetSystem.RegisterSystem<MeshSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
-        std::shared_ptr<MaterialSystem> materialSystem = assetSystem.RegisterSystem<MaterialSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
-        std::shared_ptr<ScriptingSystem> scriptingSystem = assetSystem.RegisterSystem<ScriptingSystem>(renderer.window);
-        std::shared_ptr<PointLightSystem> pointLightSystem = assetSystem.RegisterSystem<PointLightSystem>(renderer.device, renderer.getRenderPass(0), renderer.globalSetLayout->getDescriptorSetLayout());
-        std::shared_ptr<SpotLightSystem> spotLightSystem = assetSystem.RegisterSystem<SpotLightSystem>(renderer.device, renderer.getRenderPass(0), renderer.globalSetLayout->getDescriptorSetLayout());
-        std::shared_ptr<SkyboxSystem> skyboxSystem = assetSystem.RegisterSystem<SkyboxSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
+        meshSystem = assetSystem.RegisterSystem<MeshSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
+        materialSystem = assetSystem.RegisterSystem<MaterialSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
+        scriptingSystem = assetSystem.RegisterSystem<ScriptingSystem>(renderer.window);
+        pointLightSystem = assetSystem.RegisterSystem<PointLightSystem>(renderer.device, renderer.getRenderPass(0), renderer.globalSetLayout->getDescriptorSetLayout());
+        spotLightSystem = assetSystem.RegisterSystem<SpotLightSystem>(renderer.device, renderer.getRenderPass(0), renderer.globalSetLayout->getDescriptorSetLayout());
+        skyboxSystem = assetSystem.RegisterSystem<SkyboxSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
 
         //I need a list of all renderable objects for shadows. This makes me want to detach the entity list from systems, It would be a lot more simple.
         std::shared_ptr<Renderables> renderables = assetSystem.RegisterSystem<Renderables>();
@@ -112,8 +112,6 @@ namespace engine {
 
         //=======================================================================
 
-        sceneEditor.configureViewport(renderer.getRenderPass(0)->getAttachmentImageView(4), renderer.getRenderPass(0)->getAttachmentImageView(1), materialSystem->getSampler(), renderer.getRenderPass(0)->extent);
- 
         //Initialize Camera object ===================================
 
         ECS::Entity viewerObject = assetSystem.CreateEntity();
@@ -124,6 +122,35 @@ namespace engine {
         ECS::Camera& viewerCamera = assetSystem.GetComponent<ECS::Camera>(viewerObject);
         CameraManager camera{}; // <- going to make this static :l
         viewerCamera.viewMatrix = camera.setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
+
+    }
+
+    void engine::updateGameState(float deltaTime) {
+        glfwPollEvents();
+        //proccess user input =======================================================
+        
+        scriptingSystem->update(deltaTime, assetSystem);
+
+        //take screenshot
+        int stateKeyP = glfwGetKey(renderer.window.getGLFWwindow(), GLFW_KEY_P);
+        if(stateKeyP == GLFW_PRESS) {
+            std::vector<VkImage> images = renderer.getSwapchainImages();
+            VkImage srcImage = images[renderer.getCurrentImageIndex()]; 
+            screenshotTool.takeScreenshot(srcImage, "testScreenshot.jpg", renderer.device, renderer.window.getExtent());
+        }
+
+        //update camera from user input
+        ECS::Transform& viewerTransform = assetSystem.GetComponent<ECS::Transform>(viewerObject);
+        ECS::Camera& viewerCamera = assetSystem.GetComponent<ECS::Camera>(viewerObject);
+        //cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerTransform);
+        viewerCamera.viewMatrix = CameraManager::setViewYXZ(viewerTransform.translation, viewerTransform.rotation);            
+        float aspect = renderer.getRenderPass(0)->getAspectRatio();
+        viewerCamera.projectionMatrix = camera.setPerspectiveProjection(glm::radians(50.0f), aspect, viewerCamera.nearPlane, viewerCamera.farPlane);
+        viewerCamera.inverseViewMatrix = glm::inverse(viewerCamera.viewMatrix);
+    }
+
+    void engine::renderGameState(VkCommandBuffer commandBuffer) {
+
 
         //Main system loop ============================================
 
@@ -205,9 +232,6 @@ namespace engine {
                 renderer.endCurrentRenderPass(commandBuffer);
                 renderer.beginSwapChainRenderPass(commandBuffer);
 
-
-                sceneEditor.run(commandBuffer);
-
                 //finished and submit to presentation
                 renderer.endSwapChainRenderPass(commandBuffer);
                 
@@ -215,6 +239,9 @@ namespace engine {
             }
         }
         vkDeviceWaitIdle(renderer.device.device());
+    }
+
+    void engine::cleanUp() {
 
         //DESTROY EVERYTHING ==================================================================================================
         //I don't know how.

@@ -51,6 +51,8 @@ namespace renderer {
             void beginNextRenderPass(VkCommandBuffer commandBuffer);
             void endCurrentRenderPass(VkCommandBuffer commandBuffer);
 
+            VkSampler& getDefaultSampler() {return defaultSampler; };
+
            //maybe should be moved to private 
             Device device{window};
             std::shared_ptr<DescriptorPool> globalPool;
@@ -76,5 +78,7 @@ namespace renderer {
             uint32_t currentImageIndex;
             int currentFrameIndex{0};
             bool isFrameStarted = false;
+
+            VkSampler defaultSampler;
     };
 }
