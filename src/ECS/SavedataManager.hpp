@@ -16,7 +16,7 @@
 namespace ECS {
     class SaveDataManager {
         public:
-            SaveDataManager(engine::Device& device, engine::ScriptingSystem& scriptingSystem, engine::MaterialSystem& materialSystem, engine::SkyboxSystem& skyboxSystem) : device(device), scriptingSystem(scriptingSystem), materialSystem(materialSystem), skyboxSystem{skyboxSystem} {};
+            SaveDataManager(renderer::Device& device, engine::ScriptingSystem& scriptingSystem, engine::MaterialSystem& materialSystem, engine::SkyboxSystem& skyboxSystem) : device(device), scriptingSystem(scriptingSystem), materialSystem(materialSystem), skyboxSystem{skyboxSystem} {};
 
             void saveData(const char* fileName, std::unordered_map<Entity, std::vector<Component*>>& savedComponents){
                 tinyxml2::XMLDocument doc;
@@ -117,7 +117,7 @@ namespace ECS {
                 }
             }
         private:
-            engine::Device& device;
+            renderer::Device& device;
             engine::ScriptingSystem& scriptingSystem;
             engine::MaterialSystem& materialSystem;
             engine::SkyboxSystem& skyboxSystem;

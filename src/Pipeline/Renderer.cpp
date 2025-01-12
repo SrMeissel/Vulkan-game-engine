@@ -7,10 +7,12 @@
 
 namespace renderer {
 
-    Renderer::Renderer(Window& window) : window{window} {
+    Renderer::Renderer(Window& window) : window{window}, device{window} {
+
         recreateSwapChain();
         createCommandBuffers();
-        
+        std::cout << "did that stuff \n";
+
         globalPool = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT).build();
 
         //init UBO

@@ -12,8 +12,9 @@
 #include <vector>
 #include <array>
 
-class SceneEditor {
-    public:
+namespace editor {
+    class SceneEditor {
+        public:
 
         SceneEditor(Window& window, renderer::Renderer& renderer);
         ~SceneEditor();
@@ -24,7 +25,7 @@ class SceneEditor {
 
         ECS::Entity viewportCamera;
 
-    private:
+        private:
         Window& window;
         renderer::Renderer& renderer;
 
@@ -34,4 +35,5 @@ class SceneEditor {
         VkDescriptorSet viewportDescriptorSet;
         VkDescriptorSet secondaryViewportDescriptorSet;
         VkExtent2D viewportExtent;
-};
+    };
+}

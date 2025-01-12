@@ -6,6 +6,6 @@
 namespace engine {
     class ScreenshotTool {
         public:
-            void takeScreenshot(VkImage srcImage, char* fileName, Device &device, VkExtent2D extent);
+            void takeScreenshot(VkImage srcImage, char* fileName, renderer::Device &device, VkExtent2D extent);
     };
 }

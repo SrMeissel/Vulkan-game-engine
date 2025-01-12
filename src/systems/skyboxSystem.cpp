@@ -10,7 +10,7 @@
 // this was awesome
 
 namespace engine {
-    SkyboxSystem::SkyboxSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout): device{device} {
+    SkyboxSystem::SkyboxSystem(renderer::Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout): device{device} {
         //create Pipeline Layout ==================================================
 
         VkPushConstantRange pushConstantRange {};
@@ -19,7 +19,7 @@ namespace engine {
         pushConstantRange.size = sizeof(PushConstant);
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout};
-        setLayout = DescriptorSetLayout::Builder(device).addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT).build();
+        setLayout = renderer::DescriptorSetLayout::Builder(device).addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT).build();
         descriptorSetLayouts.push_back(setLayout->getDescriptorSetLayout());
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
@@ -34,8 +34,8 @@ namespace engine {
 
         //create Pipeline ==================================================
 
-        PipelineConfigInfo pipelineConfig{};
-        Pipeline::defaultPipelineConfigInfo(pipelineConfig, device);
+        renderer::PipelineConfigInfo pipelineConfig{};
+        renderer::Pipeline::defaultPipelineConfigInfo(pipelineConfig, device);
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.subpass = 1;
 
@@ -61,7 +61,7 @@ namespace engine {
 
         std::vector<std::string> files = {"../../shaders/skybox.vert.spv", "../../shaders/skybox.frag.spv"};
         std::vector<VkShaderStageFlagBits> flags = { VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_FRAGMENT_BIT};
-        pipeline = std::make_unique<Pipeline>(device, files, flags, pipelineConfig);
+        pipeline = std::make_unique<renderer::Pipeline>(device, files, flags, pipelineConfig);
 
         //make pipeline =================================================================================
         VkPhysicalDeviceProperties properties{};

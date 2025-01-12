@@ -6,7 +6,7 @@
 //https://frguthmann.github.io/posts/vulkan_imgui/
 //https://pthom.github.io/imgui_manual_online/manual/imgui_manual.html
 
-namespace engine {
+namespace editor {
 
     SceneEditor::SceneEditor(Window& window, renderer::Renderer& renderer) 
     : window(window), renderer{renderer} {

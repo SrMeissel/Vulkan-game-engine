@@ -10,7 +10,7 @@
 namespace engine {
     class SkyboxSystem : public ECS::System {
     public:
-        SkyboxSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
+        SkyboxSystem(renderer::Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
         ~SkyboxSystem() { vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); vkDestroySampler(device.device(), sampler, nullptr);}
 
         void Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager);
@@ -18,21 +18,21 @@ namespace engine {
         void SkyboxSystem::cleanup(ECS::AssetSystem& assetManager);
 
         VkSampler& getSampler() { return sampler; }
-        std::unique_ptr<DescriptorSetLayout>& getSetLayout() { return setLayout; }
+        std::unique_ptr<renderer::DescriptorSetLayout>& getSetLayout() { return setLayout; }
 
     private:
         struct PushConstant {
 	        glm::mat4 rotation;
         };
 
-        Device &device;
+        renderer::Device &device;
 
-        std::unique_ptr<Pipeline> pipeline;
+        std::unique_ptr<renderer::Pipeline> pipeline;
         VkPipelineLayout pipelineLayout;
          
          VkSampler sampler;
 
-        std::unique_ptr<DescriptorSetLayout> setLayout;
+        std::unique_ptr<renderer::DescriptorSetLayout> setLayout;
 
     };
 }

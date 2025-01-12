@@ -1,6 +1,6 @@
 #include "engine.hpp"
 
-#include "windowManager.hpp"
+#include "Pipeline/windowManager.hpp"
 #include "Pipeline/Renderer.hpp"
 
 #include <cstdlib>
@@ -11,15 +11,20 @@
 int main(int argc, char** argv) {
 
     Window window{1920, 1080, "Hello there"};
+    std::cout << "window created \n";
     renderer::Renderer renderer{window};
+    std::cout << "Backend Systems created \n";
 
     ECS::AssetSystem assetSystem;
 
     engine::engine engine{renderer, assetSystem};
     engine.init();
+    std::cout << "engine created \n";
 
-    SceneEditor sceneEditor{window, renderer};
+    editor::SceneEditor sceneEditor{window, renderer};
+    std::cout << "editor started \n";
     sceneEditor.configureViewport(renderer.getRenderPass(0)->getAttachmentImageView(4), renderer.getRenderPass(0)->getAttachmentImageView(1), renderer.getDefaultSampler(), renderer.getRenderPass(0)->extent);
+    std::cout << "editor created \n";
 
     try{
         auto currentTime = std::chrono::high_resolution_clock::now();
@@ -37,13 +42,20 @@ int main(int argc, char** argv) {
 
             if(auto commandBuffer = renderer.beginFrame()) {
                 int frameIndex = renderer.getFrameIndex();
-                engine.renderGameState(commandBuffer);
+                engine.renderGameState(commandBuffer, frameIndex);
+                renderer.beginSwapChainRenderPass(commandBuffer);
                 sceneEditor.runOnce(commandBuffer);
+                renderer.endSwapChainRenderPass(commandBuffer);
+
             }
 
             renderer.endFrame(); 
         }
         vkDeviceWaitIdle(renderer.device.device());
+
+        engine.cleanUp();
+        engine.~engine();
+
     } catch(const std::exception &e) {
         std::cerr << e.what() << '\n';
         return EXIT_FAILURE;

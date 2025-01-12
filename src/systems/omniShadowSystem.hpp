@@ -12,7 +12,7 @@
 namespace engine {
     class OmniShadowSystem : public ECS::System {
     public:
-        OmniShadowSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
+        OmniShadowSystem(renderer::Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
         ~OmniShadowSystem() { vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); }
 
         void Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager, PointLightSystem& pointLightSystem);
@@ -23,9 +23,9 @@ namespace engine {
             glm::mat4 normalMatrix{1.f};
         };
 
-        Device &device;
+        renderer::Device &device;
 
-        std::unique_ptr<Pipeline> pipeline;
+        std::unique_ptr<renderer::Pipeline> pipeline;
         VkPipelineLayout pipelineLayout;
     };
 }

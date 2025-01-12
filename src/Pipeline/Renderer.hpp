@@ -25,7 +25,7 @@ namespace renderer {
 
             float getAspectRatio() const {return swapchain->extentAspectRatio(); }
             std::vector<VkImage> getSwapchainImages() const {return swapchain->getImages(); }
-            VkRenderPass* getSwapchainRenderPass() {return swapchain->getRenderPass(); } // <=============
+            VkRenderPass* getSwapchainRenderPass() {return swapchain->getRenderPass(); }
             VkImageView getSwapchainImageView(int i) {return swapchain->getImageView(i); }
             bool isFrameInProgress() const { return isFrameStarted; }
 
@@ -54,12 +54,12 @@ namespace renderer {
             VkSampler& getDefaultSampler() {return defaultSampler; };
 
            //maybe should be moved to private 
-            Device device{window};
             std::shared_ptr<DescriptorPool> globalPool;
             std::unique_ptr<DescriptorSetLayout> globalSetLayout;
             std::vector<std::unique_ptr<Buffer>> uboBuffers{SwapChain::MAX_FRAMES_IN_FLIGHT};
             std::vector<VkDescriptorSet> globalDescriptorSets{SwapChain::MAX_FRAMES_IN_FLIGHT};
-
+            
+            Device device;
             Window& window;
         private:
             void createCommandBuffers();

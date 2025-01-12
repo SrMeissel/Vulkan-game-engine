@@ -18,7 +18,7 @@ namespace engine {
             //this is only for linear tiling, it is supprted for optimal tiling but i dont want to dive into something new right now
             //and no, I am not execty sure what it does (a boolean based combining or seperating function)
             
-            void ScreenshotTool::takeScreenshot(VkImage srcImage, char* fileName, Device &device, VkExtent2D extent){
+            void ScreenshotTool::takeScreenshot(VkImage srcImage, char* fileName, renderer::Device &device, VkExtent2D extent){
                 bool supportsblit = false;
                 //check for blit support later
 

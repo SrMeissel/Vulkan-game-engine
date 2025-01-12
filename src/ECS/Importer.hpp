@@ -17,9 +17,9 @@
 
 namespace Importer {
 
-    static engine::AllocatedImage loadJPGImage(const std::string& filepath, engine::Device& device, VkFormat format) {
+    static renderer::AllocatedImage loadJPGImage(const std::string& filepath, renderer::Device& device, VkFormat format) {
         
-        engine::AllocatedImage image{};
+        renderer::AllocatedImage image{};
         image.path = filepath;
         
         //create image ========================================================================================
@@ -31,7 +31,7 @@ namespace Importer {
             throw std::runtime_error("failed to load texture image!");
         }
 
-        engine::Buffer stagingBuffer{device, sizeof(pixels[0]), static_cast<uint32_t>(imageSize), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
+        renderer::Buffer stagingBuffer{device, sizeof(pixels[0]), static_cast<uint32_t>(imageSize), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
         stagingBuffer.map();
         stagingBuffer.writeToBuffer((void*)pixels);
 
@@ -79,10 +79,10 @@ namespace Importer {
         return image;
     };
 
-    static engine::CubeMap loadCubeMap(const std::string filepath, std::vector<std::string> tags, engine::Device& device, VkFormat format) {
+    static renderer::CubeMap loadCubeMap(const std::string filepath, std::vector<std::string> tags, renderer::Device& device, VkFormat format) {
         assert(tags.size() == 6 && "not all cube faces are filled, dumbass" );
 
-        engine::CubeMap cubeMap{};
+        renderer::CubeMap cubeMap{};
 
         size_t index = filepath.find_last_of('.');
         std::string fileName = filepath.substr(0, index);
@@ -95,7 +95,7 @@ namespace Importer {
         if(!pixels) throw std::runtime_error("failed to load texture image!"); 
 
         VkDeviceSize imageSize = texWidth * texHeight * 4;
-        engine::Buffer stagingBuffer{device, sizeof(pixels[0]), static_cast<uint32_t>(imageSize * 6), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
+        renderer::Buffer stagingBuffer{device, sizeof(pixels[0]), static_cast<uint32_t>(imageSize * 6), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
 
         stagingBuffer.map(imageSize);
         stagingBuffer.writeToBuffer((void*)pixels, imageSize);
@@ -230,7 +230,7 @@ namespace Importer {
 
     }
 
-    static ECS::SkyBox loadSkyBox(const std::string filepath, std::vector<std::string> tags, engine::Device& device, VkSampler sampler , std::unique_ptr<engine::DescriptorSetLayout>& skyboxSetLayout) {
+    static ECS::SkyBox loadSkyBox(const std::string filepath, std::vector<std::string> tags, renderer::Device& device, VkSampler sampler , std::unique_ptr<renderer::DescriptorSetLayout>& skyboxSetLayout) {
         ECS::SkyBox skybox;
         skybox.Path = filepath;
         skybox.tags = tags;
@@ -238,11 +238,11 @@ namespace Importer {
         skybox.skyBoxImage = loadCubeMap(filepath, tags, device, VK_FORMAT_R8G8B8A8_SRGB);
         std::cout << "made cubeMap" << std::endl;
 
-        skybox.descriptorPool = engine::DescriptorPool::Builder(device).setMaxSets(3)
+        skybox.descriptorPool = renderer::DescriptorPool::Builder(device).setMaxSets(3)
         .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
         .build();
 
-        engine::DescriptorWriter writer(*skyboxSetLayout, *skybox.descriptorPool);
+        renderer::DescriptorWriter writer(*skyboxSetLayout, *skybox.descriptorPool);
         skybox.imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         skybox.imageInfo.imageView = skybox.skyBoxImage.imageView;
         skybox.imageInfo.sampler = sampler;
@@ -253,13 +253,13 @@ namespace Importer {
         return skybox;
     }
 
-    static ECS::Material loadMaterial(std::string albedoPath, std::string normalPath, engine::Device& device, VkSampler sampler, std::unique_ptr<engine::DescriptorSetLayout>& materialSetLayout) {
+    static ECS::Material loadMaterial(std::string albedoPath, std::string normalPath, renderer::Device& device, VkSampler sampler, std::unique_ptr<renderer::DescriptorSetLayout>& materialSetLayout) {
             ECS::Material material{};
 
             material.albedo = Importer::loadJPGImage(albedoPath, device, VK_FORMAT_R8G8B8A8_SRGB);
             material.normal = Importer::loadJPGImage(normalPath, device, VK_FORMAT_R8G8B8A8_UNORM);
 
-            material.descriptorPool = engine::DescriptorPool::Builder(device).setMaxSets(3)
+            material.descriptorPool = renderer::DescriptorPool::Builder(device).setMaxSets(3)
             .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 2)
             .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLER, 1)
             .build();
@@ -274,14 +274,14 @@ namespace Importer {
 
             material.samplerInfo.sampler = sampler;
 
-            engine::DescriptorWriter writer(*materialSetLayout, *material.descriptorPool);
+            renderer::DescriptorWriter writer(*materialSetLayout, *material.descriptorPool);
 
             if(writer.writeImage(0, &material.samplerInfo, 1).writeImage(1,&material.albedoImageInfo, 1).writeImage(2,&material.normalImageInfo, 1).build(material.descriptorSet) == false) std::cout << "\n failed to write set \n";
 
             return material;
         }
 
-    static ECS::Renderable loadMesh(std::string filepath, engine::Device& device) {
+    static ECS::Renderable loadMesh(std::string filepath, renderer::Device& device) {
         std::cout << "Loading mesh: " << filepath << std::endl;
 
         Assimp::Importer importer;
@@ -294,13 +294,13 @@ namespace Importer {
         ECS::Renderable renderable{};
         renderable.Path = filepath;
         
-        std::vector<engine::Vertex> vertices;
+        std::vector<renderer::Vertex> vertices;
         std::vector<uint32_t> indices;
 
         for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
             const aiMesh* mesh = scene->mMeshes[i];
             for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
-                engine::Vertex vertex{};
+                renderer::Vertex vertex{};
                 vertex.position = {mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z};
                 if(mesh->HasVertexColors(0)) {
                     vertex.color = {mesh->mColors[0][j].r, mesh->mColors[0][j].g, mesh->mColors[0][j].b};
@@ -335,11 +335,11 @@ namespace Importer {
 
         uint32_t vertexSize = sizeof(vertices[0]);
 
-        engine::Buffer stagingBuffer{device, vertexSize, renderable.vertexCount, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
+        renderer::Buffer stagingBuffer{device, vertexSize, renderable.vertexCount, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
         stagingBuffer.map();
         stagingBuffer.writeToBuffer((void *)vertices.data());
 
-        renderable.vertexBuffer = std::make_unique<engine::Buffer>(device, vertexSize, renderable.vertexCount, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT); 
+        renderable.vertexBuffer = std::make_unique<renderer::Buffer>(device, vertexSize, renderable.vertexCount, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT); 
         device.copyBuffer(stagingBuffer.getBuffer(), renderable.vertexBuffer->getBuffer(), bufferSize);
 
         //create index buffer ========================================================================================
@@ -349,12 +349,12 @@ namespace Importer {
         if(renderable.hasIndexBuffer) {
             VkDeviceSize bufferSize = sizeof(indices[0])*renderable.indexCount; 
             uint32_t indexSize = sizeof(indices[0]);
-            engine::Buffer stagingBuffer{device, indexSize, renderable.indexCount, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
+            renderer::Buffer stagingBuffer{device, indexSize, renderable.indexCount, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
 
             stagingBuffer.map();
             stagingBuffer.writeToBuffer((void*)indices.data());
 
-            renderable.indexBuffer = std::make_unique<engine::Buffer>(device, indexSize, renderable.indexCount, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+            renderable.indexBuffer = std::make_unique<renderer::Buffer>(device, indexSize, renderable.indexCount, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
                 device.copyBuffer(stagingBuffer.getBuffer(), renderable.indexBuffer->getBuffer(), bufferSize);
         }

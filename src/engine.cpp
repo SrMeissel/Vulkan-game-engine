@@ -17,17 +17,18 @@
 
 namespace engine {
 
-    engine::engine(renderer::Renderer& renderer, ECS::AssetSystem& assetSystem) : renderer{renderer}, assetSystem{assetSystem} {
+    engine::engine(renderer::Renderer& renderer, ECS::AssetSystem& assetSystem) : renderer{renderer}, assetSystem{assetSystem}, scenePass{nullptr} {
     }
 
     engine::~engine() {
+        delete scenePass;
     }
 
     void engine::init() {
         //Initialize render systems ======================================
 
-        renderer::RenderPass scenePass{renderer.device, configureRenderPass(), {800, 600}}; // 1280, 720 is 720p
-        renderer.appendRenderPass(& scenePass);
+        scenePass = new renderer::RenderPass(renderer.device, configureRenderPass(), {800, 600}); // 1280, 720 is 720p
+        renderer.appendRenderPass(scenePass);
 
         //Initialize asset system ======================================
         assetSystem.Init();
@@ -49,7 +50,8 @@ namespace engine {
         skyboxSystem = assetSystem.RegisterSystem<SkyboxSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
 
         //I need a list of all renderable objects for shadows. This makes me want to detach the entity list from systems, It would be a lot more simple.
-        std::shared_ptr<Renderables> renderables = assetSystem.RegisterSystem<Renderables>();
+        renderables = assetSystem.RegisterSystem<Renderables>();
+
         ECS::Signature renderablesSignature;
         renderablesSignature.set(assetSystem.GetComponentType<ECS::Renderable>());
         renderablesSignature.set(assetSystem.GetComponentType<ECS::Transform>());
@@ -114,19 +116,17 @@ namespace engine {
 
         //Initialize Camera object ===================================
 
-        ECS::Entity viewerObject = assetSystem.CreateEntity();
+        viewerObject = assetSystem.CreateEntity();
         assetSystem.AddComponent(viewerObject, ECS::Transform{glm::vec3(0.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
         assetSystem.AddComponent(viewerObject, ECS::Camera{0.1, 5000});
         assetSystem.AddComponent(viewerObject, ECS::Script{"CameraControl", scriptingSystem->assembly, scriptingSystem->appDomain});
 
         ECS::Camera& viewerCamera = assetSystem.GetComponent<ECS::Camera>(viewerObject);
-        CameraManager camera{}; // <- going to make this static :l
-        viewerCamera.viewMatrix = camera.setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
+        viewerCamera.viewMatrix = setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
 
     }
 
     void engine::updateGameState(float deltaTime) {
-        glfwPollEvents();
         //proccess user input =======================================================
         
         scriptingSystem->update(deltaTime, assetSystem);
@@ -143,102 +143,47 @@ namespace engine {
         ECS::Transform& viewerTransform = assetSystem.GetComponent<ECS::Transform>(viewerObject);
         ECS::Camera& viewerCamera = assetSystem.GetComponent<ECS::Camera>(viewerObject);
         //cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerTransform);
-        viewerCamera.viewMatrix = CameraManager::setViewYXZ(viewerTransform.translation, viewerTransform.rotation);            
+        viewerCamera.viewMatrix = setViewYXZ(viewerTransform.translation, viewerTransform.rotation);            
         float aspect = renderer.getRenderPass(0)->getAspectRatio();
-        viewerCamera.projectionMatrix = camera.setPerspectiveProjection(glm::radians(50.0f), aspect, viewerCamera.nearPlane, viewerCamera.farPlane);
+        viewerCamera.projectionMatrix = setPerspectiveProjection(glm::radians(50.0f), aspect, viewerCamera.nearPlane, viewerCamera.farPlane);
         viewerCamera.inverseViewMatrix = glm::inverse(viewerCamera.viewMatrix);
     }
 
-    void engine::renderGameState(VkCommandBuffer commandBuffer) {
+    void engine::renderGameState(VkCommandBuffer commandBuffer, int frameIndex) {
+
+        //update graphics memory objects =====================================
+        renderer::GlobalUbo ubo{};
+        ECS::Camera& viewerCamera = assetSystem.GetComponent<ECS::Camera>(viewerObject);
+        ubo.projection = viewerCamera.projectionMatrix;
+        ubo.view = viewerCamera.viewMatrix;
+        ubo.inverseView = viewerCamera.inverseViewMatrix;
+
+        renderer.uboBuffers[frameIndex]->writeToBuffer(&ubo);
+        renderer.uboBuffers[frameIndex]->flush();
+
+        //render =====================================================
+
+        //do shadows here
+
+        spotLightSystem->RenderShadows(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem, *renderables); // <==================================
+
+        renderer.beginNextRenderPass(commandBuffer);
+
+        meshSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
+        materialSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
+
+        vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
+
+        pointLightSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
+        spotLightSystem->RenderLight(commandBuffer, viewerCamera, assetSystem);
+        skyboxSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
 
 
-        //Main system loop ============================================
+        renderer.endCurrentRenderPass(commandBuffer);
+        // renderer.beginSwapChainRenderPass(commandBuffer);
 
-        auto currentTime = std::chrono::high_resolution_clock::now();
-        bool screenshotSaved = false; // <=====
-        //int frames = 0; // <=== useful for debugging (add to while condition)
-        while(!renderer.window.shouldClose()){
-            glfwPollEvents();
-
-            //Updates scene editor frame, should not stay here.
-            //sceneEditor.run();
-
-            //get passed time
-            auto newTime = std::chrono::high_resolution_clock::now();
-            float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime-currentTime).count();
-            currentTime = newTime;
-
-            //std::cout << 1.0f/frameTime << "\n";
-            //perhaps set upper limit to frameTime so the program doesnt combust at low fps 
-
-            //proccess user input =======================================================
-
-            
-            scriptingSystem->update(frameTime, assetSystem);
-
-            //take screenshot
-            int stateKeyP = glfwGetKey(renderer.window.getGLFWwindow(), GLFW_KEY_P);
-            if(stateKeyP == GLFW_PRESS && screenshotSaved == false) {
-                std::vector<VkImage> images = renderer.getSwapchainImages();
-                VkImage srcImage = images[renderer.getCurrentImageIndex()]; 
-                screenshotTool.takeScreenshot(srcImage, "testScreenshot.jpg", renderer.device, renderer.window.getExtent());
-                screenshotSaved = true;
-            }
-
-            //update camera from user input
-            ECS::Transform& viewerTransform = assetSystem.GetComponent<ECS::Transform>(viewerObject);
-            ECS::Camera& viewerCamera = assetSystem.GetComponent<ECS::Camera>(viewerObject);
-            //cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerTransform);
-            viewerCamera.viewMatrix = camera.setViewYXZ(viewerTransform.translation, viewerTransform.rotation);            
-            float aspect = renderer.getRenderPass(0)->getAspectRatio();
-            viewerCamera.projectionMatrix = camera.setPerspectiveProjection(glm::radians(50.0f), aspect, viewerCamera.nearPlane, viewerCamera.farPlane);
-            viewerCamera.inverseViewMatrix = glm::inverse(viewerCamera.viewMatrix);
-
-            //new frame ready, runs every frame ===============================================
-            if(auto commandBuffer = renderer.beginFrame()) {
-                int frameIndex = renderer.getFrameIndex();
-
-                // frameInfo frameInfo{
-                //     frameIndex, frameTime, commandBuffer, camera, renderer.globalDescriptorSets[frameIndex]
-                // };
-
-                //update graphics memory objects =====================================
-                renderer::GlobalUbo ubo{};
-                ubo.projection = viewerCamera.projectionMatrix;
-                ubo.view = viewerCamera.viewMatrix;
-                ubo.inverseView = viewerCamera.inverseViewMatrix;
-
-                renderer.uboBuffers[frameIndex]->writeToBuffer(&ubo);
-                renderer.uboBuffers[frameIndex]->flush();
-
-                //render =====================================================
-
-                //do shadows here
-
-                spotLightSystem->RenderShadows(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem, *renderables); // <==================================
-
-                renderer.beginNextRenderPass(commandBuffer);
-
-                meshSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
-                materialSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
-
-                vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
-
-                pointLightSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
-                spotLightSystem->RenderLight(commandBuffer, viewerCamera, assetSystem);
-                skyboxSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
-
-
-                renderer.endCurrentRenderPass(commandBuffer);
-                renderer.beginSwapChainRenderPass(commandBuffer);
-
-                //finished and submit to presentation
-                renderer.endSwapChainRenderPass(commandBuffer);
-                
-                renderer.endFrame();
-            }
-        }
-        vkDeviceWaitIdle(renderer.device.device());
+        // //finished and submit to presentation
+        // renderer.endSwapChainRenderPass(commandBuffer);
     }
 
     void engine::cleanUp() {

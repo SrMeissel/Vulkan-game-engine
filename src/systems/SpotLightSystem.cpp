@@ -4,7 +4,7 @@
 #include <stdexcept>
 
 namespace engine {
-    SpotLightSystem::SpotLightSystem(Device& device, RenderPass* renderPass, VkDescriptorSetLayout globalSetLayout): device{device} {
+    SpotLightSystem::SpotLightSystem(renderer::Device& device, renderer::RenderPass* renderPass, VkDescriptorSetLayout globalSetLayout): device{device} {
         //create shadowmap renderpass ===============================================
         VkFormat depthFormat = device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
@@ -49,23 +49,23 @@ namespace engine {
 
         //init camera buffer descriptor set ===========================================
 
-        shadowUBO = std::make_unique<Buffer>(device, sizeof(PointLightUBO), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+        shadowUBO = std::make_unique<renderer::Buffer>(device, sizeof(PointLightUBO), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
         shadowUBO->map();
 
-        lightUBO = std::make_unique<Buffer>(device, sizeof(PointLightUBO), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+        lightUBO = std::make_unique<renderer::Buffer>(device, sizeof(PointLightUBO), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
         lightUBO->map();
 
-        UBOPool = DescriptorPool::Builder(device)
+        UBOPool = renderer::DescriptorPool::Builder(device)
         .addPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 3) // <==================
         .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2)
         .build();
 
-        UBOSetLayout = DescriptorSetLayout::Builder(device)
+        UBOSetLayout = renderer::DescriptorSetLayout::Builder(device)
         .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
         .build();
 
 
-        DescriptorWriter writer(*UBOSetLayout, *UBOPool);
+        renderer::DescriptorWriter writer(*UBOSetLayout, *UBOPool);
 
         auto shadowBufferInfo = shadowUBO->descriptorInfo();
         writer.writeBuffer(0, &shadowBufferInfo);
@@ -98,8 +98,8 @@ namespace engine {
 
         //create shadow Pipeline ==================================================
 
-        PipelineConfigInfo shadowPipelineConfig{};
-        Pipeline::defaultPipelineConfigInfo(shadowPipelineConfig, device);
+        renderer::PipelineConfigInfo shadowPipelineConfig{};
+        renderer::Pipeline::defaultPipelineConfigInfo(shadowPipelineConfig, device);
         shadowPipelineConfig.renderPass = shadowPass;
         shadowPipelineConfig.subpass = 0;
 
@@ -107,7 +107,7 @@ namespace engine {
 
         std::vector<std::string> files = {"../../shaders/shadow.vert.spv", "../../shaders/shadow.frag.spv"};
         std::vector<VkShaderStageFlagBits> flags = { VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_FRAGMENT_BIT};
-        shadowPipeline = std::make_unique<Pipeline>(device, files, flags, shadowPipelineConfig);
+        shadowPipeline = std::make_unique<renderer::Pipeline>(device, files, flags, shadowPipelineConfig);
 
         //create light Pipeline Layout ==================================================
         //can reuse info objects from other pipeline, i hope.
@@ -118,7 +118,7 @@ namespace engine {
 
         std::vector<VkDescriptorSetLayout> lightDescriptorSetLayouts{UBOSetLayout->getDescriptorSetLayout()};
 
-        inputSetLayout = DescriptorSetLayout::Builder(device)
+        inputSetLayout = renderer::DescriptorSetLayout::Builder(device)
         .addBinding(0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT)
         .addBinding(1, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT)
         .addBinding(2, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -126,7 +126,7 @@ namespace engine {
         lightDescriptorSetLayouts.push_back(inputSetLayout->getDescriptorSetLayout());
 
 
-        lightSetLayout = DescriptorSetLayout::Builder(device)
+        lightSetLayout = renderer::DescriptorSetLayout::Builder(device)
         .addBinding(0, VK_DESCRIPTOR_TYPE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
         .addBinding(1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
         .build();
@@ -143,8 +143,8 @@ namespace engine {
         
         //create light Pipeline ==================================================
 
-        PipelineConfigInfo lightPipelineConfig{};
-        Pipeline::defaultPipelineConfigInfo(lightPipelineConfig, device);
+        renderer::PipelineConfigInfo lightPipelineConfig{};
+        renderer::Pipeline::defaultPipelineConfigInfo(lightPipelineConfig, device);
         lightPipelineConfig.renderPass = renderPass->getRenderPass();
         lightPipelineConfig.subpass = 1;
 
@@ -167,7 +167,7 @@ namespace engine {
 
         files = {"../../shaders/spotLight.vert.spv", "../../shaders/spotLight.frag.spv"};
         flags = { VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_FRAGMENT_BIT};
-        lightPipeline = std::make_unique<Pipeline>(device, files, flags, lightPipelineConfig);
+        lightPipeline = std::make_unique<renderer::Pipeline>(device, files, flags, lightPipelineConfig);
 
         //create Sampler ==================================================
         VkPhysicalDeviceProperties properties{};
@@ -209,7 +209,7 @@ namespace engine {
         descriptors[2].imageView = renderPass->getAttachmentImageView(2);
         descriptors[2].sampler = VK_NULL_HANDLE;
 
-        engine::DescriptorWriter inputWriter(*inputSetLayout, *UBOPool);
+        renderer::DescriptorWriter inputWriter(*inputSetLayout, *UBOPool);
 
         if(inputWriter.writeImages(0, descriptors.data(), 3).build(inputSet) == false)
             std::cout << "\n failed to write set \n";
@@ -217,9 +217,6 @@ namespace engine {
     }
 
     void SpotLightSystem::RenderShadows(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assets, ECS::System& renderables) {
-        //make static pls
-        CameraManager cameraManager;
-
         for(auto const& Entity : entities) {
             ECS::Transform& transform = assets.GetComponent<ECS::Transform>(Entity);
             ECS::SpotLight& spotlight = assets.GetComponent<ECS::SpotLight>(Entity);
@@ -227,8 +224,8 @@ namespace engine {
 
             //update camera ================================================================================================
 
-            camera.viewMatrix = cameraManager.setViewTarget(transform.translation, glm::vec3(0.0, -3, -3));             
-            camera.projectionMatrix = cameraManager.setPerspectiveProjection(glm::radians(50.0f), spotlight.aspect, camera.nearPlane, camera.farPlane);
+            camera.viewMatrix = setViewTarget(transform.translation, glm::vec3(0.0, -3, -3));             
+            camera.projectionMatrix = setPerspectiveProjection(glm::radians(50.0f), spotlight.aspect, camera.nearPlane, camera.farPlane);
             camera.inverseViewMatrix = glm::inverse(camera.viewMatrix);
 
             //start shadow renderpass =============================================================================

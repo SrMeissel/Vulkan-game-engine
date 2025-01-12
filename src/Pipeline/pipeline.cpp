@@ -193,8 +193,8 @@ namespace renderer {
         configInfo.dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
         configInfo.dynamicStateInfo.flags = 0;
 
-        configInfo.bindingDescriptions = engine::getBindingDescriptions();
-        configInfo.attributeDescriptions = engine::getAttributeDescriptions();
+        configInfo.bindingDescriptions = renderer::getBindingDescriptions();
+        configInfo.attributeDescriptions = renderer::getAttributeDescriptions();
 
         //testing alpha blending as default value
         // configInfo.colorBlendAttachment[0].blendEnable = VK_TRUE;
