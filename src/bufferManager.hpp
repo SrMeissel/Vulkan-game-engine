@@ -2,7 +2,7 @@
  
 #include "Pipeline/deviceManager.hpp"
  
-namespace engine {
+namespace renderer {
  
 class Buffer {
  public:

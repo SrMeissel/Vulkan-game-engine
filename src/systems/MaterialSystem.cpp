@@ -4,7 +4,7 @@
 #include <iostream>
 
 namespace engine {
-    MaterialSystem::MaterialSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout): device{device} {
+    MaterialSystem::MaterialSystem(renderer::Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout): device{device} {
         //create Pipeline Layout ==================================================
 
         VkPushConstantRange pushConstantRange {};
@@ -14,7 +14,7 @@ namespace engine {
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout};
 
-        materialSetLayout = DescriptorSetLayout::Builder(device)
+        materialSetLayout = renderer::DescriptorSetLayout::Builder(device)
         .addBinding(0, VK_DESCRIPTOR_TYPE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
         .addBinding(1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
         .addBinding(2, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -33,8 +33,8 @@ namespace engine {
 
         //create Pipeline ==================================================
 
-        PipelineConfigInfo pipelineConfig{};
-        Pipeline::defaultPipelineConfigInfo(pipelineConfig, device);
+        renderer::PipelineConfigInfo pipelineConfig{};
+        renderer::Pipeline::defaultPipelineConfigInfo(pipelineConfig, device);
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.subpass = 0;
 
@@ -42,7 +42,7 @@ namespace engine {
         
         std::vector<std::string> files = {"../../shaders/material.vert.spv", "../../shaders/material.frag.spv"};
         std::vector<VkShaderStageFlagBits> flags = { VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_FRAGMENT_BIT};
-        pipeline = std::make_unique<Pipeline>(device, files, flags, pipelineConfig);
+        pipeline = std::make_unique<renderer::Pipeline>(device, files, flags, pipelineConfig);
 
         //create Sampler ==================================================
         VkPhysicalDeviceProperties properties{};

@@ -3,16 +3,21 @@
 #include "windowManager.hpp" 
 #include "deviceManager.hpp"
 #include "swapchainManager.hpp"
-#include "RenderPass.hpp" // <===========
+#include "RenderPass.hpp"
+#include "descriptorManager.hpp"
+
+#include "bufferManager.hpp"
+
+#include "frameInfo.hpp"
 
 #include <memory>
 #include <vector>
 #include <cassert>
 
-namespace engine {
+namespace renderer {
     class Renderer {
         public:
-            Renderer(Window& window, Device& device);
+            Renderer(Window& window);
             ~Renderer();
 
             Renderer(const Renderer &) = delete;
@@ -20,7 +25,7 @@ namespace engine {
 
             float getAspectRatio() const {return swapchain->extentAspectRatio(); }
             std::vector<VkImage> getSwapchainImages() const {return swapchain->getImages(); }
-            VkRenderPass* getSwapchainRenderPass() {return swapchain->getRenderPass(); } // <=============
+            VkRenderPass* getSwapchainRenderPass() {return swapchain->getRenderPass(); }
             VkImageView getSwapchainImageView(int i) {return swapchain->getImageView(i); }
             bool isFrameInProgress() const { return isFrameStarted; }
 
@@ -46,15 +51,23 @@ namespace engine {
             void beginNextRenderPass(VkCommandBuffer commandBuffer);
             void endCurrentRenderPass(VkCommandBuffer commandBuffer);
 
+            VkSampler& getDefaultSampler() {return defaultSampler; };
+
+            Device device;
+            Window& window;
+
+           //maybe should be moved to private 
+            std::shared_ptr<DescriptorPool> globalPool;
+            std::unique_ptr<DescriptorSetLayout> globalSetLayout;
+            std::vector<std::unique_ptr<Buffer>> uboBuffers{SwapChain::MAX_FRAMES_IN_FLIGHT};
+            std::vector<VkDescriptorSet> globalDescriptorSets{SwapChain::MAX_FRAMES_IN_FLIGHT};
+            
         private:
             void createCommandBuffers();
             void freeCommandBuffers();
 
             void recreateSwapChain();
             void ResizeRenderPasses(); // if renderpass uses window extent that needs to be resizes with the window
-
-            Window& window;
-            Device& device;
 
             std::unique_ptr<SwapChain> swapchain;
             std::vector<VkCommandBuffer> commandBuffers;
@@ -66,5 +79,7 @@ namespace engine {
             uint32_t currentImageIndex;
             int currentFrameIndex{0};
             bool isFrameStarted = false;
+
+            VkSampler defaultSampler;
     };
 }

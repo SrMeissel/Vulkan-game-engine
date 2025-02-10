@@ -4,7 +4,7 @@
 #include <stdexcept>
 
 namespace engine {
-    OmniShadowSystem::OmniShadowSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout): device{device} {
+    OmniShadowSystem::OmniShadowSystem(renderer::Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout): device{device} {
         //create Pipeline Layout ==================================================
 
         VkPushConstantRange pushConstantRange {};
@@ -26,8 +26,8 @@ namespace engine {
  
         //create Pipeline ==================================================
 
-        PipelineConfigInfo pipelineConfig{};
-        Pipeline::defaultPipelineConfigInfo(pipelineConfig, device);
+        renderer::PipelineConfigInfo pipelineConfig{};
+        renderer::Pipeline::defaultPipelineConfigInfo(pipelineConfig, device);
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.subpass = 0;
 
@@ -36,7 +36,7 @@ namespace engine {
         
         std::vector<std::string> files = {"../../shaders/mesh.vert.spv", "../../shaders/mesh.frag.spv"};
         std::vector<VkShaderStageFlagBits> flags = { VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_FRAGMENT_BIT};
-        pipeline = std::make_unique<Pipeline>(device, files, flags, pipelineConfig);
+        pipeline = std::make_unique<renderer::Pipeline>(device, files, flags, pipelineConfig);
     }
 
     void OmniShadowSystem::Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assets, PointLightSystem& pointLightSystem) {

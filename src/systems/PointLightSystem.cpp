@@ -3,7 +3,7 @@
 #include <stdexcept>
 
 namespace engine {
-    PointLightSystem::PointLightSystem(Device& device, RenderPass* renderPass, VkDescriptorSetLayout globalSetLayout) : device(device) {
+    PointLightSystem::PointLightSystem(renderer::Device& device, renderer::RenderPass* renderPass, VkDescriptorSetLayout globalSetLayout) : device(device) {
         //create Pipeline Layout ==================================================
 
         VkPushConstantRange pushConstantRange {};
@@ -13,7 +13,7 @@ namespace engine {
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout};
 
-        setLayout = DescriptorSetLayout::Builder(device)
+        setLayout = renderer::DescriptorSetLayout::Builder(device)
         .addBinding(0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT)
         .addBinding(1, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT)
         .addBinding(2, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -32,8 +32,8 @@ namespace engine {
 
         //create Pipeline ==================================================
 
-        PipelineConfigInfo pipelineConfig{};
-        Pipeline::defaultPipelineConfigInfo(pipelineConfig, device);
+        renderer::PipelineConfigInfo pipelineConfig{};
+        renderer::Pipeline::defaultPipelineConfigInfo(pipelineConfig, device);
         pipelineConfig.renderPass = renderPass->getRenderPass();
         pipelineConfig.subpass = 1;
 
@@ -56,11 +56,11 @@ namespace engine {
         
         std::vector<std::string> files = {"../../shaders/pointlight.vert.spv", "../../shaders/pointlight.frag.spv"};
         std::vector<VkShaderStageFlagBits> flags = { VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_FRAGMENT_BIT};
-        pipeline = std::make_unique<Pipeline>(device, files, flags, pipelineConfig);
+        pipeline = std::make_unique<renderer::Pipeline>(device, files, flags, pipelineConfig);
 
         //create Descriptor Set ==============================================================================
 
-        descriptorPool = engine::DescriptorPool::Builder(device).setMaxSets(3)
+        descriptorPool = renderer::DescriptorPool::Builder(device).setMaxSets(3)
         .addPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 3)
         .build();
 
@@ -76,7 +76,7 @@ namespace engine {
         descriptors[2].imageView = renderPass->getAttachmentImageView(2);
         descriptors[2].sampler = VK_NULL_HANDLE;
 
-        engine::DescriptorWriter writer(*setLayout, *descriptorPool);
+        renderer::DescriptorWriter writer(*setLayout, *descriptorPool);
 
         if(writer.writeImages(0, descriptors.data(), 3).build(descriptorSet) == false)
             std::cout << "\n failed to write set \n";

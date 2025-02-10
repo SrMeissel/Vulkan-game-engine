@@ -10,7 +10,7 @@
 namespace engine {
     class MeshSystem : public ECS::System {
     public:
-        MeshSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
+        MeshSystem(renderer::Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
         ~MeshSystem() { vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); }
 
         void Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager);
@@ -21,9 +21,9 @@ namespace engine {
             glm::mat4 normalMatrix{1.f};
         };
 
-        Device &device;
+        renderer::Device &device;
 
-        std::unique_ptr<Pipeline> pipeline;
+        std::unique_ptr<renderer::Pipeline> pipeline;
         VkPipelineLayout pipelineLayout;
     };
 }

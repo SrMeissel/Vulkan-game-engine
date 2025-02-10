@@ -3,7 +3,7 @@
 #include "EntityManager.hpp"
 #include "ComponentManager.hpp"
 #include "SystemManager.hpp"
-#include "components.hpp"
+#include "Components.hpp"
 
 #include <type_traits>
 
@@ -11,10 +11,20 @@ namespace ECS {
     class AssetSystem {
     public:
     //not just constructor? seems like a constructor to me.
-	void Init() {
+
+	AssetSystem() {
 		componentManager = std::make_unique<ComponentManager>();
 		entityManager = std::make_unique<EntityManager>();
 		systemManager = std::make_unique<SystemManager>();
+
+		RegisterComponent<Transform>();
+		RegisterComponent<Camera>();
+		RegisterComponent<Renderable>();
+		RegisterComponent<Material>();
+		RegisterComponent<Script>();
+		RegisterComponent<PointLight>();
+		RegisterComponent<SpotLight>();
+		RegisterComponent<SkyBox>();
 	}
 
     // Entity functions ===========================================================

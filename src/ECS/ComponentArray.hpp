@@ -66,6 +66,13 @@ namespace ECS {
 		    }
 	    }
 
+        //intriguing
+        // std::vector<T> getAllData() {
+        //     std::vector<T> arrayData(componentArray);
+        //     arrayData.resize(arraySize);
+        //     return arrayData;
+        // };
+
     private:
         std::array<T, MAX_ENTITIES> componentArray; //THE data. kept packed
         size_t arraySize; //current count of entries in the array

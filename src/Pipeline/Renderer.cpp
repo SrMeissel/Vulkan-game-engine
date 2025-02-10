@@ -5,14 +5,63 @@
 #include <array>
 
 
-namespace engine {
+namespace renderer {
 
-    Renderer::Renderer(Window& window, Device& device) : window{window}, device{device} {
+    Renderer::Renderer(Window& window) : window{window}, device{window} {
+
         recreateSwapChain();
         createCommandBuffers();
+        globalPool = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT).build();
+
+        //init UBO
+         for(int i=0; i < uboBuffers.size(); i++) {
+            uboBuffers[i] = std::make_unique<Buffer>(device, sizeof(GlobalUbo), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+            uboBuffers[i]->map();
+        }
+        // add UBO to descriptor
+        globalSetLayout = DescriptorSetLayout::Builder(device)
+        .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+        .build();
+
+         for(int i=0; i < globalDescriptorSets.size(); i++){
+            DescriptorWriter writer(*globalSetLayout, *globalPool);
+
+            auto bufferInfo = uboBuffers[i]->descriptorInfo();
+            writer.writeBuffer(0, &bufferInfo);
+            writer.build(globalDescriptorSets[i]);
+        }
+
+        //create Sampler ==================================================
+        VkPhysicalDeviceProperties properties{};
+        vkGetPhysicalDeviceProperties(device.physicalDevice, &properties);
+
+        VkSamplerCreateInfo samplerInfo{};
+        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerInfo.magFilter = VK_FILTER_LINEAR;
+        samplerInfo.minFilter = VK_FILTER_LINEAR;
+        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.anisotropyEnable = VK_TRUE;
+        samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+        samplerInfo.unnormalizedCoordinates = VK_FALSE;
+        samplerInfo.compareEnable = VK_FALSE;
+        samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        samplerInfo.mipLodBias = 0.0f;
+        samplerInfo.minLod = 0.0f;
+        samplerInfo.maxLod = 0.0f;
+
+        if (vkCreateSampler(device.device(), &samplerInfo, nullptr, &defaultSampler) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create texture sampler!");
+        }
+
     }
     Renderer::~Renderer() {
         freeCommandBuffers();
+
+        vkDestroySampler(device.device(), defaultSampler, nullptr);
     }
 
     void Renderer::recreateSwapChain() {

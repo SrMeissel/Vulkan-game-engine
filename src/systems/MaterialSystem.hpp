@@ -12,15 +12,18 @@
 namespace engine {
     class MaterialSystem : public ECS::System {
     public:
-        MaterialSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
-        ~MaterialSystem() { vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); vkDestroySampler(device.device(), sampler, nullptr);}
+        MaterialSystem(renderer::Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
+        ~MaterialSystem() { 
+            vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr);
+            vkDestroySampler(device.device(), sampler, nullptr);
+        }
 
         void Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager);
 
         void cleanup(ECS::AssetSystem& assetManager);
 
         VkSampler& getSampler() { return sampler; }
-        std::unique_ptr<DescriptorSetLayout>& getMaterialSetLayout() { return materialSetLayout; }
+        std::unique_ptr<renderer::DescriptorSetLayout>& getMaterialSetLayout() { return materialSetLayout; }
 
     private:
         struct PushConstant {
@@ -28,11 +31,11 @@ namespace engine {
             glm::mat4 normalMatrix{1.f};
         };
 
-        Device &device;
+        renderer::Device &device;
 
-        std::unique_ptr<Pipeline> pipeline;
+        std::unique_ptr<renderer::Pipeline> pipeline;
         VkPipelineLayout pipelineLayout;
         VkSampler sampler;
-        std::unique_ptr<DescriptorSetLayout> materialSetLayout;
+        std::unique_ptr<renderer::DescriptorSetLayout> materialSetLayout;
     };
 }

@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <iostream>
 
-namespace engine {
+namespace renderer {
     RenderPass::RenderPass(Device& device, VkRenderPassCreateInfo* info, VkExtent2D customExtent) : 
     device{device}, info{info}, extent{customExtent} {
         //creates the renderpass objects from info directly

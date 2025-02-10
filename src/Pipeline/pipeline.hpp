@@ -7,7 +7,7 @@
 #include <vector>
 #include <array>
 
-namespace engine{
+namespace renderer {
 
     struct PipelineConfigInfo {
         PipelineConfigInfo() = default;
@@ -37,7 +37,6 @@ namespace engine{
             Pipeline(Device& device, std::vector<std::string> files, std::vector<VkShaderStageFlagBits> flags, const PipelineConfigInfo& configInfo);
             ~Pipeline();
 
-            Pipeline() = default;
             Pipeline(const Pipeline&) = delete;
             Pipeline& operator=(const Pipeline&) = delete;
 

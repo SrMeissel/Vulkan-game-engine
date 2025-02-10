@@ -28,27 +28,33 @@ namespace engine {
             static constexpr int WIDTH = 1200;
             static constexpr int HEIGHT = 800;
 
-            engine();
+            engine(renderer::Renderer& renderer, ECS::AssetSystem& assetSystem);
             ~engine();
 
             engine(const engine &) = delete;
             engine &operator=(const engine &) = delete;
 
-            void run();
+            void updateGameState(float deltaTime);
+            void renderGameState(VkCommandBuffer commandBuffer, int frameIndex);
         private:
             VkRenderPassCreateInfo* configureRenderPass();
             VkFormat chooseSwapSurfaceFormat();
 
-            Window window{WIDTH, HEIGHT, "Hello there"};
-            Device device{window};
-            Renderer renderer{window, device};
-
-            SceneEditor sceneEditor{device, window, renderer};
+            renderer::Renderer& renderer;
+            ECS::AssetSystem& assetSystem;
 
             ScreenshotTool screenshotTool;
 
-            std::shared_ptr<DescriptorPool> globalPool;
-            
-            ECS::AssetSystem assetSystem;
+            std::shared_ptr<MeshSystem> meshSystem;
+            std::shared_ptr<MaterialSystem> materialSystem;
+            std::shared_ptr<ScriptingSystem> scriptingSystem;
+            std::shared_ptr<PointLightSystem> pointLightSystem;
+            std::shared_ptr<SpotLightSystem> spotLightSystem;
+            std::shared_ptr<SkyboxSystem> skyboxSystem;
+            //I need a list of all renderable objects for shadows. This makes me want to detach the entity list from systems, It would be a lot more simple.
+            std::shared_ptr<Renderables> renderables;
+
+            ECS::Entity viewerObject; 
+            renderer::RenderPass* scenePass;
     };
 }

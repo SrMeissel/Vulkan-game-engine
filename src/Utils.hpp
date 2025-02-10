@@ -17,9 +17,11 @@ namespace engine {
         seed ^= std::hash<T>{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
         (hashCombine(seed, rest), ...);
     };
+}
 
     //global structs ==========================================================
 
+namespace renderer {
     struct Vertex{
         glm::vec3 position{};
         glm::vec3 color{};
@@ -74,14 +76,16 @@ namespace engine {
         return attributeDescriptions;
     }
 
+
+
 }
 
 //whatever the hell this is =====================================================================
 
 namespace std {
     template<>
-    struct hash<engine::Vertex> {
-        size_t operator()(engine::Vertex const& vertex) const {
+    struct hash<renderer::Vertex> {
+        size_t operator()(renderer::Vertex const& vertex) const {
             size_t seed = 0;
             engine::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
             return seed; 

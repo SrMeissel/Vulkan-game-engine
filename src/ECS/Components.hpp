@@ -18,7 +18,7 @@ namespace ECS {
 
     struct Component {
         virtual ~Component() = default;
-        virtual tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) = 0; // <======
+        virtual tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) = 0;
     };
 
     struct Renderable : public Component {
@@ -26,11 +26,11 @@ namespace ECS {
 
         std::string Path;
 
-        std::shared_ptr<engine::Buffer> vertexBuffer;
+        std::shared_ptr<renderer::Buffer> vertexBuffer;
         uint32_t vertexCount;
 
         bool hasIndexBuffer = false;
-        std::shared_ptr<engine::Buffer> indexBuffer;
+        std::shared_ptr<renderer::Buffer> indexBuffer;
         uint32_t indexCount;
 
         tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
@@ -43,15 +43,15 @@ namespace ECS {
     struct Material : public Component {
         Material() = default;
 
-        engine::AllocatedImage albedo;
-        engine::AllocatedImage normal;
+        renderer::AllocatedImage albedo;
+        renderer::AllocatedImage normal;
 
         VkDescriptorImageInfo albedoImageInfo;
         VkDescriptorImageInfo normalImageInfo;
 
         VkDescriptorImageInfo samplerInfo;
 
-        std::shared_ptr<engine::DescriptorPool> descriptorPool;
+        std::shared_ptr<renderer::DescriptorPool> descriptorPool;
         VkDescriptorSet descriptorSet;
 
         tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
@@ -70,10 +70,10 @@ namespace ECS {
         std::string Path;
         std::vector<std::string> tags;
 
-        engine::CubeMap skyBoxImage;
+        renderer::CubeMap skyBoxImage;
 
         VkDescriptorImageInfo imageInfo;
-        std::shared_ptr<engine::DescriptorPool> descriptorPool;
+        std::shared_ptr<renderer::DescriptorPool> descriptorPool;
         VkDescriptorSet descriptorSet;
 
         tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
@@ -97,7 +97,7 @@ namespace ECS {
         float radius;
         float intensity;
 
-        //engine::AllocatedImage shadowMap;
+        //renderer::AllocatedImage shadowMap;
         //VkFramebuffer shadowMapFrameBuffer;
 
         tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
@@ -113,7 +113,7 @@ namespace ECS {
 
     struct SpotLight : public Component {
         SpotLight() = default;
-        SpotLight(engine::Device& device, engine::Window& window, glm::vec3 color, float intensity, glm::vec2 resolution, VkRenderPass pass, VkSampler sampler, std::unique_ptr<engine::DescriptorSetLayout>& setLayout) : 
+        SpotLight(renderer::Device& device, Window& window, glm::vec3 color, float intensity, glm::vec2 resolution, VkRenderPass pass, VkSampler sampler, std::unique_ptr<renderer::DescriptorSetLayout>& setLayout) : 
         color{color}, intensity{intensity}, resolution{resolution}, aspect{static_cast<float>(resolution.x) / static_cast<float>(resolution.y)} {
 
             // create images ===========================================================================
@@ -187,7 +187,7 @@ namespace ECS {
                 throw std::runtime_error("failed to create framebuffer!");
             }
             //create descriptor =======================================================================================
-            descriptorPool = engine::DescriptorPool::Builder(device).setMaxSets(2)
+            descriptorPool = renderer::DescriptorPool::Builder(device).setMaxSets(2)
             .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1)
             .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLER, 1)
             .build();
@@ -198,7 +198,7 @@ namespace ECS {
 
             samplerInfo.sampler = sampler;
 
-            engine::DescriptorWriter writer(*setLayout, *descriptorPool);
+            renderer::DescriptorWriter writer(*setLayout, *descriptorPool);
             if(writer.writeImage(0, &samplerInfo, 1).writeImage(1,&descriptorImageInfo, 1).build(descriptorSet) == false) std::cout << "\n failed to write set \n";
 
         }
@@ -208,11 +208,11 @@ namespace ECS {
         glm::vec2 resolution;
         float aspect;
 
-        engine::AllocatedImage shadowMap{};
+        renderer::AllocatedImage shadowMap{};
         VkFramebuffer frameBuffer;
 
         VkDescriptorImageInfo descriptorImageInfo;
-        std::shared_ptr<engine::DescriptorPool> descriptorPool;
+        std::shared_ptr<renderer::DescriptorPool> descriptorPool;
         VkDescriptorSet descriptorSet;
         VkDescriptorImageInfo samplerInfo;
 
@@ -375,9 +375,6 @@ namespace ECS {
 
             updateMethod = mono_class_get_method_from_name(objectClass, "update", 0);
             update = (Update)mono_method_get_unmanaged_thunk(updateMethod);
-
-            std::cout << "Script Created!" << std::endl;    
-
         }
 
         tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {

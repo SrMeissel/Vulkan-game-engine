@@ -7,31 +7,33 @@
 #include "../../libs/imgui/imgui_impl_vulkan.h"
 #include "../../libs/imgui/imgui_impl_glfw.h"
 
+#include "ECS/AssetManager.hpp"
+
 #include <vector>
 #include <array>
 
-namespace engine {
+namespace editor {
     class SceneEditor {
-
         public:
 
-            SceneEditor(Device& device, Window& window, Renderer& renderer);
-            ~SceneEditor();
+        SceneEditor(Window& window, renderer::Renderer& renderer);
+        ~SceneEditor();
 
-            void run(VkCommandBuffer commandBuffer);
+        void runOnce(VkCommandBuffer commandBuffer);
 
-            void configureViewport(VkImageView imageView, VkImageView secondaryView, VkSampler sampler, VkExtent2D extent);
+        void configureViewport(VkImageView imageView, VkImageView secondaryView, VkSampler sampler, VkExtent2D extent);
+
+        ECS::Entity viewportCamera;
 
         private:
-            Device& device;
-            Window& window;
-            Renderer& renderer;
+        Window& window;
+        renderer::Renderer& renderer;
 
-            VkRenderPassCreateInfo* configureRenderPass();
+        //VkRenderPassCreateInfo* configureRenderPass();
 
-            std::shared_ptr<DescriptorPool> imguiPool {};
-            VkDescriptorSet viewportDescriptorSet;
-            VkDescriptorSet secondaryViewportDescriptorSet;
-            VkExtent2D viewportExtent;
+        std::shared_ptr<renderer::DescriptorPool> imguiPool {};
+        VkDescriptorSet viewportDescriptorSet;
+        VkDescriptorSet secondaryViewportDescriptorSet;
+        VkExtent2D viewportExtent;
     };
 }

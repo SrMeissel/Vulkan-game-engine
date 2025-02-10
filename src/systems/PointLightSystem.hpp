@@ -14,8 +14,10 @@
 namespace engine {
     class PointLightSystem : public ECS::System {
     public:
-        PointLightSystem(Device& device, RenderPass* renderPass, VkDescriptorSetLayout globalSetLayout);
-        ~PointLightSystem() { vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); }
+        PointLightSystem(renderer::Device& device, renderer::RenderPass* renderPass, VkDescriptorSetLayout globalSetLayout);
+        ~PointLightSystem() { 
+            vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); 
+        }
 
         void Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager);
 
@@ -27,15 +29,14 @@ namespace engine {
             float radius;
         };
 
-        Device &device;
+        renderer::Device &device;
 
-        std::unique_ptr<Pipeline> pipeline;
+        std::unique_ptr<renderer::Pipeline> pipeline;
         VkPipelineLayout pipelineLayout;
 
-        VkSampler sampler;
-        std::shared_ptr<engine::DescriptorPool> descriptorPool;
+        std::shared_ptr<renderer::DescriptorPool> descriptorPool;
         VkDescriptorSet descriptorSet;
-        std::unique_ptr<DescriptorSetLayout> setLayout;
+        std::unique_ptr<renderer::DescriptorSetLayout> setLayout;
         std::array<VkDescriptorSetLayout, 1> setLayoutData{};
         std::array<VkDescriptorImageInfo, 3> descriptors{};
     };
