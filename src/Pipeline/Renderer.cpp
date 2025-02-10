@@ -11,8 +11,6 @@ namespace renderer {
 
         recreateSwapChain();
         createCommandBuffers();
-        std::cout << "did that stuff \n";
-
         globalPool = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT).build();
 
         //init UBO
@@ -62,6 +60,8 @@ namespace renderer {
     }
     Renderer::~Renderer() {
         freeCommandBuffers();
+
+        vkDestroySampler(device.device(), defaultSampler, nullptr);
     }
 
     void Renderer::recreateSwapChain() {

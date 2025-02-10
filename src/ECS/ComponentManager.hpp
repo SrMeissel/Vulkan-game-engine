@@ -72,7 +72,6 @@ namespace ECS {
             }
         }
 
-        //is very slow
         // const char* GetComponentName(ComponentType type) {
         //     for (auto const& pair : componentTypes) {
         //         if (pair.second == type) {

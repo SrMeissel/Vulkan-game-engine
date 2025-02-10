@@ -11,21 +11,15 @@
 int main(int argc, char** argv) {
 
     Window window{1920, 1080, "Hello there"};
-    std::cout << "window created \n";
     renderer::Renderer renderer{window};
-    std::cout << "Backend Systems created \n";
 
     ECS::AssetSystem assetSystem;
 
     engine::engine engine{renderer, assetSystem};
-    engine.init();
-    std::cout << "engine created \n";
 
     editor::SceneEditor sceneEditor{window, renderer};
-    std::cout << "editor started \n";
     sceneEditor.configureViewport(renderer.getRenderPass(0)->getAttachmentImageView(4), renderer.getRenderPass(0)->getAttachmentImageView(1), renderer.getDefaultSampler(), renderer.getRenderPass(0)->extent);
-    std::cout << "editor created \n";
-
+    
     try{
         auto currentTime = std::chrono::high_resolution_clock::now();
         //bool firstLoopPerFrame = true; not sure how to implement this one
@@ -53,13 +47,12 @@ int main(int argc, char** argv) {
         }
         vkDeviceWaitIdle(renderer.device.device());
 
-        engine.cleanUp();
-        engine.~engine();
-
     } catch(const std::exception &e) {
         std::cerr << e.what() << '\n';
         return EXIT_FAILURE;
     }
+
+    //engine.~engine();
 
     return EXIT_SUCCESS;
 }

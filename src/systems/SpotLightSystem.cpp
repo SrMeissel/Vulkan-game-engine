@@ -75,8 +75,6 @@ namespace engine {
         writer.writeBuffer(0, &lightBufferInfo);
         writer.build(lightUBOSet);
 
-        std::cout << "created shadow set \n";
-
         //create shadow Pipeline Layout ==================================================
 
         VkPushConstantRange pushConstantRange {};

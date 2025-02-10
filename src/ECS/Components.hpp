@@ -18,7 +18,7 @@ namespace ECS {
 
     struct Component {
         virtual ~Component() = default;
-        virtual tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) = 0; // <======
+        virtual tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) = 0;
     };
 
     struct Renderable : public Component {
@@ -375,9 +375,6 @@ namespace ECS {
 
             updateMethod = mono_class_get_method_from_name(objectClass, "update", 0);
             update = (Update)mono_method_get_unmanaged_thunk(updateMethod);
-
-            std::cout << "Script Created!" << std::endl;    
-
         }
 
         tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {

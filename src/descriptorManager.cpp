@@ -120,10 +120,8 @@ bool DescriptorPool::allocateDescriptor(
   // Might want to create a "DescriptorPoolManager" class that handles this case, and builds
   // a new pool whenever an old pool fills up. But this is beyond our current scope
   if (vkAllocateDescriptorSets(device.device(), &allocInfo, &descriptor) != VK_SUCCESS) {
-    //std::cout << "descriptor allocation failed \n";
     return false;
   }
-  //std::cout << "descriptor allocation success! \n";
   return true;
 }
  
@@ -203,7 +201,6 @@ DescriptorWriter &DescriptorWriter::writeImages(
   write.pImageInfo = imageInfo;
   write.descriptorCount = count;
  
-  std::cout << "sampler descriptor writes added "<< "\n";
   writes.push_back(write);
   return *this;
 }
@@ -221,7 +218,6 @@ void DescriptorWriter::overwrite(VkDescriptorSet &set) {
   for (auto &write : writes) {
     write.dstSet = set;
   }
-  //std::cout << "descriptor writes size " << writes.size() << "\n";
   vkUpdateDescriptorSets(pool.device.device(), (int)writes.size(), writes.data(), 0, nullptr);
 }
  

@@ -29,7 +29,7 @@ namespace editor {
         Window& window;
         renderer::Renderer& renderer;
 
-        VkRenderPassCreateInfo* configureRenderPass();
+        //VkRenderPassCreateInfo* configureRenderPass();
 
         std::shared_ptr<renderer::DescriptorPool> imguiPool {};
         VkDescriptorSet viewportDescriptorSet;

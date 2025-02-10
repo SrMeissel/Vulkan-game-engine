@@ -13,7 +13,10 @@ namespace engine {
     class MaterialSystem : public ECS::System {
     public:
         MaterialSystem(renderer::Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
-        ~MaterialSystem() { vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); vkDestroySampler(device.device(), sampler, nullptr);}
+        ~MaterialSystem() { 
+            vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr);
+            vkDestroySampler(device.device(), sampler, nullptr);
+        }
 
         void Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager);
 

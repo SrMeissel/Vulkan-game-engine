@@ -18,29 +18,10 @@
 namespace engine {
 
     engine::engine(renderer::Renderer& renderer, ECS::AssetSystem& assetSystem) : renderer{renderer}, assetSystem{assetSystem}, scenePass{nullptr} {
-    }
-
-    engine::~engine() {
-        delete scenePass;
-    }
-
-    void engine::init() {
         //Initialize render systems ======================================
 
         scenePass = new renderer::RenderPass(renderer.device, configureRenderPass(), {800, 600}); // 1280, 720 is 720p
         renderer.appendRenderPass(scenePass);
-
-        //Initialize asset system ======================================
-        assetSystem.Init();
-
-        assetSystem.RegisterComponent<ECS::Transform>();
-        assetSystem.RegisterComponent<ECS::Camera>();
-        assetSystem.RegisterComponent<ECS::Renderable>();
-        assetSystem.RegisterComponent<ECS::Material>();
-        assetSystem.RegisterComponent<ECS::Script>();
-        assetSystem.RegisterComponent<ECS::PointLight>();
-        assetSystem.RegisterComponent<ECS::SpotLight>();
-        assetSystem.RegisterComponent<ECS::SkyBox>();
 
         meshSystem = assetSystem.RegisterSystem<MeshSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
         materialSystem = assetSystem.RegisterSystem<MaterialSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
@@ -94,13 +75,14 @@ namespace engine {
 
         ECS::SaveDataManager saveDataManager{renderer.device, *scriptingSystem, *materialSystem, *skyboxSystem}; 
         saveDataManager.loadData("../../saveFiles/statuetteSkyBox.xml", assetSystem);
+        // saveDataManager.saveData(fileName, assetSystem.getAllEntities())
 
         ECS::Entity backplane = assetSystem.CreateEntity();
         assetSystem.AddComponent<ECS::Transform>(backplane, ECS::Transform{glm::vec3(0.0f, 0.0f, 25.0f), glm::vec3(40.0f, 1.0f, 40.0f), glm::vec3{glm::radians(90.0f), 0.0f, 0.0f}});
         assetSystem.AddComponent<ECS::Renderable>(backplane, Importer::loadMesh("../../models/quad.obj", renderer.device));
 
- //<Translation x="0" y="-1.5" z="-3"/>
- //glm::vec3(-4.0f, -3.5f, -12.0f)
+        //<Translation x="0" y="-1.5" z="-3"/>
+        //glm::vec3(-4.0f, -3.5f, -12.0f)
 
         glm::vec3 direction = glm::normalize(glm::vec3(0.0, -1.5, -3) - glm::vec3(-4.0, -3.5, -12.0));
         float yaw = atan2(direction.z, direction.x);
@@ -124,6 +106,18 @@ namespace engine {
         ECS::Camera& viewerCamera = assetSystem.GetComponent<ECS::Camera>(viewerObject);
         viewerCamera.viewMatrix = setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
 
+     }
+
+    engine::~engine() {
+        //DESTROY EVERYTHING ==================================================================================================
+        //I don't know how.
+        //nvm im a genius
+
+        delete scenePass;
+
+        materialSystem->cleanup(assetSystem);
+        skyboxSystem->cleanup(assetSystem);
+        spotLightSystem->cleanup(assetSystem);
     }
 
     void engine::updateGameState(float deltaTime) {
@@ -184,18 +178,6 @@ namespace engine {
 
         // //finished and submit to presentation
         // renderer.endSwapChainRenderPass(commandBuffer);
-    }
-
-    void engine::cleanUp() {
-
-        //DESTROY EVERYTHING ==================================================================================================
-        //I don't know how.
-        //nvm im a genius
-
-        materialSystem->cleanup(assetSystem);
-        skyboxSystem->cleanup(assetSystem);
-        spotLightSystem->cleanup(assetSystem);
-
     }
 
     //this works, vkcreateRenderPass uses pointer. The static keywords are used to prevent the objects from deleteing because their referenced.

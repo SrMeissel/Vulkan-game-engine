@@ -90,7 +90,6 @@ namespace Importer {
         std::string imagePath = fileName + tags[0] + extention;
 
         int texWidth, texHeight, texChannels;
-        std::cout << "loading cube face: " << imagePath << std::endl;
         stbi_uc* pixels = stbi_load(imagePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
         if(!pixels) throw std::runtime_error("failed to load texture image!"); 
 
@@ -105,7 +104,6 @@ namespace Importer {
 
         for(int i=1; i < 6; i++) {
             imagePath = fileName + tags[i] + extention;
-            std::cout << "loading cube face: " << imagePath << std::endl;
 
             pixels = stbi_load(imagePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
             if(!pixels) throw std::runtime_error("failed to load texture image!"); 
@@ -236,8 +234,6 @@ namespace Importer {
         skybox.tags = tags;
 
         skybox.skyBoxImage = loadCubeMap(filepath, tags, device, VK_FORMAT_R8G8B8A8_SRGB);
-        std::cout << "made cubeMap" << std::endl;
-
         skybox.descriptorPool = renderer::DescriptorPool::Builder(device).setMaxSets(3)
         .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
         .build();
@@ -246,9 +242,7 @@ namespace Importer {
         skybox.imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         skybox.imageInfo.imageView = skybox.skyBoxImage.imageView;
         skybox.imageInfo.sampler = sampler;
-        std::cout << "about to write descriptors" << std::endl;
         if(writer.writeImage(0, &skybox.imageInfo, 1).build(skybox.descriptorSet) == false) std::cout << "\n failed to write set \n";
-        std::cout << "wrote descriptors" << std::endl;
 
         return skybox;
     }
@@ -282,8 +276,6 @@ namespace Importer {
         }
 
     static ECS::Renderable loadMesh(std::string filepath, renderer::Device& device) {
-        std::cout << "Loading mesh: " << filepath << std::endl;
-
         Assimp::Importer importer;
         const aiScene* scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_CalcTangentSpace);
 

@@ -34,10 +34,8 @@ namespace engine {
             engine(const engine &) = delete;
             engine &operator=(const engine &) = delete;
 
-            void init();
             void updateGameState(float deltaTime);
             void renderGameState(VkCommandBuffer commandBuffer, int frameIndex);
-            void cleanUp();
         private:
             VkRenderPassCreateInfo* configureRenderPass();
             VkFormat chooseSwapSurfaceFormat();

@@ -53,14 +53,15 @@ namespace renderer {
 
             VkSampler& getDefaultSampler() {return defaultSampler; };
 
+            Device device;
+            Window& window;
+
            //maybe should be moved to private 
             std::shared_ptr<DescriptorPool> globalPool;
             std::unique_ptr<DescriptorSetLayout> globalSetLayout;
             std::vector<std::unique_ptr<Buffer>> uboBuffers{SwapChain::MAX_FRAMES_IN_FLIGHT};
             std::vector<VkDescriptorSet> globalDescriptorSets{SwapChain::MAX_FRAMES_IN_FLIGHT};
             
-            Device device;
-            Window& window;
         private:
             void createCommandBuffers();
             void freeCommandBuffers();
