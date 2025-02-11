@@ -97,9 +97,6 @@ namespace ECS {
         float radius;
         float intensity;
 
-        //renderer::AllocatedImage shadowMap;
-        //VkFramebuffer shadowMapFrameBuffer;
-
         tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
             tinyxml2::XMLElement* pointLight = doc.NewElement("PointLight");
             pointLight->SetAttribute("R", color.r);
@@ -350,11 +347,7 @@ namespace ECS {
         MonoClass* parentClass;
         MonoImage* image;
 
-        Script() {
-            scriptClass = nullptr;
-            scriptObject = nullptr;
-            objectClass = nullptr;
-        }
+        Script() = default;
 
         Script(const char* name, MonoAssembly* assembly, MonoDomain* appDomain) {
             className = name;

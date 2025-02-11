@@ -55,6 +55,7 @@ namespace engine {
             std::shared_ptr<Renderables> renderables;
 
             ECS::Entity viewerObject; 
+            
             renderer::RenderPass* scenePass;
     };
 }

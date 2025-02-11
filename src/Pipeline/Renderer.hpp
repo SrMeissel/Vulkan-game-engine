@@ -10,9 +10,14 @@
 
 #include "frameInfo.hpp"
 
+#include "Utils.hpp"
+
+#include "ECS/Importer.hpp"
+
 #include <memory>
 #include <vector>
 #include <cassert>
+#include <map>
 
 namespace renderer {
     class Renderer {
@@ -82,4 +87,53 @@ namespace renderer {
 
             VkSampler defaultSampler;
     };
+
+
+    //the gallery serves as a way to store all images by reference path, may not be needed.
+    struct Exhibit {
+        std::string path;
+
+        Exhibit(std::string path, Gallery& gallery) : gallery{gallery}, path{path} {
+            gallery.createImage(path);
+        }
+        ~Exhibit() {
+            gallery.removeImage(path);
+        }
+
+        private:
+        Gallery& gallery;
+    };
+
+    struct Gallery {
+        Gallery(Device& device) : device{device} {
+            deleter = [&device](AllocatedImage* image) {
+                vkDestroyImageView(device.device(), image->imageView, nullptr);
+                vkDestroyImage(device.device(), image->image, nullptr);
+                vkFreeMemory(device.device(), image->memory, nullptr);
+                delete image;
+            };
+        }
+
+        AllocatedImage* getImage(std::string path) {
+            return images[path].first.get();
+        }
+
+        void createImage(std::string path) {
+            if(images.count(path)) images[path].second++; 
+            else images[path] = {std::make_unique<AllocatedImage>(Importer::loadJPGImage(path, device, VK_FORMAT_R8G8B8A8_SRGB)), 1};
+        }
+
+        void removeImage(std::string path) {
+            assert(images.count(path) && "Trying to remove a nonexistant Exhibit!");
+            auto& image = images[path];
+            --image.second;
+            if(image.second <= 0)   images.erase(path);
+        }
+
+        private:
+        Device& device;
+        std::function<void(AllocatedImage*)> deleter;
+        std::map<std::string, std::pair<std::unique_ptr<AllocatedImage, decltype(deleter)>, int>> images;
+    };
+
 }
