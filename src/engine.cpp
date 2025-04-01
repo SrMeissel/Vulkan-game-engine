@@ -76,7 +76,7 @@ namespace engine {
         assetSystem.SetSystemSignature<SkyboxSystem>(skyboxSigniture);
 
         ECS::SaveDataManager saveDataManager{renderer.device, *scriptingSystem, *materialSystem, *skyboxSystem}; 
-        saveDataManager.loadData("../../saveFiles/statuetteSkyBox.xml", assetSystem);
+        saveDataManager.loadData("../../saveFiles/Default.xml", assetSystem);
         // saveDataManager.saveData(fileName, assetSystem.getAllEntities())
 
         ECS::Entity backplane = assetSystem.CreateEntity();

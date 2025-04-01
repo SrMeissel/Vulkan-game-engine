@@ -89,7 +89,9 @@ namespace renderer {
     };
 
 
-    //the gallery serves as a way to store all images by reference path, may not be needed.
+    // =============================================================================================================================================================
+
+    //the gallery serves as a way to store all images by reference path, may not be used.
     struct Gallery {
         Gallery(Device& device) : device{device} {
             deleter = [&device](AllocatedImage* image) {

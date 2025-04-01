@@ -16,6 +16,7 @@
 
         Window window{1920, 1080, "Hello there"};
         renderer::Renderer renderer{window};
+        
 
         ECS::AssetSystem assetSystem;
 
