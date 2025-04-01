@@ -90,20 +90,6 @@ namespace renderer {
 
 
     //the gallery serves as a way to store all images by reference path, may not be needed.
-    struct Exhibit {
-        std::string path;
-
-        Exhibit(std::string path, Gallery& gallery) : gallery{gallery}, path{path} {
-            gallery.createImage(path);
-        }
-        ~Exhibit() {
-            gallery.removeImage(path);
-        }
-
-        private:
-        Gallery& gallery;
-    };
-
     struct Gallery {
         Gallery(Device& device) : device{device} {
             deleter = [&device](AllocatedImage* image) {
@@ -135,5 +121,20 @@ namespace renderer {
         std::function<void(AllocatedImage*)> deleter;
         std::map<std::string, std::pair<std::unique_ptr<AllocatedImage, decltype(deleter)>, int>> images;
     };
+    
+    struct Exhibit {
+        std::string path;
+
+        Exhibit(std::string path, Gallery& gallery) : gallery{gallery}, path{path} {
+            gallery.createImage(path);
+        }
+        ~Exhibit() {
+            gallery.removeImage(path);
+        }
+
+        private:
+        Gallery& gallery;
+    };
+
 
 }

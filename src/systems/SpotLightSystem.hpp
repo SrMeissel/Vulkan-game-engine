@@ -30,7 +30,7 @@ namespace engine {
         }
 
         void RenderShadows(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager, ECS::System& renderables);
-        void RenderLight(VkCommandBuffer commandBuffer, ECS::Camera& viewerCamera, ECS::AssetSystem& assetManager);
+        void RenderLight(VkCommandBuffer commandBuffer, const ECS::Camera& viewerCamera, ECS::AssetSystem& assetManager);
 
         VkRenderPass getRenderPass() {return shadowPass; }
         VkSampler& getSampler() { return sampler; }        

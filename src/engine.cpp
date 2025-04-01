@@ -22,6 +22,8 @@ namespace engine {
 
         scenePass = new renderer::RenderPass(renderer.device, configureRenderPass(), {800, 600}); // 1280, 720 is 720p
         renderer.appendRenderPass(scenePass);
+        //TODO: I should start adding TODO's around my project.
+        //TODO: make renderer.defineSwapchain(RenderPass); 
 
         meshSystem = assetSystem.RegisterSystem<MeshSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
         materialSystem = assetSystem.RegisterSystem<MaterialSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
@@ -98,15 +100,22 @@ namespace engine {
 
         //Initialize Camera object ===================================
 
-        viewerObject = assetSystem.CreateEntity();
-        assetSystem.AddComponent(viewerObject, ECS::Transform{glm::vec3(0.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
-        assetSystem.AddComponent(viewerObject, ECS::Camera{0.1, 5000});
-        assetSystem.AddComponent(viewerObject, ECS::Script{"CameraControl", scriptingSystem->assembly, scriptingSystem->appDomain});
+        // viewerObject = assetSystem.CreateEntity();
+        // ECS::Transform& viewerTransform = assetSystem.AddComponent(viewerObject, ECS::Transform{glm::vec3(0.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
+        // ECS::Camera& viewerCamera = assetSystem.AddComponent(viewerObject, ECS::Camera{0.1, 5000});
+        // assetSystem.AddComponent(viewerObject, ECS::Script{"CameraControl", scriptingSystem->assembly, scriptingSystem->appDomain});
 
-        ECS::Camera& viewerCamera = assetSystem.GetComponent<ECS::Camera>(viewerObject);
-        viewerCamera.viewMatrix = setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
+        // //ECS::Camera& viewerCamera = assetSystem.GetComponent<ECS::Camera>(viewerObject);
+        // //ECS::Transform& viewerTransform = assetSystem.GetComponent<ECS::Transform>(viewerObject);
+        
+        // //viewerCamera.viewMatrix = setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
+        
+        // viewerCamera.viewMatrix = setViewYXZ(viewerTransform.translation, viewerTransform.rotation);            
+        // float aspect = renderer.getRenderPass(0)->getAspectRatio();
+        // viewerCamera.projectionMatrix = setPerspectiveProjection(glm::radians(50.0f), aspect, viewerCamera.nearPlane, viewerCamera.farPlane);
+        // viewerCamera.inverseViewMatrix = glm::inverse(viewerCamera.viewMatrix);
 
-     }
+    }
 
     engine::~engine() {
         //DESTROY EVERYTHING ==================================================================================================
@@ -143,14 +152,15 @@ namespace engine {
         viewerCamera.inverseViewMatrix = glm::inverse(viewerCamera.viewMatrix);
     }
 
-    void engine::renderGameState(VkCommandBuffer commandBuffer, int frameIndex) {
+    void engine::renderGameState(VkCommandBuffer commandBuffer, int frameIndex, const ECS::Camera& target) {
+
+        // ECS::Camera& targetB = assetSystem.GetComponent<ECS::Camera>(viewerObject);
 
         //update graphics memory objects =====================================
         renderer::GlobalUbo ubo{};
-        ECS::Camera& viewerCamera = assetSystem.GetComponent<ECS::Camera>(viewerObject);
-        ubo.projection = viewerCamera.projectionMatrix;
-        ubo.view = viewerCamera.viewMatrix;
-        ubo.inverseView = viewerCamera.inverseViewMatrix;
+        ubo.projection = target.projectionMatrix;
+        ubo.view = target.viewMatrix;
+        ubo.inverseView = target.inverseViewMatrix;
 
         renderer.uboBuffers[frameIndex]->writeToBuffer(&ubo);
         renderer.uboBuffers[frameIndex]->flush();
@@ -159,7 +169,7 @@ namespace engine {
 
         //do shadows here
 
-        spotLightSystem->RenderShadows(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem, *renderables); // <==================================
+        spotLightSystem->RenderShadows(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem, *renderables);
 
         renderer.beginNextRenderPass(commandBuffer);
 
@@ -169,7 +179,7 @@ namespace engine {
         vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
 
         pointLightSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
-        spotLightSystem->RenderLight(commandBuffer, viewerCamera, assetSystem);
+        spotLightSystem->RenderLight(commandBuffer, target, assetSystem);
         skyboxSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
 
 

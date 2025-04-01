@@ -35,7 +35,9 @@ namespace engine {
             engine &operator=(const engine &) = delete;
 
             void updateGameState(float deltaTime);
-            void renderGameState(VkCommandBuffer commandBuffer, int frameIndex);
+            void renderGameState(VkCommandBuffer commandBuffer, int frameIndex, const ECS::Camera& target);
+
+            void setViewerObject(ECS::Entity object) {viewerObject = object; }
         private:
             VkRenderPassCreateInfo* configureRenderPass();
             VkFormat chooseSwapSurfaceFormat();

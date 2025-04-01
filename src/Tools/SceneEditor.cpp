@@ -8,8 +8,8 @@
 
 namespace editor {
 
-    SceneEditor::SceneEditor(Window& window, renderer::Renderer& renderer) 
-    : window(window), renderer{renderer} {
+    SceneEditor::SceneEditor(Window& window, renderer::Renderer& renderer, ECS::AssetSystem& assetSystem) 
+    : window(window), renderer{renderer}, assetSystem{assetSystem} {
 
         //seems extremely overkill
         //only modified once per launch
@@ -49,6 +49,7 @@ namespace editor {
         ImGui_ImplVulkan_Init(&initInfo, *renderer.getSwapchainRenderPass());
         ImGui_ImplVulkan_CreateFontsTexture();
     }
+
     SceneEditor::~SceneEditor() {
         ImGui_ImplVulkan_RemoveTexture(viewportDescriptorSet);
         ImGui_ImplVulkan_RemoveTexture(secondaryViewportDescriptorSet);
@@ -57,7 +58,21 @@ namespace editor {
         ImGui_ImplVulkan_Shutdown();
     }
 
-    void SceneEditor::runOnce(VkCommandBuffer commandBuffer) {
+    void SceneEditor::updateState(float dt, EngineState& state) {
+        auto& viewportTransform = assetSystem.GetComponent<ECS::Transform>(viewportEntity);
+        auto& viewportCamera = assetSystem.GetComponent<ECS::Camera>(viewportEntity);
+        moveInPlaneXZ(window, viewportTransform, dt, 2.5f, 3.0f);
+        
+        viewportCamera.viewMatrix = engine::setViewYXZ(viewportTransform.translation, viewportTransform.rotation);            
+        float aspect = renderer.getRenderPass(0)->getAspectRatio();
+        viewportCamera.projectionMatrix = engine::setPerspectiveProjection(glm::radians(50.0f), aspect, viewportCamera.nearPlane, viewportCamera.farPlane);
+        viewportCamera.inverseViewMatrix = glm::inverse(viewportCamera.viewMatrix);
+
+        if(glfwGetKey(window.getGLFWwindow(), GLFW_KEY_J)) state = RUNNING;
+        if(glfwGetKey(window.getGLFWwindow(), GLFW_KEY_H)) state = PAUSED;
+    }
+
+    void SceneEditor::renderState(VkCommandBuffer commandBuffer) {
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         
@@ -74,7 +89,7 @@ namespace editor {
 
         //mess with object Window ====================================================
         ImGui::Begin("Object thingy");
-        
+        ImGui::Button("RUN");
         ImGui::End();
 
         //ImGui::ShowDemoWindow();
@@ -87,6 +102,11 @@ namespace editor {
         viewportDescriptorSet = ImGui_ImplVulkan_AddTexture(sampler, imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         secondaryViewportDescriptorSet = ImGui_ImplVulkan_AddTexture(sampler, secondaryView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         viewportExtent = extent;
+
+        viewportEntity = assetSystem.CreateEntity();
+        assetSystem.AddComponent(viewportEntity, ECS::Transform{glm::vec3(0.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
+        assetSystem.AddComponent(viewportEntity, ECS::Camera{0.1, 5000});
+        
     }
 
     // VkRenderPassCreateInfo* SceneEditor::configureRenderPass() {

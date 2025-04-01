@@ -310,7 +310,7 @@ namespace engine {
         }
     }
 
-    void SpotLightSystem::RenderLight(VkCommandBuffer commandBuffer, ECS::Camera& viewerCamera, ECS::AssetSystem& assets) {
+    void SpotLightSystem::RenderLight(VkCommandBuffer commandBuffer, const ECS::Camera& viewerCamera, ECS::AssetSystem& assets) {
         lightPipeline->bind(commandBuffer);
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lightPipelineLayout, 1, 1, &inputSet, 0, nullptr);
 

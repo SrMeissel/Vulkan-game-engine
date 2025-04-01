@@ -63,7 +63,7 @@ namespace ECS {
 	}
 
     template<typename T>
-	void AddComponent(Entity entity, T component) {
+	T& AddComponent(Entity entity, T component) {
 		T& placedComponent = componentManager->AddComponent<T>(entity, component); // do the thing
 		savedComponents[entity].push_back(&placedComponent);
 
@@ -72,6 +72,8 @@ namespace ECS {
 		entityManager->SetSignature(entity, signature);
 
 		systemManager->EntitySignatureChanged(entity, signature);
+
+		return component;
 	}
     
 	template<typename T>

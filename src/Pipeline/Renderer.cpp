@@ -193,7 +193,7 @@ namespace renderer {
     }
 
     void Renderer::endCurrentRenderPass(VkCommandBuffer commandBuffer) {
-        assert(isFrameStarted && "cannot call endSwapChainRenderPass if no frame is in progress!");
+        assert(isFrameStarted && "cannot call endCurrentRenderPass if no frame is in progress!");
         assert(commandBuffer == getCurrentCommandBuffer() && "Cannot end render pass on command buffer from a different frame");
 
         vkCmdEndRenderPass(commandBuffer);
