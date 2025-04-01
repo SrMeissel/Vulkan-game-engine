@@ -7,7 +7,9 @@
 #include <stdexcept>
 #include <chrono>
 
-#include <windows.h>
+#ifndef CONSOLE
+    #include <windows.h>
+#endif // CONSOLE
 
 #ifndef EDITOR
 
@@ -62,13 +64,13 @@
             return EXIT_FAILURE;
         }
 
-        //engine.~engine();
-
         return EXIT_SUCCESS;
     }
 
-    int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
-        LPSTR lpCmdLine, int nCmdShow) {
-        return main(__argc, __argv);
-    }
-#endif
+    #ifndef CONSOLE
+        int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
+            LPSTR lpCmdLine, int nCmdShow) {
+            return main(__argc, __argv);
+        }
+    #endif // CONSOLE
+#endif // EDITOR
