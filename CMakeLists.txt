@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C Compiler: ${CMAKE_C_COMPILER}")
 
-
+if(WIN32)
 find_file(Vulkan_LIBRARY
     NAMES vulkan-1.lib
     HINTS
@@ -16,6 +16,7 @@ find_file(Vulkan_LIBRARY
     REQUIRED
 )
 set(Vulkan_INCLUDE_DIR $ENV{VULKAN_SDK}/Include)
+endif()
 find_package(Vulkan REQUIRED)
 
 find_package(assimp REQUIRED)
@@ -52,17 +53,28 @@ else()
 endif() # IS_STATIC_LIB
 
 #mono stuff =============================================
-set(Mono_DIR "C:/Program Files/Mono")
-find_file(Mono_DLL
-    NAMES mono-2.0-sgen.dll
-    HINTS "${Mono_DIR}/bin"
-    DOCS "I might just use Lua..."
-    REQUIRED
-)
-message(STATUS "Mono DLL found at: ${Mono_DLL}")
+if(WIN32)
+    set(Mono_DIR "C:/Program Files/Mono") # for includes
+    find_file(Mono_File
+	NAMES mono-2.0-sgen.dll
+	HINTS "C:/Program Files/Mono/bin"
+	DOCS "I might just use Lua..."
+	REQUIRED
+    )
+endif()
+if(UNIX)
+    set(Mono_DIR "/usr")
+    find_file(Mono_File
+	NAMES libmonosgen-2.0.so
+	HINTS /lib
+	DOCS "Mono might suck"
+	REQUIRED
+    )
+endif()
+message(STATUS "Mono DLL found at: ${Mono_File}")
 add_custom_command(TARGET engine POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${Mono_DLL}"
+    "${Mono_File}"
         $<TARGET_FILE_DIR:engine>/
     COMMENT "Copying Mono runtime to application directory"
 )
@@ -89,4 +101,9 @@ target_sources(engine PRIVATE
 target_link_libraries(engine glfw)
 target_link_libraries(engine Vulkan::Vulkan)
 target_link_libraries(engine assimp::assimp)
-target_link_libraries(engine "${Mono_DIR}/lib/mono-2.0-sgen.lib")
+if(WIN32)
+    target_link_libraries(engine "C:/Program Files/Mono/lib/mono-2.0-sgen.lib")
+endif()
+if(UNIX)
+    target_link_libraries(engine "/usr/lib/libmonosgen-2.0.a")
+endif()

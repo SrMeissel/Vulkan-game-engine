@@ -23,7 +23,7 @@ namespace engine {
         assembly = LoadAssembly("C:/Users/mizer/dev/Vulkan-game-engine/Scripts/EngineScripting/bin/Debug/EngineScripting.dll");
         if(assembly == nullptr) std::cout << "Failed to load assembly!" << std::endl;
 
-        mono_add_internal_call("GameEngine.EngineCore::DoSomething", DoSomething);
+        mono_add_internal_call("GameEngine.EngineCore::DoSomething", reinterpret_cast<const void*>(&DoSomething));
 
     }
 

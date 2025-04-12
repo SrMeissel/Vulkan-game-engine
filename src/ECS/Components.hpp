@@ -336,11 +336,17 @@ namespace ECS {
         MonoObject* scriptObject;
         MonoClass* objectClass;
 
-        typedef void (__stdcall *Update)(MonoObject*, MonoException**);
+#ifdef _WIN32
+	#define CALLING_CONVENTION __stdcall
+#else
+	#define CALLING_CONVENTION
+#endif
+
+        typedef void (CALLING_CONVENTION *Update)(MonoObject*, MonoException**);
         MonoMethod* updateMethod;
         Update update;
 
-        typedef void (__stdcall *LoadTransform)(MonoObject*, float, float, float, float, float, float, MonoException**);
+        typedef void (CALLING_CONVENTION *LoadTransform)(MonoObject*, float, float, float, float, float, float, MonoException**);
         MonoMethod* loadTransformMethod;
         LoadTransform loadTransform;
 
