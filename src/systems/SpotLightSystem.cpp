@@ -103,7 +103,7 @@ namespace engine {
 
         shadowPipelineConfig.pipelineLayout = shadowPipelineLayout;
 
-        std::vector<std::string> files = {"../../shaders/shadow.vert.spv", "../../shaders/shadow.frag.spv"};
+        std::vector<std::string> files = {(std::string)SOURCE_PATH + "/shaders/shadow.vert.spv", (std::string)SOURCE_PATH + "/shaders/shadow.frag.spv"};
         std::vector<VkShaderStageFlagBits> flags = { VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_FRAGMENT_BIT};
         shadowPipeline = std::make_unique<renderer::Pipeline>(device, files, flags, shadowPipelineConfig);
 
@@ -163,7 +163,7 @@ namespace engine {
 
         lightPipelineConfig.pipelineLayout = lightPipelineLayout;
 
-        files = {"../../shaders/spotLight.vert.spv", "../../shaders/spotLight.frag.spv"};
+        files = {(std::string)SOURCE_PATH +"/shaders/spotLight.vert.spv", (std::string)SOURCE_PATH + "/shaders/spotLight.frag.spv"};
         flags = { VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_FRAGMENT_BIT};
         lightPipeline = std::make_unique<renderer::Pipeline>(device, files, flags, lightPipelineConfig);
 

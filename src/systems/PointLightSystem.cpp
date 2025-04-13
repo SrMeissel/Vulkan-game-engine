@@ -54,7 +54,7 @@ namespace engine {
 
         pipelineConfig.pipelineLayout = pipelineLayout;
         
-        std::vector<std::string> files = {"../../shaders/pointlight.vert.spv", "../../shaders/pointlight.frag.spv"};
+        std::vector<std::string> files = {(std::string)SOURCE_PATH + "/shaders/pointlight.vert.spv", (std::string)SOURCE_PATH + "/shaders/pointlight.frag.spv"};
         std::vector<VkShaderStageFlagBits> flags = { VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_FRAGMENT_BIT};
         pipeline = std::make_unique<renderer::Pipeline>(device, files, flags, pipelineConfig);
 

@@ -35,9 +35,11 @@ namespace ECS {
 
                 doc.SaveFile(fileName);
             }
-            void loadData(const char* fileName, AssetSystem& assetSystem) {
+            void loadData(std::string fileName, AssetSystem& assetSystem) {
+		std::cout << "about to load file:	" << fileName.c_str() << "\n";
                 tinyxml2::XMLDocument doc;
-                doc.LoadFile(fileName);
+                doc.LoadFile(fileName.c_str());
+		std::cout << "file loaded \n";
 
                 tinyxml2::XMLElement* pRoot = doc.FirstChildElement("Collection");
                 tinyxml2::XMLElement* pEntity = pRoot->FirstChildElement("Entity");
@@ -47,6 +49,7 @@ namespace ECS {
                     tinyxml2::XMLElement* pComponent = pEntity->FirstChildElement();
 
                     while(pComponent) {
+			std::cout << "adding component \n";
                         const char* componentName = pComponent->Name();
 
                         //at some point, when I feel like it, I will move these to be virtual functions in the component class.. I'm pretty sure I can do that without slowing down normal operation.
@@ -74,7 +77,9 @@ namespace ECS {
                             assetSystem.AddComponent(entity, Importer::loadMesh(pComponent->GetText(), device));
 
                         } else if (strcmp(componentName, "Script") == 0) {
+			    std::cout << "adding Script \n";
                             assetSystem.AddComponent(entity, Script{pComponent->GetText(), scriptingSystem.assembly, scriptingSystem.appDomain });
+			    std::cout << "script added \n";
 
                         } else if (strcmp(componentName, "Material") == 0) {
                             const char* albedoPath;

@@ -40,7 +40,7 @@ namespace engine {
 
         pipelineConfig.pipelineLayout = pipelineLayout;
         
-        std::vector<std::string> files = {"../../shaders/material.vert.spv", "../../shaders/material.frag.spv"};
+        std::vector<std::string> files = {(std::string)SOURCE_PATH + "/shaders/material.vert.spv", (std::string)SOURCE_PATH + "/shaders/material.frag.spv"};
         std::vector<VkShaderStageFlagBits> flags = { VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_FRAGMENT_BIT};
         pipeline = std::make_unique<renderer::Pipeline>(device, files, flags, pipelineConfig);
 

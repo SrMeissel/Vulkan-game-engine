@@ -14,21 +14,24 @@
 #ifndef EDITOR
 
     int main(int argc, char** argv) {
-        std::cout << "Hello? \n";
+	std::cout << "Source Path: " << SOURCE_PATH << "\n";
 
         Window window{1920, 1080, "Hello there"};
         renderer::Renderer renderer{window};
-        
 
         ECS::AssetSystem assetSystem;
 
         engine::engine engine{renderer, assetSystem};
+
+	std::cout << "engine made \n";
 
         editor::SceneEditor sceneEditor{window, renderer, assetSystem};
         sceneEditor.configureViewport(renderer.getRenderPass(0)->getAttachmentImageView(4), renderer.getRenderPass(0)->getAttachmentImageView(1), renderer.getDefaultSampler(), renderer.getRenderPass(0)->extent);
         editor::EngineState state = editor::EngineState::PAUSED;
 
         engine.setViewerObject(sceneEditor.viewportEntity);
+
+	std::cout << "going to loop \n";
 
         try{
             auto currentTime = std::chrono::high_resolution_clock::now();

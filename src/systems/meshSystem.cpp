@@ -33,8 +33,7 @@ namespace engine {
 
         pipelineConfig.pipelineLayout = pipelineLayout;
         //pipelineConfig.rasterizationInfo.polygonMode = VK_POLYGON_MODE_LINE; // <===== hollow wireframes
-        
-        std::vector<std::string> files = {"../../shaders/mesh.vert.spv", "../../shaders/mesh.frag.spv"};
+        std::vector<std::string> files = {(std::string)SOURCE_PATH + "/shaders/mesh.vert.spv", (std::string)SOURCE_PATH + "/shaders/mesh.frag.spv"};
         std::vector<VkShaderStageFlagBits> flags = { VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_FRAGMENT_BIT};
         pipeline = std::make_unique<renderer::Pipeline>(device, files, flags, pipelineConfig);
     }

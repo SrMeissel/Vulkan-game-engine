@@ -28,9 +28,12 @@ namespace engine {
         meshSystem = assetSystem.RegisterSystem<MeshSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
         materialSystem = assetSystem.RegisterSystem<MaterialSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
         scriptingSystem = assetSystem.RegisterSystem<ScriptingSystem>(renderer.window);
+	std::cout << "scripting system made \n";
         pointLightSystem = assetSystem.RegisterSystem<PointLightSystem>(renderer.device, renderer.getRenderPass(0), renderer.globalSetLayout->getDescriptorSetLayout());
         spotLightSystem = assetSystem.RegisterSystem<SpotLightSystem>(renderer.device, renderer.getRenderPass(0), renderer.globalSetLayout->getDescriptorSetLayout());
         skyboxSystem = assetSystem.RegisterSystem<SkyboxSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
+
+	std::cout << "systems made \n";
 
         //I need a list of all renderable objects for shadows. This makes me want to detach the entity list from systems, It would be a lot more simple.
         renderables = assetSystem.RegisterSystem<Renderables>();
@@ -75,13 +78,17 @@ namespace engine {
         skyboxSigniture.set(assetSystem.GetComponentType<ECS::SkyBox>());
         assetSystem.SetSystemSignature<SkyboxSystem>(skyboxSigniture);
 
+	std::cout << "about to load data \n";
+
         ECS::SaveDataManager saveDataManager{renderer.device, *scriptingSystem, *materialSystem, *skyboxSystem}; 
-        saveDataManager.loadData("../../saveFiles/Default.xml", assetSystem);
+        saveDataManager.loadData((std::string)SOURCE_PATH + "/saveFiles/default.xml", assetSystem);
         // saveDataManager.saveData(fileName, assetSystem.getAllEntities())
+
+	std::cout << "loaded data \n";
 
         ECS::Entity backplane = assetSystem.CreateEntity();
         assetSystem.AddComponent<ECS::Transform>(backplane, ECS::Transform{glm::vec3(0.0f, 0.0f, 25.0f), glm::vec3(40.0f, 1.0f, 40.0f), glm::vec3{glm::radians(90.0f), 0.0f, 0.0f}});
-        assetSystem.AddComponent<ECS::Renderable>(backplane, Importer::loadMesh("../../models/quad.obj", renderer.device));
+        assetSystem.AddComponent<ECS::Renderable>(backplane, Importer::loadMesh((std::string)SOURCE_PATH +"/models/quad.obj", renderer.device));
 
         //<Translation x="0" y="-1.5" z="-3"/>
         //glm::vec3(-4.0f, -3.5f, -12.0f)

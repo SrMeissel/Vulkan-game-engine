@@ -2,6 +2,11 @@
 #include <fstream>
 #include <cstdlib>
 
+#ifdef _WIN32
+#define MONO_ASSEMBLIES "C:/Program Files/mono/lib/mono/4.5"
+#else
+#define MONO_ASSEMBLIES "/usr/lib/mono/4.5" 
+#endif
 // https://mono.github.io/mail-archives/mono-list/2015-November/051922.html
 // WHY TF IS THIS THE BEST DOCS I CAN FIND
 
@@ -14,16 +19,20 @@ namespace engine {
     
         //_putenv_s("MONO_GC_PARAMS", "nursery-size=64m");
 
-        mono_set_assemblies_path("C:/Program Files/mono/lib/mono/4.5");
+        mono_set_assemblies_path(MONO_ASSEMBLIES);
         domain = mono_jit_init("engine");
 
         appDomain = mono_domain_create_appdomain("MyAppDomain", nullptr);
         mono_domain_set(appDomain, true);
 
-        assembly = LoadAssembly("C:/Users/mizer/dev/Vulkan-game-engine/Scripts/EngineScripting/bin/Debug/EngineScripting.dll");
+	std::cout << "about to make assembly \n";
+        assembly = LoadAssembly((std::string)SOURCE_PATH + "/Scripts/EngineScripting/bin/Debug/EngineScripting.dll");
         if(assembly == nullptr) std::cout << "Failed to load assembly!" << std::endl;
 
+	std::cout << "assembly made \n";
+
         mono_add_internal_call("GameEngine.EngineCore::DoSomething", reinterpret_cast<const void*>(&DoSomething));
+	std::cout << "added call \n";
 
     }
 

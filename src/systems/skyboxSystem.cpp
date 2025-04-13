@@ -59,7 +59,7 @@ namespace engine {
 
         pipelineConfig.pipelineLayout = pipelineLayout;
 
-        std::vector<std::string> files = {"../../shaders/skybox.vert.spv", "../../shaders/skybox.frag.spv"};
+        std::vector<std::string> files = {(std::string)SOURCE_PATH + "/shaders/skybox.vert.spv", (std::string)SOURCE_PATH + "/shaders/skybox.frag.spv"};
         std::vector<VkShaderStageFlagBits> flags = { VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_FRAGMENT_BIT};
         pipeline = std::make_unique<renderer::Pipeline>(device, files, flags, pipelineConfig);
 

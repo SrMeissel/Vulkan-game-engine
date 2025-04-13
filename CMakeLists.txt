@@ -58,6 +58,15 @@ else()
     endif() # IS_CONSOLE_APP
 endif() # IS_STATIC_LIB
 
+#this is where I am trying to remove all path problems by defining globals ===========
+
+target_compile_definitions(engine PRIVATE SOURCE_PATH="${PROJECT_SOURCE_DIR}")
+
+option(_ASSET_PATH "define path to game assets" OFF)
+if(_ASSET_PATH)
+    target_compile_definitions(engine PRIVATE ASSET_PATH=${_ASSET_PATH})
+endif() #_ASSET_PATH
+
 #mono stuff =============================================
 if(WIN32)
     set(Mono_DIR "C:/Program Files/Mono") # for includes
