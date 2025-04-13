@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.27)
 
 project(Vulkan-Engine VERSION 1.0)
 
-# set(CMAKE_CXX_STANDARD 17)
-# set(CMAKE_CXX_STANDARD_REQUIRED True)
+# hash_combine in src/Utils.hpp requires c++17 :)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C Compiler: ${CMAKE_C_COMPILER}")
