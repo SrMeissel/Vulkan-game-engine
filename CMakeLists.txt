@@ -2,11 +2,15 @@ cmake_minimum_required(VERSION 3.27)
 
 project(Vulkan-Engine VERSION 1.0)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+# set(CMAKE_CXX_STANDARD 17)
+# set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C Compiler: ${CMAKE_C_COMPILER}")
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+endif()
 
 if(WIN32)
 find_file(Vulkan_LIBRARY
@@ -21,6 +25,7 @@ find_package(Vulkan REQUIRED)
 
 find_package(assimp REQUIRED)
 
+#somehow, this works on linux, for now I won't touch it.
 set (glfw3_DIR "C:/Program Files (x86)/GLFW/lib/cmake/glfw3") #TODO: Replace with find_path
 find_package(glfw3 3.3 REQUIRED)
 

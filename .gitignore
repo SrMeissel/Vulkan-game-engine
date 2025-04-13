@@ -1,4 +1,4 @@
-out
+build
 outShared
 textures/*
 docs
@@ -6,3 +6,4 @@ docs
 *.vsgit
 *.vs
 *.rdc
+.cache
