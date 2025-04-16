@@ -5,7 +5,7 @@
             <Rotation x="0" y="0" z="0"/>
             <Scale x="5" y="5" z="5"/>
         </Transform>
-        <Renderable>../../models/smooth_vase.obj</Renderable>
+        <Renderable>/models/smooth_vase.obj</Renderable>
         <Script>Rotate</Script>
     </Entity>
     <Entity>
@@ -14,7 +14,7 @@
             <Rotation x="0" y="0" z="0"/>
             <Scale x="1" y="1" z="1"/>
         </Transform>
-        <Renderable>../../models/colored_cube.obj</Renderable>
+        <Renderable>/models/colored_cube.obj</Renderable>
     </Entity>
     <Entity>
         <Transform>
@@ -22,7 +22,7 @@
             <Rotation x="0" y="0" z="0"/>
             <Scale x="0.5" y="0.5" z="0.5"/>
         </Transform>
-        <Renderable>../../models/sphere.obj</Renderable>
+        <Renderable>/models/sphere.obj</Renderable>
         <Script>TransformExpirement</Script>
     </Entity>
     <Entity>
@@ -31,6 +31,6 @@
             <Rotation x="0" y="0" z="0"/>
             <Scale x="20" y="1" z="20"/>
         </Transform>
-        <Renderable>../../models/quad.obj</Renderable>
+        <Renderable>/models/quad.obj</Renderable>
     </Entity>
 </Collection>

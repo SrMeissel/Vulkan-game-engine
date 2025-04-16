@@ -5,7 +5,7 @@
             <Rotation x="0" y="0" z="0"/>
             <Scale x="5" y="5" z="5"/>
         </Transform>
-        <Renderable>../../models/smooth_vase.obj</Renderable>
+        <Renderable>/models/smooth_vase.obj</Renderable>
         <Script>Rotate</Script>
     </Entity>
     <Entity>
@@ -14,7 +14,7 @@
             <Rotation x="0" y="0" z="0"/>
             <Scale x="1" y="1" z="1"/>
         </Transform>
-        <Renderable>../../models/colored_cube.obj</Renderable>
+        <Renderable>/models/colored_cube.obj</Renderable>
     </Entity>
     <Entity>
         <Transform>
@@ -22,7 +22,7 @@
             <Rotation x="0" y="0" z="0"/>
             <Scale x="0.5" y="0.5" z="0.5"/>
         </Transform>
-        <Renderable>../../models/sphere.obj</Renderable>
+        <Renderable>/models/sphere.obj</Renderable>
         <Script>TransformExpirement</Script>
     </Entity>
     <Entity>
@@ -31,7 +31,7 @@
             <Rotation x="0" y="0" z="0"/>
             <Scale x="20" y="1" z="20"/>
         </Transform>
-        <Renderable>../../models/quad.obj</Renderable>
+        <Renderable>/models/quad.obj</Renderable>
     </Entity>
     <Entity>
         <Transform>
@@ -39,8 +39,8 @@
             <Rotation x="0" y="0" z="0"/>
             <Scale x="0.050000001" y="-0.050000001" z="-0.050000001"/>
         </Transform>
-        <Renderable>../../textures/Experimental/Castle Column_scout/Castle Column_LOD0__scout.gltf</Renderable>
-        <Material albedoPath="../../textures/Experimental/Castle Column_scout/Albedo_4K__scout.jpg" normalPath="../../textures/Experimental/Castle Column_scout/Normal_4K_LOD0_scout.jpg"/>
+        <Renderable>/textures/Experimental/Castle Column_scout/Castle Column_LOD0__scout.gltf</Renderable>
+        <Material albedoPath="/textures/Experimental/Castle Column_scout/Albedo_4K__scout.jpg" normalPath="/textures/Experimental/Castle Column_scout/Normal_4K_LOD0_scout.jpg"/>
     </Entity>
     <Entity>
         <Transform>
@@ -48,8 +48,8 @@
             <Rotation x="0" y="0" z="0"/>
             <Scale x="0.050000001" y="-0.050000001" z="-0.050000001"/>
         </Transform>
-        <Renderable>../../textures/Experimental/Castle Column_scout/Castle Column_LOD0__scout.gltf</Renderable>
-        <Material albedoPath="../../textures/Experimental/Castle Column_scout/Albedo_4K__scout.jpg" normalPath="../../textures/Experimental/Castle Column_scout/Normal_4K_LOD0_scout.jpg"/>
+        <Renderable>/textures/Experimental/Castle Column_scout/Castle Column_LOD0__scout.gltf</Renderable>
+        <Material albedoPath="/textures/Experimental/Castle Column_scout/Albedo_4K__scout.jpg" normalPath="/textures/Experimental/Castle Column_scout/Normal_4K_LOD0_scout.jpg"/>
     </Entity>
     <Entity>
         <Transform>
@@ -57,8 +57,8 @@
             <Rotation x="0" y="0" z="0"/>
             <Scale x="0.1" y="-0.1" z="-0.1"/>
         </Transform>
-        <Renderable>../../textures/Experimental/Decorative Stone Relief Sculpture_umkmaahfa/Decorative Stone Relief Sculpture_LOD0__umkmaahfa.gltf</Renderable>
-        <Material albedoPath="../../textures/Experimental/Decorative Stone Relief Sculpture_umkmaahfa/Albedo_4K__umkmaahfa.jpg" normalPath="../../textures/Experimental/Decorative Stone Relief Sculpture_umkmaahfa/Normal_4K_LOD0_umkmaahfa.jpg"/>
+        <Renderable>/textures/Experimental/Decorative Stone Relief Sculpture_umkmaahfa/Decorative Stone Relief Sculpture_LOD0__umkmaahfa.gltf</Renderable>
+        <Material albedoPath="/textures/Experimental/Decorative Stone Relief Sculpture_umkmaahfa/Albedo_4K__umkmaahfa.jpg" normalPath="/textures/Experimental/Decorative Stone Relief Sculpture_umkmaahfa/Normal_4K_LOD0_umkmaahfa.jpg"/>
     </Entity>
     <Entity>
         <Transform>
@@ -66,8 +66,8 @@
             <Rotation x="0" y="0" z="0"/>
             <Scale x="0.025" y="-0.025" z="-0.025"/>
         </Transform>
-        <Renderable>../../textures/Experimental/Japanese Stone Plinth_veuiaauga/Japanese Stone Plinth_LOD0__veuiaauga.gltf</Renderable>
-        <Material albedoPath="../../textures/Experimental/Japanese Stone Plinth_veuiaauga/Albedo_4K__veuiaauga.jpg" normalPath="../../textures/Experimental/Japanese Stone Plinth_veuiaauga/Normal_4K_LOD0_veuiaauga.jpg"/>
+        <Renderable>/textures/Experimental/Japanese Stone Plinth_veuiaauga/Japanese Stone Plinth_LOD0__veuiaauga.gltf</Renderable>
+        <Material albedoPath="/textures/Experimental/Japanese Stone Plinth_veuiaauga/Albedo_4K__veuiaauga.jpg" normalPath="/textures/Experimental/Japanese Stone Plinth_veuiaauga/Normal_4K_LOD0_veuiaauga.jpg"/>
     </Entity>
     <Entity>
         <Transform>
@@ -75,8 +75,8 @@
             <Rotation x="0" y="0" z="0"/>
             <Scale x="0.1" y="-0.1" z="-0.1"/>
         </Transform>
-        <Renderable>../../textures/Experimental/Female Bust Statuette_ugsicgxva/Female Bust Statuette_LOD0__ugsicgxva.gltf</Renderable>
-        <Material albedoPath="../../textures/Experimental/Female Bust Statuette_ugsicgxva/Albedo_4K__ugsicgxva.jpg" normalPath="../../textures/Experimental/Female Bust Statuette_ugsicgxva/Normal_4K_LOD0_ugsicgxva.jpg"/>
+        <Renderable>/textures/Experimental/Female Bust Statuette_ugsicgxva/Female Bust Statuette_LOD0__ugsicgxva.gltf</Renderable>
+        <Material albedoPath="/textures/Experimental/Female Bust Statuette_ugsicgxva/Albedo_4K__ugsicgxva.jpg" normalPath="/textures/Experimental/Female Bust Statuette_ugsicgxva/Normal_4K_LOD0_ugsicgxva.jpg"/>
     </Entity>
     <Entity>
         <Transform>

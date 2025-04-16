@@ -7,6 +7,10 @@
 #include <stdexcept>
 #include <chrono>
 
+#ifndef SOURCE_PATH
+#define SOURCE_PATH ""
+#endif
+
 #ifndef CONSOLE
     #include <windows.h>
 #endif // CONSOLE

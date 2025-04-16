@@ -20,7 +20,7 @@ namespace Importer {
     static renderer::AllocatedImage loadJPGImage(const std::string& filepath, renderer::Device& device, VkFormat format) {
         
         renderer::AllocatedImage image{};
-        image.path = filepath;
+        image.path = (std::string)SOURCE_PATH + filepath;
         
         //create image ========================================================================================
         int texWidth, texHeight, texChannels;
@@ -277,7 +277,7 @@ namespace Importer {
 
     static ECS::Renderable loadMesh(std::string filepath, renderer::Device& device) {
         Assimp::Importer importer;
-        const aiScene* scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_CalcTangentSpace);
+        const aiScene* scene = importer.ReadFile((std::string)SOURCE_PATH + filepath, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_CalcTangentSpace);
 
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
             throw std::runtime_error("Assimp error: " + std::string(importer.GetErrorString()));

@@ -36,20 +36,30 @@ namespace ECS {
                 doc.SaveFile(fileName);
             }
             void loadData(std::string fileName, AssetSystem& assetSystem) {
-		std::cout << "about to load file:	" << fileName.c_str() << "\n";
                 tinyxml2::XMLDocument doc;
-                doc.LoadFile(fileName.c_str());
-		std::cout << "file loaded \n";
+
+                std::cout << "loading file: " << ((std::string)SOURCE_PATH + fileName).c_str() << "\n";
+                
+                FILE* file = fopen(((std::string)SOURCE_PATH + fileName).c_str(), "rb");
+                if (file == NULL) {
+                    std::cout << "file bad \n";
+                    throw std::runtime_error("file bad");
+                }
+
+                if(doc.LoadFile(file) != 0) {
+                    std::cout << "load succ \n";
+                    //throw std::runtime_error("load succ");
+                }
 
                 tinyxml2::XMLElement* pRoot = doc.FirstChildElement("Collection");
                 tinyxml2::XMLElement* pEntity = pRoot->FirstChildElement("Entity");
 
                 while(pEntity) {
+                    std::cout << "loading component \n";
                     Entity entity = assetSystem.CreateEntity();
                     tinyxml2::XMLElement* pComponent = pEntity->FirstChildElement();
 
                     while(pComponent) {
-			std::cout << "adding component \n";
                         const char* componentName = pComponent->Name();
 
                         //at some point, when I feel like it, I will move these to be virtual functions in the component class.. I'm pretty sure I can do that without slowing down normal operation.
@@ -77,9 +87,7 @@ namespace ECS {
                             assetSystem.AddComponent(entity, Importer::loadMesh(pComponent->GetText(), device));
 
                         } else if (strcmp(componentName, "Script") == 0) {
-			    std::cout << "adding Script \n";
                             assetSystem.AddComponent(entity, Script{pComponent->GetText(), scriptingSystem.assembly, scriptingSystem.appDomain });
-			    std::cout << "script added \n";
 
                         } else if (strcmp(componentName, "Material") == 0) {
                             const char* albedoPath;
@@ -119,6 +127,11 @@ namespace ECS {
                         pComponent = pComponent->NextSiblingElement();
                     }
                     pEntity = pEntity->NextSiblingElement();
+                }
+
+                if (fclose(file) != 0) {
+                    std::cout << "close bad \n";
+                    throw std::runtime_error("close bad");
                 }
             }
         private:

@@ -5,7 +5,7 @@
             <Rotation x="0" y="0" z="0"/>
             <Scale x="1" y="1" z="1"/>
         </Transform>
-        <Renderable>../../models/colored_cube.obj</Renderable>
+        <Renderable>/models/colored_cube.obj</Renderable>
         <Script>Rotate</Script>
     </Entity>
     <Entity>
@@ -14,7 +14,7 @@
             <Rotation x="0" y="0" z="0"/>
             <Scale x="1" y="1" z="1"/>
         </Transform>
-        <Renderable>../../models/sphere.obj</Renderable>
+        <Renderable>/models/sphere.obj</Renderable>
         <Script>TransformExpirement</Script>
     </Entity>
     <Entity>
@@ -23,7 +23,7 @@
             <Rotation x="0" y="0" z="0"/>
             <Scale x="50" y="1" z="50"/>
         </Transform>
-        <Renderable>../../models/quad.obj</Renderable>
+        <Renderable>/models/quad.obj</Renderable>
     </Entity>
     <Entity>
         <Transform>
@@ -32,5 +32,14 @@
             <Scale x="1" y="1" z="1"/>
         </Transform>
         <Script>CameraControl</Script>
+    </Entity>
+    <Entity>
+        <Transform>
+            <Translation x="0" y="0" z="0"/>
+            <Rotation x="0" y="0" z="0"/>
+            <Scale x="1" y="1" z="1"/>
+        </Transform>
+        <SkyBox Right="RT" Left="LF" Up="UP" Down="DN" Front="FT" Back="BK">../../textures/Skybox/space-Bright.jpg</SkyBox>
+        <Script>RotateControl</Script>
     </Entity>
 </Collection>

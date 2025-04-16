@@ -81,14 +81,14 @@ namespace engine {
 	std::cout << "about to load data \n";
 
         ECS::SaveDataManager saveDataManager{renderer.device, *scriptingSystem, *materialSystem, *skyboxSystem}; 
-        saveDataManager.loadData((std::string)SOURCE_PATH + "/saveFiles/default.xml", assetSystem);
+        saveDataManager.loadData("/saveFiles/default.xml", assetSystem);
         // saveDataManager.saveData(fileName, assetSystem.getAllEntities())
 
 	std::cout << "loaded data \n";
 
         ECS::Entity backplane = assetSystem.CreateEntity();
         assetSystem.AddComponent<ECS::Transform>(backplane, ECS::Transform{glm::vec3(0.0f, 0.0f, 25.0f), glm::vec3(40.0f, 1.0f, 40.0f), glm::vec3{glm::radians(90.0f), 0.0f, 0.0f}});
-        assetSystem.AddComponent<ECS::Renderable>(backplane, Importer::loadMesh((std::string)SOURCE_PATH +"/models/quad.obj", renderer.device));
+        assetSystem.AddComponent<ECS::Renderable>(backplane, Importer::loadMesh("/models/quad.obj", renderer.device));
 
         //<Translation x="0" y="-1.5" z="-3"/>
         //glm::vec3(-4.0f, -3.5f, -12.0f)
