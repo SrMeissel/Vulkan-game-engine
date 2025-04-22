@@ -30,7 +30,7 @@ namespace renderer {
 
             float getAspectRatio() const {return swapchain->extentAspectRatio(); }
             std::vector<VkImage> getSwapchainImages() const {return swapchain->getImages(); }
-            VkRenderPass* getSwapchainRenderPass() {return swapchain->getRenderPass(); }
+            // VkRenderPass* getSwapchainRenderPass() {return swapchain->getRenderPass(); }
             VkImageView getSwapchainImageView(int i) {return swapchain->getImageView(i); }
             bool isFrameInProgress() const { return isFrameStarted; }
 
@@ -46,22 +46,14 @@ namespace renderer {
             }
             uint32_t getCurrentImageIndex() const {return currentImageIndex; }
 
-            void appendRenderPass(RenderPass* renderPass) {renderPasses.emplace_back(renderPass); }
-            RenderPass*  getRenderPass(int i) {return renderPasses[i]; }
-
             VkCommandBuffer beginFrame();
             void endFrame();
-            void beginSwapChainRenderPass(VkCommandBuffer commandBuffer);
-            void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
-            void beginNextRenderPass(VkCommandBuffer commandBuffer);
-            void endCurrentRenderPass(VkCommandBuffer commandBuffer);
 
             VkSampler& getDefaultSampler() {return defaultSampler; };
 
             Device device;
             Window& window;
 
-           //maybe should be moved to private 
             std::shared_ptr<DescriptorPool> globalPool;
             std::unique_ptr<DescriptorSetLayout> globalSetLayout;
             std::vector<std::unique_ptr<Buffer>> uboBuffers{SwapChain::MAX_FRAMES_IN_FLIGHT};
@@ -74,11 +66,11 @@ namespace renderer {
             void recreateSwapChain();
             void ResizeRenderPasses(); // if renderpass uses window extent that needs to be resizes with the window
 
+            VkRenderPassCreateInfo primaryPassInfo;
+            std::vector<RenderPass> renderPasses;
+
             std::unique_ptr<SwapChain> swapchain;
             std::vector<VkCommandBuffer> commandBuffers;
-
-            std::vector<RenderPass*> renderPasses;
-            int currentRenderPass{0};
 
             // Image index and frame index are different things!!!!!
             uint32_t currentImageIndex;

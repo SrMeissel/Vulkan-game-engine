@@ -33,13 +33,13 @@
         </Transform>
         <Script>CameraControl</Script>
     </Entity>
-    <Entity>
+    <Entity>    
         <Transform>
             <Translation x="0" y="0" z="0"/>
             <Rotation x="0" y="0" z="0"/>
             <Scale x="1" y="1" z="1"/>
         </Transform>
-        <SkyBox Right="RT" Left="LF" Up="UP" Down="DN" Front="FT" Back="BK">../../textures/Skybox/space-Bright.jpg</SkyBox>
+        <SkyBox Right="RT" Left="LF" Up="UP" Down="DN" Front="FT" Back="BK">/textures/Skybox/space-Bright.jpg</SkyBox>
         <Script>RotateControl</Script>
     </Entity>
 </Collection>

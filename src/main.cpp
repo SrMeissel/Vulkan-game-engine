@@ -27,15 +27,11 @@
 
         engine::engine engine{renderer, assetSystem};
 
-	std::cout << "engine made \n";
-
         editor::SceneEditor sceneEditor{window, renderer, assetSystem};
         sceneEditor.configureViewport(renderer.getRenderPass(0)->getAttachmentImageView(4), renderer.getRenderPass(0)->getAttachmentImageView(1), renderer.getDefaultSampler(), renderer.getRenderPass(0)->extent);
         editor::EngineState state = editor::EngineState::PAUSED;
 
         engine.setViewerObject(sceneEditor.viewportEntity);
-
-	std::cout << "going to loop \n";
 
         try{
             auto currentTime = std::chrono::high_resolution_clock::now();

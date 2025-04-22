@@ -11,21 +11,20 @@
 
 namespace renderer {
 
-SwapChain::SwapChain(Device &deviceRef, VkExtent2D extent)
+SwapChain::SwapChain(Device &deviceRef, const VkRenderPassCreateInfo& info ,VkExtent2D extent)
     : device{deviceRef}, windowExtent{extent} {
-  init();
+  init(info);
 }
-SwapChain::SwapChain(Device &deviceRef, VkExtent2D extent, std::shared_ptr<SwapChain> previousSwapChain)
+SwapChain::SwapChain(Device &deviceRef, const VkRenderPassCreateInfo& info, VkExtent2D extent, std::shared_ptr<SwapChain> previousSwapChain)
     : device{deviceRef}, windowExtent{extent}, oldSwapChain{previousSwapChain} {
-  init();
+  init(info);
   oldSwapChain = nullptr;
 }
 
-void SwapChain::init() {
-  //createImageViews and createFrameBuffers can be combined. :)
+void SwapChain::init(const VkRenderPassCreateInfo& info) {
   createSwapChain();
   createImageViews();
-  createRenderPass();
+  createRenderPass(info);
   createFramebuffers();
   createSyncObjects();
 }
@@ -218,47 +217,9 @@ void SwapChain::createImageViews() {
   }
 }
 
-void SwapChain::createRenderPass() {
+void SwapChain::createRenderPass(const VkRenderPassCreateInfo& info) {
 
-  VkAttachmentDescription attachment;
-    attachment.format = swapChainImageFormat;
-    attachment.samples = device.msaaSamples;
-    attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // <=========
-    attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-    attachment.flags = 0;
-
-  VkAttachmentReference colorAttachmentRef = {};
-    colorAttachmentRef.attachment = 0;
-    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-  VkSubpassDescription subpass {};
-    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = &colorAttachmentRef;
-
-  VkSubpassDependency dependency = {};
-    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-    dependency.dstSubpass = 0;
-    dependency.srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    dependency.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-    dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-  VkRenderPassCreateInfo* renderPassInfo = new VkRenderPassCreateInfo();
-    renderPassInfo->sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo->attachmentCount = 1;
-    renderPassInfo->pAttachments = &attachment;
-    renderPassInfo->subpassCount = 1;
-    renderPassInfo->pSubpasses = &subpass;
-    renderPassInfo->dependencyCount = 1;
-    renderPassInfo->pDependencies = &dependency;
-
-  if (vkCreateRenderPass(device.device(), renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+  if (vkCreateRenderPass(device.device(), &info, nullptr, &renderPass) != VK_SUCCESS) {
     throw std::runtime_error("failed to create render pass!");
   }
   

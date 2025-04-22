@@ -85,7 +85,7 @@ namespace Importer {
         renderer::CubeMap cubeMap{};
 
         size_t index = filepath.find_last_of('.');
-        std::string fileName = filepath.substr(0, index);
+        std::string fileName = SOURCE_PATH + filepath.substr(0, index);
         std::string extention = filepath.substr(index);
         std::string imagePath = fileName + tags[0] + extention;
 

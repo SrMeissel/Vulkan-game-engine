@@ -16,8 +16,8 @@ class SwapChain {
  public:
   static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-  SwapChain(Device &deviceRef, VkExtent2D windowExtent);
-  SwapChain(Device &deviceRef, VkExtent2D windowExtent, std::shared_ptr<SwapChain> previous);
+  SwapChain(Device &deviceRef, const VkRenderPassCreateInfo& info, VkExtent2D windowExtent);
+  SwapChain(Device &deviceRef, const VkRenderPassCreateInfo& info, VkExtent2D windowExtent, std::shared_ptr<SwapChain> previous);
   ~SwapChain();
 
   SwapChain(const SwapChain &) = delete;
@@ -43,21 +43,20 @@ class SwapChain {
   bool compareSwapChain(const SwapChain& swapChain) const {
     return swapChain.swapChainImageFormat == swapChainImageFormat;
   }
-
- private:
-  void init();
-  void createSwapChain();
-  void createImageViews();
-  void createRenderPass();
-  void createFramebuffers();
-  void createSyncObjects();
-
   // Helper functions
-  VkSurfaceFormatKHR chooseSwapSurfaceFormat(
+  static VkSurfaceFormatKHR chooseSwapSurfaceFormat(
       const std::vector<VkSurfaceFormatKHR> &availableFormats);
-  VkPresentModeKHR chooseSwapPresentMode(
+  static VkPresentModeKHR chooseSwapPresentMode(
       const std::vector<VkPresentModeKHR> &availablePresentModes);
   VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
+
+ private:
+  void init(const VkRenderPassCreateInfo& info);
+  void createSwapChain();
+  void createImageViews();
+  void createRenderPass(const VkRenderPassCreateInfo& info);
+  void createFramebuffers();
+  void createSyncObjects();
 
   VkFormat swapChainImageFormat;
   VkExtent2D swapChainExtent;
