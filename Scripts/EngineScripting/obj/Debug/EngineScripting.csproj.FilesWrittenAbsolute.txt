@@ -1,0 +1,5 @@
+/home/meissel/dev/Vulkan-game-engine/Scripts/EngineScripting/obj/Debug/.NETFramework,Version=v4.7.2.AssemblyAttribute.cs
+/home/meissel/dev/Vulkan-game-engine/Scripts/EngineScripting/bin/Debug/EngineScripting.pdb
+/home/meissel/dev/Vulkan-game-engine/Scripts/EngineScripting/bin/Debug/EngineScripting.dll
+/home/meissel/dev/Vulkan-game-engine/Scripts/EngineScripting/obj/Debug/EngineScripting.dll
+/home/meissel/dev/Vulkan-game-engine/Scripts/EngineScripting/obj/Debug/EngineScripting.pdb
