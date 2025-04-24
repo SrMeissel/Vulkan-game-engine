@@ -52,7 +52,6 @@ SwapChain::~SwapChain() {
     vkDestroySemaphore(device.device(), imageAvailableSemaphores[i], nullptr);
     vkDestroyFence(device.device(), inFlightFences[i], nullptr);
   }
-
 }
 
 VkResult SwapChain::acquireNextImage(uint32_t *imageIndex) {
@@ -226,10 +225,9 @@ void SwapChain::createRenderPass(const VkRenderPassCreateInfo& info) {
 }
 
 void SwapChain::createFramebuffers() {
-  swapChainFramebuffers.resize(imageCount());
-  for (size_t i = 0; i < imageCount(); i++) {
+  swapChainFramebuffers.resize(swapChainImages.size());
+  for (size_t i = 0; i < swapChainImages.size(); i++) {
 
-    VkExtent2D swapChainExtent = getSwapChainExtent();
     VkFramebufferCreateInfo framebufferInfo = {};
     framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
     framebufferInfo.renderPass = renderPass;
@@ -253,7 +251,7 @@ void SwapChain::createSyncObjects() {
   imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
   renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
   inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-  imagesInFlight.resize(imageCount(), VK_NULL_HANDLE);
+  imagesInFlight.resize(swapChainImages.size(), VK_NULL_HANDLE);
 
   VkSemaphoreCreateInfo semaphoreInfo = {};
   semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;

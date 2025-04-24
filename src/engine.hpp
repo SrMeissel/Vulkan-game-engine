@@ -58,6 +58,6 @@ namespace engine {
 
             ECS::Entity viewerObject; 
             
-            renderer::RenderPass* scenePass;
+            // renderer::RenderPass* scenePass;
     };
 }

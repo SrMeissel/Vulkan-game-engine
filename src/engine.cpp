@@ -17,22 +17,16 @@
 
 namespace engine {
 
-    engine::engine(renderer::Renderer& renderer, ECS::AssetSystem& assetSystem) : renderer{renderer}, assetSystem{assetSystem}, scenePass{nullptr} {
+    engine::engine(renderer::Renderer& renderer, ECS::AssetSystem& assetSystem) : renderer{renderer}, assetSystem{assetSystem} {
         //Initialize render systems ======================================
-
-        scenePass = new renderer::RenderPass(renderer.device, configureRenderPass(), {800, 600}); // 1280, 720 is 720p
-        renderer.appendRenderPass(scenePass);
         //TODO: I should start adding TODO's around my project.
-        //TODO: make renderer.defineSwapchain(RenderPass); 
 
         meshSystem = assetSystem.RegisterSystem<MeshSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
         materialSystem = assetSystem.RegisterSystem<MaterialSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
         scriptingSystem = assetSystem.RegisterSystem<ScriptingSystem>(renderer.window);
-	std::cout << "scripting system made \n";
         pointLightSystem = assetSystem.RegisterSystem<PointLightSystem>(renderer.device, renderer.getRenderPass(0), renderer.globalSetLayout->getDescriptorSetLayout());
         spotLightSystem = assetSystem.RegisterSystem<SpotLightSystem>(renderer.device, renderer.getRenderPass(0), renderer.globalSetLayout->getDescriptorSetLayout());
         skyboxSystem = assetSystem.RegisterSystem<SkyboxSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
-
 
         //I need a list of all renderable objects for shadows. This makes me want to detach the entity list from systems, It would be a lot more simple.
         renderables = assetSystem.RegisterSystem<Renderables>();
@@ -124,8 +118,6 @@ namespace engine {
         //I don't know how.
         //nvm im a genius
 
-        delete scenePass;
-
         materialSystem->cleanup(assetSystem);
         skyboxSystem->cleanup(assetSystem);
         spotLightSystem->cleanup(assetSystem);
@@ -139,9 +131,9 @@ namespace engine {
         //take screenshot
         int stateKeyP = glfwGetKey(renderer.window.getGLFWwindow(), GLFW_KEY_P);
         if(stateKeyP == GLFW_PRESS) {
-            std::vector<VkImage> images = renderer.getSwapchainImages();
-            VkImage srcImage = images[renderer.getCurrentImageIndex()]; 
-            screenshotTool.takeScreenshot(srcImage, "testScreenshot.jpg", renderer.device, renderer.window.getExtent());
+            // std::vector<VkImage> images = renderer.getSwapchainImages();
+            // VkImage srcImage = images[renderer.getCurrentImageIndex()]; 
+            // screenshotTool.takeScreenshot(srcImage, "testScreenshot.jpg", renderer.device, renderer.window.getExtent());
         }
 
         //update camera from user input
@@ -173,7 +165,8 @@ namespace engine {
 
         spotLightSystem->RenderShadows(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem, *renderables);
 
-        renderer.beginNextRenderPass(commandBuffer);
+        //yikes
+        renderer.beginRenderPass(commandBuffer, renderer::Renderer::DefinedRenderPasses::SwapChain);
 
         meshSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
         materialSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
@@ -185,11 +178,7 @@ namespace engine {
         skyboxSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
 
 
-        renderer.endCurrentRenderPass(commandBuffer);
-        // renderer.beginSwapChainRenderPass(commandBuffer);
-
-        // //finished and submit to presentation
-        // renderer.endSwapChainRenderPass(commandBuffer);
+        renderer.endRenderPass(commandBuffer);
     }
 
     //this works, vkcreateRenderPass uses pointer. The static keywords are used to prevent the objects from deleteing because their referenced.

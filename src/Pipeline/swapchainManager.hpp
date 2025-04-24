@@ -24,15 +24,12 @@ class SwapChain {
   SwapChain& operator=(const SwapChain &) = delete;
 
   VkFramebuffer getFrameBuffer(int index) { return swapChainFramebuffers[index]; }
-  VkRenderPass* getRenderPass() { return &renderPass; }
+  VkRenderPass& getRenderPass() { return renderPass; }
   VkImageView getImageView(int index) { return swapChainImageViews[index]; }
-  std::vector<VkImage> getImages() {return swapChainImages; }
-  size_t imageCount() { return swapChainImages.size(); }
   VkFormat getSwapChainImageFormat() { return swapChainImageFormat; }
-  VkExtent2D getSwapChainExtent() { return swapChainExtent; }
-  uint32_t width() { return swapChainExtent.width; }
-  uint32_t height() { return swapChainExtent.height; }
 
+  VkExtent2D windowExtent;
+  VkExtent2D swapChainExtent;
   float extentAspectRatio() {
     return static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height);
   }
@@ -59,7 +56,6 @@ class SwapChain {
   void createSyncObjects();
 
   VkFormat swapChainImageFormat;
-  VkExtent2D swapChainExtent;
 
   std::vector<VkFramebuffer> swapChainFramebuffers;
   VkRenderPass renderPass;
@@ -68,7 +64,6 @@ class SwapChain {
   std::vector<VkImageView> swapChainImageViews;
 
   Device &device;
-  VkExtent2D windowExtent;
 
   VkSwapchainKHR swapchain;
   std::shared_ptr<SwapChain> oldSwapChain;

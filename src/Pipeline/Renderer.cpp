@@ -39,13 +39,15 @@ namespace renderer {
         dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
         dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
     
-        primaryPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        primaryPassInfo.attachmentCount = 1;
-        primaryPassInfo.pAttachments = &attachment;
-        primaryPassInfo.subpassCount = 1;
-        primaryPassInfo.pSubpasses = &subpass;
-        primaryPassInfo.dependencyCount = 1;
-        primaryPassInfo.pDependencies = &dependency;
+        swapchainPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        swapchainPassInfo.attachmentCount = 1;
+        swapchainPassInfo.pAttachments = &attachment;
+        swapchainPassInfo.subpassCount = 1;
+        swapchainPassInfo.pSubpasses = &subpass;
+        swapchainPassInfo.dependencyCount = 1;
+        swapchainPassInfo.pDependencies = &dependency;
+
+        //========================================================================================================
 
         recreateSwapChain();
         createCommandBuffers();
@@ -145,8 +147,6 @@ namespace renderer {
     VkCommandBuffer Renderer::beginFrame() {
         assert(!isFrameStarted && "Cant call begin frame while frame is already is progress!");
 
-        currentRenderPass = 0;
-
         auto result = swapchain->acquireNextImage(&currentImageIndex);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -191,64 +191,27 @@ namespace renderer {
         currentFrameIndex = (currentFrameIndex + 1) % SwapChain::MAX_FRAMES_IN_FLIGHT;
     }
 
-    void Renderer::beginNextRenderPass(VkCommandBuffer commandBuffer) {
-        assert(isFrameStarted && "cannot call beginNextRenderPass if no frame is in progress!");
-        assert(commandBuffer == getCurrentCommandBuffer() && "Cannot begin render pass on command buffer from a different frame");
-        RenderPass* renderPass = renderPasses[currentRenderPass];
-
-        VkRenderPassBeginInfo renderPassbeginInfo{};
-        renderPassbeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassbeginInfo.renderPass = renderPass->getRenderPass();
-        renderPassbeginInfo.framebuffer = renderPass->getFrameBuffer();
-        renderPassbeginInfo.renderArea.offset = {0, 0};
-        renderPassbeginInfo.renderArea.extent = renderPass->extent;
-
-        std::vector<VkClearValue> clearValues;
-        clearValues.resize(renderPass->getRenderPassInfo().attachmentCount);
-        for(int i = 0; i < renderPass->getRenderPassInfo().attachmentCount; i++) {
-            if(renderPass->getRenderPassInfo().pAttachments[i].format == device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
-                clearValues[i].depthStencil = {1.0f, 0};
-            } else {
-                clearValues[i].color = {0.0f, 0.0f, 0.001f, 1.0f};  
-            } 
-        }
-
-        renderPassbeginInfo.clearValueCount = clearValues.size();
-        renderPassbeginInfo.pClearValues = clearValues.data();
-        
-        vkCmdBeginRenderPass(commandBuffer, &renderPassbeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-        VkViewport viewport{};
-        viewport.x = 0.0f;
-        viewport.y = 0.0f; 
-        viewport.width = static_cast<float>(renderPass->extent.width);
-        viewport.height = static_cast<float>(renderPass->extent.height);
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
-        VkRect2D scissor{{0, 0}, renderPass->extent};
-        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-    }
-
-    void Renderer::endCurrentRenderPass(VkCommandBuffer commandBuffer) {
+    void Renderer::endRenderPass(VkCommandBuffer commandBuffer) {
         assert(isFrameStarted && "cannot call endCurrentRenderPass if no frame is in progress!");
         assert(commandBuffer == getCurrentCommandBuffer() && "Cannot end render pass on command buffer from a different frame");
 
         vkCmdEndRenderPass(commandBuffer);
-
-        currentRenderPass++; // <===========
     }
 
-    void Renderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer) {
+    void Renderer::beginRenderPass(VkCommandBuffer commandBuffer, Renderer::DefinedRenderPasses pass) {
         assert(isFrameStarted && "cannot call beginSwapChainRenderPass if no frame is in progress!");
         assert(commandBuffer == getCurrentCommandBuffer() && "Cannot begin render pass on command buffer from a different frame");
 
         VkRenderPassBeginInfo renderPassbeginInfo{};
+        if(pass == Renderer::DefinedRenderPasses::SwapChain){
         renderPassbeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassbeginInfo.renderPass = *swapchain->getRenderPass();
+        renderPassbeginInfo.renderPass = swapchain->getRenderPass();
         renderPassbeginInfo.framebuffer = swapchain->getFrameBuffer(currentImageIndex);
-        renderPassbeginInfo.renderArea.offset = {0, 0};
-        renderPassbeginInfo.renderArea.extent = swapchain->getSwapChainExtent();
+        renderPassbeginInfo.renderArea.offset = {-1, 0};
+        renderPassbeginInfo.renderArea.extent = swapchain->swapChainExtent;
+        } else {
+            throw std::runtime_error("attempting to start invalid renderpass");
+        }
 
         VkClearValue clearValue;
         clearValue.color = {0.0f, 0.0f, 0.001f, 1.0f};
@@ -261,19 +224,12 @@ namespace renderer {
         VkViewport viewport{};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
-        viewport.width = static_cast<float>(swapchain->getSwapChainExtent().width);
-        viewport.height = static_cast<float>(swapchain->getSwapChainExtent().height);
+        viewport.width = static_cast<float>(swapchain->swapChainExtent.width);
+        viewport.height = static_cast<float>(swapchain->swapChainExtent.height);
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
-        VkRect2D scissor{{0, 0}, swapchain->getSwapChainExtent()};
+        VkRect2D scissor{{0, 0}, swapchain->swapChainExtent};
         vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-    }
-    
-    void Renderer::endSwapChainRenderPass(VkCommandBuffer commandBuffer) {
-        assert(isFrameStarted && "cannot call endSwapChainRenderPass if no frame is in progress!");
-        assert(commandBuffer == getCurrentCommandBuffer() && "Cannot end render pass on command buffer from a different frame");
-
-        vkCmdEndRenderPass(commandBuffer);
     }
 }

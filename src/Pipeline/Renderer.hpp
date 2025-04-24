@@ -22,6 +22,11 @@
 namespace renderer {
     class Renderer {
         public:
+            
+            enum class DefinedRenderPasses {
+                SwapChain
+            };
+
             Renderer(Window& window);
             ~Renderer();
 
@@ -29,9 +34,9 @@ namespace renderer {
             Renderer &operator=(const Renderer &) = delete;
 
             float getAspectRatio() const {return swapchain->extentAspectRatio(); }
-            std::vector<VkImage> getSwapchainImages() const {return swapchain->getImages(); }
+            // std::vector<VkImage> getSwapchainImages() const {return swapchain->getImages(); }
             // VkRenderPass* getSwapchainRenderPass() {return swapchain->getRenderPass(); }
-            VkImageView getSwapchainImageView(int i) {return swapchain->getImageView(i); }
+            // VkImageView getSwapchainImageView(int i) {return swapchain->getImageView(i); }
             bool isFrameInProgress() const { return isFrameStarted; }
 
             VkCommandBuffer getCurrentCommandBuffer() const {
@@ -48,6 +53,9 @@ namespace renderer {
 
             VkCommandBuffer beginFrame();
             void endFrame();
+
+            void Renderer::beginRenderPass(VkCommandBuffer commandBuffer, Renderer::DefinedRenderPasses pass);
+            void Renderer::endRenderPass(VkCommandBuffer commandBuffer);
 
             VkSampler& getDefaultSampler() {return defaultSampler; };
 
@@ -66,8 +74,8 @@ namespace renderer {
             void recreateSwapChain();
             void ResizeRenderPasses(); // if renderpass uses window extent that needs to be resizes with the window
 
-            VkRenderPassCreateInfo primaryPassInfo;
-            std::vector<RenderPass> renderPasses;
+            VkRenderPassCreateInfo swapchainPassInfo;
+            // std::vector<RenderPass> renderPasses; //dont need, yet
 
             std::unique_ptr<SwapChain> swapchain;
             std::vector<VkCommandBuffer> commandBuffers;
