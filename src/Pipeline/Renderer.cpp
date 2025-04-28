@@ -1,6 +1,8 @@
 #include "Renderer.hpp"
 
-#include <iostream>
+
+#include "frameInfo.hpp"
+
 #include <stdexcept>
 #include <array>
 
@@ -12,46 +14,130 @@ namespace renderer {
         // Primary renderPass info ================================================================================
         static VkAttachmentDescription attachment;
         attachment.format = SwapChain::chooseSwapSurfaceFormat(device.getSwapChainSupport().formats).format;
-        attachment.samples = device.msaaSamples;
-        attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // <=========
-        attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-        attachment.flags = 0;
-    
-        static VkAttachmentReference colorAttachmentRef = {};
-        colorAttachmentRef.attachment = 0;
-        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    
-        static VkSubpassDescription subpass {};
-        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpass.colorAttachmentCount = 1;
-        subpass.pColorAttachments = &colorAttachmentRef;
-    
-        static VkSubpassDependency dependency = {};
-        dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-        dependency.dstSubpass = 0;
-        dependency.srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-        dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-        dependency.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-    
-        swapchainPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        swapchainPassInfo.attachmentCount = 1;
-        swapchainPassInfo.pAttachments = &attachment;
-        swapchainPassInfo.subpassCount = 1;
-        swapchainPassInfo.pSubpasses = &subpass;
-        swapchainPassInfo.dependencyCount = 1;
-        swapchainPassInfo.pDependencies = &dependency;
+
+        static std::array<VkAttachmentDescription, 5> attachments;
+        static std::array<VkAttachmentReference, 3> colorAttachmentRef = {};
+        static std::array<VkAttachmentReference, 3> inputReference = {};
+
+        //colorAttachment
+        attachments[0].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+	attachments[0].samples = device.msaaSamples;
+        attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attachments[0].finalLayout =  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        colorAttachmentRef[0].attachment = 0;
+        colorAttachmentRef[0].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        inputReference[0].attachment = 0;
+        inputReference[0].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        //normal color attachment
+        attachments[1].format = VK_FORMAT_R32G32B32A32_SFLOAT; // <================== renderer.device specific
+        attachments[1].samples = device.msaaSamples;
+        attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attachments[1].finalLayout =  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        colorAttachmentRef[1].attachment = 1;
+        colorAttachmentRef[1].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        inputReference[1].attachment = 1;
+        inputReference[1].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        //position color attachment
+        attachments[2].format = VK_FORMAT_R32G32B32A32_SFLOAT;  // <================== renderer.device specific
+        attachments[2].samples = device.msaaSamples;
+        attachments[2].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachments[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attachments[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachments[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachments[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attachments[2].finalLayout =  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        colorAttachmentRef[2].attachment = 2;
+        colorAttachmentRef[2].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        inputReference[2].attachment = 2;
+        inputReference[2].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        //depthAttachment
+        attachments[3].format = 
+	device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+	VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+        attachments[3].samples = device.msaaSamples;
+        attachments[3].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachments[3].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attachments[3].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachments[3].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachments[3].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attachments[3].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        static VkAttachmentReference depthAttachmentRef = {};
+        depthAttachmentRef.attachment = 3;
+        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        //lighting attachment
+        attachments[4].format = SwapChain::chooseSwapSurfaceFormat(device.getSwapChainSupport().formats).format;
+	attachments[4].samples = device.msaaSamples;
+        attachments[4].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachments[4].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attachments[4].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachments[4].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachments[4].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attachments[4].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; 
+
+        static VkAttachmentReference lightingAttachmentRef = {};
+        lightingAttachmentRef.attachment = 4;
+        lightingAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        static std::array<VkSubpassDescription, 2> subpasses {};
+            subpasses[0].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+            subpasses[0].colorAttachmentCount = (int)colorAttachmentRef.size();
+            subpasses[0].pColorAttachments = colorAttachmentRef.data();
+            subpasses[0].pDepthStencilAttachment = &depthAttachmentRef;
+
+            subpasses[1].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+            subpasses[1].colorAttachmentCount = 1;
+            subpasses[1].pColorAttachments = &lightingAttachmentRef;
+            subpasses[1].inputAttachmentCount = (int)inputReference.size();
+            subpasses[1].pInputAttachments = inputReference.data();
+            subpasses[1].pDepthStencilAttachment = &depthAttachmentRef;
+
+        static std::array<VkSubpassDependency, 1> dependency = {};
+            dependency[0].srcSubpass = 0;
+            dependency[0].dstSubpass = 1;
+            dependency[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // Stage of writing to the color attachment
+            dependency[0].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT; // Stage of reading from the attachment in the shader
+            dependency[0].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // Access type for writing to the color attachment
+            dependency[0].dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT; 
+            dependency[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+        primaryPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        primaryPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        primaryPassInfo.pAttachments = attachments.data();
+        primaryPassInfo.subpassCount = (int)subpasses.size();
+        primaryPassInfo.pSubpasses = subpasses.data();
+        primaryPassInfo.dependencyCount = (int)dependency.size();
+        primaryPassInfo.pDependencies = dependency.data();
+
+	primaryRenderPass = std::make_unique<RenderPass>(device, &primaryPassInfo, window.getExtent());
 
         //========================================================================================================
 
         recreateSwapChain();
         createCommandBuffers();
-        globalPool = DescriptorPool::Builder(device).setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT).build();
+
+        globalPool = DescriptorPool::Builder(device)
+	.setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
+	.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+	.build();
 
         //init UBO
          for(int i=0; i < uboBuffers.size(); i++) {
@@ -175,6 +261,8 @@ namespace renderer {
         assert(isFrameStarted && "Cannot call end frame while no frame is in progress!");
         auto commandBuffer = getCurrentCommandBuffer();
 
+	swapchain->copyImage(commandBuffer, primaryRenderPass->images[4].image, primaryRenderPass->extent, currentImageIndex);
+
         if(vkEndCommandBuffer(commandBuffer) != VK_SUCCESS){
             throw std::runtime_error("Failed to record command buffer!");
         }
@@ -183,6 +271,7 @@ namespace renderer {
         if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window.wasWindowResized()){
             window.resetWindowResizedFlag();
             recreateSwapChain();
+	    resizeRenderPasses();
         } else if(result != VK_SUCCESS) {
             throw std::runtime_error("Failed to present swapchain image!");
         }
@@ -192,32 +281,39 @@ namespace renderer {
     }
 
     void Renderer::endRenderPass(VkCommandBuffer commandBuffer) {
-        assert(isFrameStarted && "cannot call endCurrentRenderPass if no frame is in progress!");
+        assert(isFrameStarted && "cannot call endRenderPass if no frame is in progress!");
         assert(commandBuffer == getCurrentCommandBuffer() && "Cannot end render pass on command buffer from a different frame");
 
         vkCmdEndRenderPass(commandBuffer);
     }
 
-    void Renderer::beginRenderPass(VkCommandBuffer commandBuffer, Renderer::DefinedRenderPasses pass) {
+    void Renderer::beginRenderPass(VkCommandBuffer commandBuffer, DefinedRenderPasses pass) {
         assert(isFrameStarted && "cannot call beginSwapChainRenderPass if no frame is in progress!");
         assert(commandBuffer == getCurrentCommandBuffer() && "Cannot begin render pass on command buffer from a different frame");
 
         VkRenderPassBeginInfo renderPassbeginInfo{};
-        if(pass == Renderer::DefinedRenderPasses::SwapChain){
+        if(pass == DefinedRenderPasses::Primary){
         renderPassbeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassbeginInfo.renderPass = swapchain->getRenderPass();
-        renderPassbeginInfo.framebuffer = swapchain->getFrameBuffer(currentImageIndex);
-        renderPassbeginInfo.renderArea.offset = {-1, 0};
-        renderPassbeginInfo.renderArea.extent = swapchain->swapChainExtent;
+        renderPassbeginInfo.renderPass = primaryRenderPass->renderPass;
+        renderPassbeginInfo.framebuffer = primaryRenderPass->frameBuffer; 
+        renderPassbeginInfo.renderArea.offset = VkOffset2D{0, 0};
+        renderPassbeginInfo.renderArea.extent = primaryRenderPass->extent;
+
+        std::vector<VkClearValue> clearValues;
+        clearValues.resize(primaryPassInfo.attachmentCount);
+        for(int i = 0; i < primaryPassInfo.attachmentCount; i++) {
+            if(primaryPassInfo.pAttachments[i].format == device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
+                clearValues[i].depthStencil = {1.0f, 0};
+            } else {
+                clearValues[i].color = {0.0f, 0.0f, 0.001f, 1.0f};  
+            } 
+        }
+        renderPassbeginInfo.clearValueCount = clearValues.size();
+        renderPassbeginInfo.pClearValues = clearValues.data();
+
         } else {
             throw std::runtime_error("attempting to start invalid renderpass");
         }
-
-        VkClearValue clearValue;
-        clearValue.color = {0.0f, 0.0f, 0.001f, 1.0f};
-
-        renderPassbeginInfo.clearValueCount = 1;
-        renderPassbeginInfo.pClearValues = &clearValue;
 
         vkCmdBeginRenderPass(commandBuffer, &renderPassbeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 

@@ -5,7 +5,6 @@
 #include "Pipeline/Renderer.hpp"
 #include "descriptorManager.hpp"
 #include "screenshotTool.hpp"
-#include "Tools/SceneEditor.hpp"
 
 #include "ECS/AssetManager.hpp"
 #include "ECS/Components.hpp"
@@ -35,7 +34,7 @@ namespace engine {
             engine &operator=(const engine &) = delete;
 
             void updateGameState(float deltaTime);
-            void renderGameState(VkCommandBuffer commandBuffer, int frameIndex, const ECS::Camera& target);
+            void renderGameState(const ECS::Camera& target);
 
             void setViewerObject(ECS::Entity object) {viewerObject = object; }
         private:

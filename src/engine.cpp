@@ -21,12 +21,12 @@ namespace engine {
         //Initialize render systems ======================================
         //TODO: I should start adding TODO's around my project.
 
-        meshSystem = assetSystem.RegisterSystem<MeshSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
-        materialSystem = assetSystem.RegisterSystem<MaterialSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
+        meshSystem = assetSystem.RegisterSystem<MeshSystem>(renderer.device, renderer.primaryRenderPass->renderPass, renderer.globalSetLayout->getDescriptorSetLayout());
+        materialSystem = assetSystem.RegisterSystem<MaterialSystem>(renderer.device, renderer.primaryRenderPass->renderPass, renderer.globalSetLayout->getDescriptorSetLayout());
         scriptingSystem = assetSystem.RegisterSystem<ScriptingSystem>(renderer.window);
-        pointLightSystem = assetSystem.RegisterSystem<PointLightSystem>(renderer.device, renderer.getRenderPass(0), renderer.globalSetLayout->getDescriptorSetLayout());
-        spotLightSystem = assetSystem.RegisterSystem<SpotLightSystem>(renderer.device, renderer.getRenderPass(0), renderer.globalSetLayout->getDescriptorSetLayout());
-        skyboxSystem = assetSystem.RegisterSystem<SkyboxSystem>(renderer.device, renderer.getRenderPass(0)->getRenderPass(), renderer.globalSetLayout->getDescriptorSetLayout());
+        pointLightSystem = assetSystem.RegisterSystem<PointLightSystem>(renderer.device, renderer.primaryRenderPass.get(), renderer.globalSetLayout->getDescriptorSetLayout());
+        spotLightSystem = assetSystem.RegisterSystem<SpotLightSystem>(renderer.device, renderer.primaryRenderPass.get(), renderer.globalSetLayout->getDescriptorSetLayout());
+        skyboxSystem = assetSystem.RegisterSystem<SkyboxSystem>(renderer.device, renderer.primaryRenderPass->renderPass, renderer.globalSetLayout->getDescriptorSetLayout());
 
         //I need a list of all renderable objects for shadows. This makes me want to detach the entity list from systems, It would be a lot more simple.
         renderables = assetSystem.RegisterSystem<Renderables>();
@@ -141,14 +141,16 @@ namespace engine {
         ECS::Camera& viewerCamera = assetSystem.GetComponent<ECS::Camera>(viewerObject);
         //cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerTransform);
         viewerCamera.viewMatrix = setViewYXZ(viewerTransform.translation, viewerTransform.rotation);            
-        float aspect = renderer.getRenderPass(0)->getAspectRatio();
+        float aspect = renderer.primaryRenderPass->getAspectRatio();
         viewerCamera.projectionMatrix = setPerspectiveProjection(glm::radians(50.0f), aspect, viewerCamera.nearPlane, viewerCamera.farPlane);
         viewerCamera.inverseViewMatrix = glm::inverse(viewerCamera.viewMatrix);
     }
 
-    void engine::renderGameState(VkCommandBuffer commandBuffer, int frameIndex, const ECS::Camera& target) {
+    void engine::renderGameState(const ECS::Camera& target) {
 
-        // ECS::Camera& targetB = assetSystem.GetComponent<ECS::Camera>(viewerObject);
+
+	auto commandBuffer = renderer.beginFrame();
+	int frameIndex = renderer.getFrameIndex();
 
         //update graphics memory objects =====================================
         renderer::GlobalUbo ubo{};
@@ -166,7 +168,7 @@ namespace engine {
         spotLightSystem->RenderShadows(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem, *renderables);
 
         //yikes
-        renderer.beginRenderPass(commandBuffer, renderer::Renderer::DefinedRenderPasses::SwapChain);
+        renderer.beginRenderPass(commandBuffer, renderer::DefinedRenderPasses::Primary);
 
         meshSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
         materialSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
@@ -179,6 +181,8 @@ namespace engine {
 
 
         renderer.endRenderPass(commandBuffer);
+
+	renderer.endFrame();
     }
 
     //this works, vkcreateRenderPass uses pointer. The static keywords are used to prevent the objects from deleteing because their referenced.

@@ -2,11 +2,7 @@
 
 #include "deviceManager.hpp"
 
-// vulkan headers
 #include <vulkan/vulkan.h>
-
-// std lib headers
-#include <string>
 #include <vector>
 #include <memory>
 
@@ -16,16 +12,13 @@ class SwapChain {
  public:
   static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-  SwapChain(Device &deviceRef, const VkRenderPassCreateInfo& info, VkExtent2D windowExtent);
-  SwapChain(Device &deviceRef, const VkRenderPassCreateInfo& info, VkExtent2D windowExtent, std::shared_ptr<SwapChain> previous);
+  SwapChain(Device &deviceRef, VkExtent2D windowExtent);
+  SwapChain(Device &deviceRef, VkExtent2D windowExtent, std::shared_ptr<SwapChain> previous);
   ~SwapChain();
 
   SwapChain(const SwapChain &) = delete;
   SwapChain& operator=(const SwapChain &) = delete;
 
-  VkFramebuffer getFrameBuffer(int index) { return swapChainFramebuffers[index]; }
-  VkRenderPass& getRenderPass() { return renderPass; }
-  VkImageView getImageView(int index) { return swapChainImageViews[index]; }
   VkFormat getSwapChainImageFormat() { return swapChainImageFormat; }
 
   VkExtent2D windowExtent;
@@ -40,6 +33,7 @@ class SwapChain {
   bool compareSwapChain(const SwapChain& swapChain) const {
     return swapChain.swapChainImageFormat == swapChainImageFormat;
   }
+
   // Helper functions
   static VkSurfaceFormatKHR chooseSwapSurfaceFormat(
       const std::vector<VkSurfaceFormatKHR> &availableFormats);
@@ -47,26 +41,20 @@ class SwapChain {
       const std::vector<VkPresentModeKHR> &availablePresentModes);
   VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
 
+  void copyImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkExtent2D extent, int imageIndex);
+
  private:
-  void init(const VkRenderPassCreateInfo& info);
+  void init();
   void createSwapChain();
-  void createImageViews();
-  void createRenderPass(const VkRenderPassCreateInfo& info);
-  void createFramebuffers();
   void createSyncObjects();
 
   VkFormat swapChainImageFormat;
-
-  std::vector<VkFramebuffer> swapChainFramebuffers;
-  VkRenderPass renderPass;
-
   std::vector<VkImage> swapChainImages;
-  std::vector<VkImageView> swapChainImageViews;
-
-  Device &device;
 
   VkSwapchainKHR swapchain;
   std::shared_ptr<SwapChain> oldSwapChain;
+
+  Device &device;
 
   std::vector<VkSemaphore> imageAvailableSemaphores;
   std::vector<VkSemaphore> renderFinishedSemaphores;

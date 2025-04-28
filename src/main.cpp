@@ -20,18 +20,18 @@
     int main(int argc, char** argv) {
 	std::cout << "Source Path: " << SOURCE_PATH << "\n";
 
-        Window window{1920, 1080, "Hello there"};
+        Window window{1280, 720, "Hello there"};
         renderer::Renderer renderer{window};
 
         ECS::AssetSystem assetSystem;
 
         engine::engine engine{renderer, assetSystem};
 
-        editor::SceneEditor sceneEditor{window, renderer, assetSystem};
-        sceneEditor.configureViewport(renderer.getRenderPass(0)->getAttachmentImageView(4), renderer.getRenderPass(0)->getAttachmentImageView(1), renderer.getDefaultSampler(), renderer.getRenderPass(0)->extent);
-        editor::EngineState state = editor::EngineState::PAUSED;
+	ECS::Entity viewportEntity = assetSystem.CreateEntity();
+	assetSystem.AddComponent(viewportEntity, ECS::Transform{glm::vec3(0.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
+	assetSystem.AddComponent(viewportEntity, ECS::Camera{0.1, 5000});
 
-        engine.setViewerObject(sceneEditor.viewportEntity);
+        engine.setViewerObject(viewportEntity);
 
         try{
             auto currentTime = std::chrono::high_resolution_clock::now();
@@ -44,21 +44,9 @@
                 auto newTime = std::chrono::high_resolution_clock::now();
                 float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime-currentTime).count();
                 currentTime = newTime;
-                
-                sceneEditor.updateState(frameTime, state);
-                if(state == editor::EngineState::RUNNING) engine.updateGameState(frameTime);
 
-                if(auto commandBuffer = renderer.beginFrame()) {
-                    int frameIndex = renderer.getFrameIndex();
-                    engine.renderGameState(commandBuffer, frameIndex, assetSystem.GetComponent<ECS::Camera>(sceneEditor.viewportEntity));
-                    renderer.beginSwapChainRenderPass(commandBuffer);
-                    sceneEditor.renderState(commandBuffer);
-                    renderer.endSwapChainRenderPass(commandBuffer);
+                    engine.renderGameState(assetSystem.GetComponent<ECS::Camera>(viewportEntity));
 
-                }
-                renderer.endFrame(); 
-
-                if(state == editor::EngineState::RESET) state = editor::EngineState::PAUSED;
             }
             vkDeviceWaitIdle(renderer.device.device());
 

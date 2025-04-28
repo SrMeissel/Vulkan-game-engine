@@ -143,7 +143,7 @@ namespace engine {
 
         renderer::PipelineConfigInfo lightPipelineConfig{};
         renderer::Pipeline::defaultPipelineConfigInfo(lightPipelineConfig, device);
-        lightPipelineConfig.renderPass = renderPass->getRenderPass();
+        lightPipelineConfig.renderPass = renderPass->renderPass;
         lightPipelineConfig.subpass = 1;
 
         lightPipelineConfig.depthStencilInfo.depthTestEnable = VK_FALSE;
@@ -196,15 +196,15 @@ namespace engine {
         // create input attachment set ==========================================
         
         descriptors[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        descriptors[0].imageView = renderPass->getAttachmentImageView(0);
+        descriptors[0].imageView = renderPass->images[0].imageView;
         descriptors[0].sampler = VK_NULL_HANDLE;
 
         descriptors[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        descriptors[1].imageView = renderPass->getAttachmentImageView(1);
+        descriptors[1].imageView = renderPass->images[1].imageView;
         descriptors[1].sampler = VK_NULL_HANDLE;
 
         descriptors[2].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        descriptors[2].imageView = renderPass->getAttachmentImageView(2);
+        descriptors[2].imageView = renderPass->images[2].imageView;
         descriptors[2].sampler = VK_NULL_HANDLE;
 
         renderer::DescriptorWriter inputWriter(*inputSetLayout, *UBOPool);
