@@ -12,8 +12,6 @@ namespace renderer {
     Renderer::Renderer(Window& window) : window{window}, device{window} {
 
         // Primary renderPass info ================================================================================
-        static VkAttachmentDescription attachment;
-        attachment.format = SwapChain::chooseSwapSurfaceFormat(device.getSwapChainSupport().formats).format;
 
         static std::array<VkAttachmentDescription, 5> attachments;
         static std::array<VkAttachmentReference, 3> colorAttachmentRef = {};
@@ -21,7 +19,7 @@ namespace renderer {
 
         //colorAttachment
         attachments[0].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-	attachments[0].samples = device.msaaSamples;
+        attachments[0].samples = device.msaaSamples;
         attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -119,15 +117,18 @@ namespace renderer {
             dependency[0].dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT; 
             dependency[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-        primaryPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        primaryPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-        primaryPassInfo.pAttachments = attachments.data();
-        primaryPassInfo.subpassCount = (int)subpasses.size();
-        primaryPassInfo.pSubpasses = subpasses.data();
-        primaryPassInfo.dependencyCount = (int)dependency.size();
-        primaryPassInfo.pDependencies = dependency.data();
+        primaryPassInfo = new VkRenderPassCreateInfo{};
+        primaryPassInfo->sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        primaryPassInfo->attachmentCount = static_cast<uint32_t>(attachments.size());
+        primaryPassInfo->pAttachments = attachments.data();
+        primaryPassInfo->subpassCount = (int)subpasses.size();
+        primaryPassInfo->pSubpasses = subpasses.data();
+        primaryPassInfo->dependencyCount = (int)dependency.size();
+        primaryPassInfo->pDependencies = dependency.data();
 
-	primaryRenderPass = std::make_unique<RenderPass>(device, &primaryPassInfo, window.getExtent());
+        std::cout << "making renderpass \n";
+        primaryRenderPass = std::make_unique<RenderPass>(device, primaryPassInfo, window.getExtent());
+        std::cout << "made renderpass \n";
 
         //========================================================================================================
 
@@ -261,7 +262,7 @@ namespace renderer {
         assert(isFrameStarted && "Cannot call end frame while no frame is in progress!");
         auto commandBuffer = getCurrentCommandBuffer();
 
-	swapchain->copyImage(commandBuffer, primaryRenderPass->images[4].image, primaryRenderPass->extent, currentImageIndex);
+        swapchain->copyImage(commandBuffer, primaryRenderPass->images[4].image, primaryRenderPass->extent, currentImageIndex);
 
         if(vkEndCommandBuffer(commandBuffer) != VK_SUCCESS){
             throw std::runtime_error("Failed to record command buffer!");
@@ -292,6 +293,8 @@ namespace renderer {
         assert(commandBuffer == getCurrentCommandBuffer() && "Cannot begin render pass on command buffer from a different frame");
 
         VkRenderPassBeginInfo renderPassbeginInfo{};
+        std::vector<VkClearValue> clearValues;
+
         if(pass == DefinedRenderPasses::Primary){
         renderPassbeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassbeginInfo.renderPass = primaryRenderPass->renderPass;
@@ -299,10 +302,9 @@ namespace renderer {
         renderPassbeginInfo.renderArea.offset = VkOffset2D{0, 0};
         renderPassbeginInfo.renderArea.extent = primaryRenderPass->extent;
 
-        std::vector<VkClearValue> clearValues;
-        clearValues.resize(primaryPassInfo.attachmentCount);
-        for(int i = 0; i < primaryPassInfo.attachmentCount; i++) {
-            if(primaryPassInfo.pAttachments[i].format == device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
+        clearValues.resize(primaryPassInfo->attachmentCount);
+        for(int i = 0; i < primaryPassInfo->attachmentCount; i++) {
+            if(primaryPassInfo->pAttachments[i].format == device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
                 clearValues[i].depthStencil = {1.0f, 0};
             } else {
                 clearValues[i].color = {0.0f, 0.0f, 0.001f, 1.0f};  
@@ -320,8 +322,8 @@ namespace renderer {
         VkViewport viewport{};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
-        viewport.width = static_cast<float>(swapchain->swapChainExtent.width);
-        viewport.height = static_cast<float>(swapchain->swapChainExtent.height);
+        viewport.width = static_cast<float>(primaryRenderPass->extent.width);
+        viewport.height = static_cast<float>(primaryRenderPass->extent.height);
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
         VkRect2D scissor{{0, 0}, swapchain->swapChainExtent};

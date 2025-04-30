@@ -56,7 +56,7 @@ VkResult SwapChain::acquireNextImage(uint32_t *imageIndex) {
 }
 
 void SwapChain::copyImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkExtent2D extent, int imageIndex) {
-    std::cout << "copying image to swapchain \n";
+    // std::cout << "copying image to swapchain \n";
    device.insertImageMemoryBarrier(
     commandBuffer,
     swapChainImages[imageIndex],

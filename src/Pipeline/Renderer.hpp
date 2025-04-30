@@ -56,7 +56,7 @@ class Renderer {
 	Device device;
 	Window& window;
 
-	VkRenderPassCreateInfo primaryPassInfo;
+	VkRenderPassCreateInfo* primaryPassInfo;
 	std::unique_ptr<RenderPass> primaryRenderPass;
 
 	std::shared_ptr<DescriptorPool> globalPool;

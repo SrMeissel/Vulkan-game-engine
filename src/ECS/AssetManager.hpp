@@ -73,7 +73,7 @@ namespace ECS {
 
 		systemManager->EntitySignatureChanged(entity, signature);
 
-		return component;
+		return placedComponent;
 	}
     
 	template<typename T>

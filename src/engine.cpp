@@ -147,7 +147,7 @@ namespace engine {
     }
 
     void engine::renderGameState(const ECS::Camera& target) {
-
+    if (target.projectionMatrix == glm::mat4{1.0f}) throw std::runtime_error("you didnt init the camera matricies...");       
 
 	auto commandBuffer = renderer.beginFrame();
 	int frameIndex = renderer.getFrameIndex();
@@ -163,11 +163,8 @@ namespace engine {
 
         //render =====================================================
 
-        //do shadows here
-
         spotLightSystem->RenderShadows(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem, *renderables);
 
-        //yikes
         renderer.beginRenderPass(commandBuffer, renderer::DefinedRenderPasses::Primary);
 
         meshSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);

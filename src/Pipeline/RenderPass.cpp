@@ -9,6 +9,7 @@ namespace renderer {
         if (vkCreateRenderPass(device.device(), info, nullptr, &renderPass) != VK_SUCCESS) {
             throw std::runtime_error("failed to create render pass!");
         }
+        std::cout << "VkCreateRenderPass ran succ \n";
         createImageResources();
         createFrameBuffer();
     }

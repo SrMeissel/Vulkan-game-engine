@@ -8,7 +8,7 @@
 #include <chrono>
 
 #ifndef SOURCE_PATH
-#define SOURCE_PATH ""
+#define SOURCE_PATH " "
 #endif
 
 #ifndef CONSOLE
@@ -22,16 +22,24 @@
 
         Window window{1280, 720, "Hello there"};
         renderer::Renderer renderer{window};
+        std::cout << "made renderer \n";
 
         ECS::AssetSystem assetSystem;
 
         engine::engine engine{renderer, assetSystem};
 
 	ECS::Entity viewportEntity = assetSystem.CreateEntity();
-	assetSystem.AddComponent(viewportEntity, ECS::Transform{glm::vec3(0.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
-	assetSystem.AddComponent(viewportEntity, ECS::Camera{0.1, 5000});
+	ECS::Transform& viewportTransform = assetSystem.AddComponent(viewportEntity, ECS::Transform{glm::vec3(0.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
+	ECS::Camera& viewportCamera = assetSystem.AddComponent(viewportEntity, ECS::Camera{0.1, 5000});
 
-        engine.setViewerObject(viewportEntity);
+    // moveInPlaneXZ(window, viewportTransform, dt, 2.5f, 3.0f);
+    
+    viewportCamera.viewMatrix = engine::setViewYXZ(viewportTransform.translation, viewportTransform.rotation);            
+    float aspect = renderer.getAspectRatio();
+    viewportCamera.projectionMatrix = engine::setPerspectiveProjection(glm::radians(50.0f), aspect, viewportCamera.nearPlane, viewportCamera.farPlane);
+    viewportCamera.inverseViewMatrix = glm::inverse(viewportCamera.viewMatrix);
+
+    engine.setViewerObject(viewportEntity);
 
         try{
             auto currentTime = std::chrono::high_resolution_clock::now();
