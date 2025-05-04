@@ -33,7 +33,7 @@ namespace engine {
             engine(const engine &) = delete;
             engine &operator=(const engine &) = delete;
 
-            void updateGameState(float deltaTime);
+            void updateGameState(float deltaTime, Window& window);
             void renderGameState(const ECS::Camera& target);
 
             void setViewerObject(ECS::Entity object) {viewerObject = object; }

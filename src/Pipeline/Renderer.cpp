@@ -126,9 +126,7 @@ namespace renderer {
         primaryPassInfo->dependencyCount = (int)dependency.size();
         primaryPassInfo->pDependencies = dependency.data();
 
-        std::cout << "making renderpass \n";
         primaryRenderPass = std::make_unique<RenderPass>(device, primaryPassInfo, window.getExtent());
-        std::cout << "made renderpass \n";
 
         //========================================================================================================
 
@@ -212,6 +210,18 @@ namespace renderer {
         }
     }
 
+    void Renderer::resizeRenderPasses() {
+
+        auto extent = window.getExtent();
+        while(extent.width == 0 || extent.height == 0) {
+            extent = window.getExtent();
+            glfwWaitEvents();
+        }
+
+        primaryRenderPass = std::make_unique<RenderPass>(device, primaryPassInfo, extent);
+        primaryRenderPass->resized = true;
+        std::cout << "aspect ratio: " << primaryRenderPass->getAspectRatio() << "\n";
+    }
     void Renderer::createCommandBuffers() {
         commandBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
         VkCommandBufferAllocateInfo allocInfo{};
@@ -268,11 +278,12 @@ namespace renderer {
             throw std::runtime_error("Failed to record command buffer!");
         }
 
+        primaryRenderPass->resized=false;
         auto result = swapchain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
         if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window.wasWindowResized()){
             window.resetWindowResizedFlag();
             recreateSwapChain();
-	    resizeRenderPasses();
+            resizeRenderPasses();
         } else if(result != VK_SUCCESS) {
             throw std::runtime_error("Failed to present swapchain image!");
         }

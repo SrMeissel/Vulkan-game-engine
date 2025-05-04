@@ -25,6 +25,9 @@ namespace renderer {
 	    VkRenderPass renderPass;
 	    std::vector<AllocatedImage> images;
 	    VkFramebuffer frameBuffer; // connects image to attachment
+
+        bool resized{false};
+
         private:
 	    void createImageResources();
 	    void createFrameBuffer();
@@ -32,5 +35,6 @@ namespace renderer {
 	    Device& device;
 
 	    VkRenderPassCreateInfo* info;
+
     };
 }

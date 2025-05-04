@@ -3,7 +3,7 @@
 #include <stdexcept>
 
 namespace engine {
-    PointLightSystem::PointLightSystem(renderer::Device& device, renderer::RenderPass* renderPass, VkDescriptorSetLayout globalSetLayout) : device(device) {
+    PointLightSystem::PointLightSystem(renderer::Renderer& renderer) : renderer{renderer} {
         //create Pipeline Layout ==================================================
 
         VkPushConstantRange pushConstantRange {};
@@ -11,9 +11,9 @@ namespace engine {
         pushConstantRange.offset = 0;
         pushConstantRange.size = sizeof(PushConstant);
 
-        std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout};
+        std::vector<VkDescriptorSetLayout> descriptorSetLayouts{renderer.globalSetLayout->getDescriptorSetLayout()};
 
-        setLayout = renderer::DescriptorSetLayout::Builder(device)
+        setLayout = renderer::DescriptorSetLayout::Builder(renderer.device)
         .addBinding(0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT)
         .addBinding(1, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT)
         .addBinding(2, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -26,15 +26,15 @@ namespace engine {
         pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
         pipelineLayoutInfo.pushConstantRangeCount = 1;
         pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-        if(vkCreatePipelineLayout(device.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+        if(vkCreatePipelineLayout(renderer.device.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
             throw std::runtime_error("failed to create pipeline layout");
         }
 
         //create Pipeline ==================================================
 
         renderer::PipelineConfigInfo pipelineConfig{};
-        renderer::Pipeline::defaultPipelineConfigInfo(pipelineConfig, device);
-        pipelineConfig.renderPass = renderPass->renderPass;
+        renderer::Pipeline::defaultPipelineConfigInfo(pipelineConfig, renderer.device);
+        pipelineConfig.renderPass = renderer.primaryRenderPass->renderPass;
         pipelineConfig.subpass = 1;
 
         pipelineConfig.depthStencilInfo.depthTestEnable = VK_FALSE;
@@ -56,24 +56,27 @@ namespace engine {
         
         std::vector<std::string> files = {(std::string)SOURCE_PATH + "/shaders/pointlight.vert.spv", (std::string)SOURCE_PATH + "/shaders/pointlight.frag.spv"};
         std::vector<VkShaderStageFlagBits> flags = { VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_FRAGMENT_BIT};
-        pipeline = std::make_unique<renderer::Pipeline>(device, files, flags, pipelineConfig);
+        pipeline = std::make_unique<renderer::Pipeline>(renderer.device, files, flags, pipelineConfig);
 
-        //create Descriptor Set ==============================================================================
+        recreateDescriptorSets();
+    }
 
-        descriptorPool = renderer::DescriptorPool::Builder(device).setMaxSets(3)
+    void PointLightSystem::recreateDescriptorSets() {
+
+        descriptorPool = renderer::DescriptorPool::Builder(renderer.device).setMaxSets(3)
         .addPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 3)
         .build();
 
         descriptors[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        descriptors[0].imageView = renderPass->images[0].imageView;
+        descriptors[0].imageView = renderer.primaryRenderPass->images[0].imageView;
         descriptors[0].sampler = VK_NULL_HANDLE;
 
         descriptors[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        descriptors[1].imageView = renderPass->images[1].imageView;
+        descriptors[1].imageView = renderer.primaryRenderPass->images[1].imageView;
         descriptors[1].sampler = VK_NULL_HANDLE;
 
         descriptors[2].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        descriptors[2].imageView = renderPass->images[2].imageView;
+        descriptors[2].imageView = renderer.primaryRenderPass->images[2].imageView;
         descriptors[2].sampler = VK_NULL_HANDLE;
 
         renderer::DescriptorWriter writer(*setLayout, *descriptorPool);
@@ -83,6 +86,7 @@ namespace engine {
     }
 
     void PointLightSystem::Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assets) {
+        if(renderer.primaryRenderPass->resized == true) recreateDescriptorSets();
         pipeline->bind(commandBuffer);
 
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &globalUBOSet, 0, nullptr);

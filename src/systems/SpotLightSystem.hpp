@@ -10,7 +10,8 @@
 #include "ECS/Components.hpp"
 #include "Pipeline/pipeline.hpp"
 #include "Pipeline/deviceManager.hpp"
-#include "../cameraManager.hpp"
+#include "Pipeline/Renderer.hpp"
+#include "cameraManager.hpp"
 
 #include "meshSystem.hpp"
 
@@ -20,13 +21,13 @@
 namespace engine {
     class SpotLightSystem : public ECS::System {
     public:
-        SpotLightSystem(renderer::Device& device, renderer::RenderPass* renderPass, VkDescriptorSetLayout globalSetLayout);
+        SpotLightSystem(renderer::Renderer& renderer);
         ~SpotLightSystem() { 
-            vkDestroyPipelineLayout(device.device(), shadowPipelineLayout, nullptr); 
-            vkDestroyPipelineLayout(device.device(), lightPipelineLayout, nullptr);
-            vkDestroyRenderPass(device.device(), shadowPass, nullptr);
+            vkDestroyPipelineLayout(renderer.device.device(), shadowPipelineLayout, nullptr); 
+            vkDestroyPipelineLayout(renderer.device.device(), lightPipelineLayout, nullptr);
+            vkDestroyRenderPass(renderer.device.device(), shadowPass, nullptr);
         
-            vkDestroySampler(device.device(), sampler, nullptr);    
+            vkDestroySampler(renderer.device.device(), sampler, nullptr);    
         }
 
         void RenderShadows(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager, ECS::System& renderables);
@@ -58,7 +59,9 @@ namespace engine {
             float farPlane;
         };
 
-        renderer::Device &device;
+        void recreateDescriptorSets();
+
+        renderer::Renderer& renderer;
 
         std::shared_ptr<renderer::DescriptorPool> UBOPool;
         std::unique_ptr<renderer::DescriptorSetLayout> UBOSetLayout;

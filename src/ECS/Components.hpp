@@ -357,8 +357,6 @@ namespace ECS {
 
         Script(const char* name, MonoAssembly* assembly, MonoDomain* appDomain) {
 
-	    std::cout << "attempting to make Script Comp \n";
-
             className = name;
             image = mono_assembly_get_image(assembly);
             scriptClass = mono_class_from_name(image, "", name);
@@ -377,8 +375,6 @@ namespace ECS {
 
             updateMethod = mono_class_get_method_from_name(objectClass, "update", 0);
             update = (Update)mono_method_get_unmanaged_thunk(updateMethod);
-
-	    std::cout << "made Script Comp \n";
 	
         }
 

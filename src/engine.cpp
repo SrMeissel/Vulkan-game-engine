@@ -1,5 +1,6 @@
 #include "engine.hpp"
 #include "cameraManager.hpp"
+#include "Tools/CameraControl.hpp"
 #include "bufferManager.hpp"
 #include "ECS/Importer.hpp"
 #include "frameInfo.hpp"
@@ -24,8 +25,8 @@ namespace engine {
         meshSystem = assetSystem.RegisterSystem<MeshSystem>(renderer.device, renderer.primaryRenderPass->renderPass, renderer.globalSetLayout->getDescriptorSetLayout());
         materialSystem = assetSystem.RegisterSystem<MaterialSystem>(renderer.device, renderer.primaryRenderPass->renderPass, renderer.globalSetLayout->getDescriptorSetLayout());
         scriptingSystem = assetSystem.RegisterSystem<ScriptingSystem>(renderer.window);
-        pointLightSystem = assetSystem.RegisterSystem<PointLightSystem>(renderer.device, renderer.primaryRenderPass.get(), renderer.globalSetLayout->getDescriptorSetLayout());
-        spotLightSystem = assetSystem.RegisterSystem<SpotLightSystem>(renderer.device, renderer.primaryRenderPass.get(), renderer.globalSetLayout->getDescriptorSetLayout());
+        pointLightSystem = assetSystem.RegisterSystem<PointLightSystem>(renderer);
+        spotLightSystem = assetSystem.RegisterSystem<SpotLightSystem>(renderer);
         skyboxSystem = assetSystem.RegisterSystem<SkyboxSystem>(renderer.device, renderer.primaryRenderPass->renderPass, renderer.globalSetLayout->getDescriptorSetLayout());
 
         //I need a list of all renderable objects for shadows. This makes me want to detach the entity list from systems, It would be a lot more simple.
@@ -72,7 +73,8 @@ namespace engine {
         assetSystem.SetSystemSignature<SkyboxSystem>(skyboxSigniture);
 
         ECS::SaveDataManager saveDataManager{renderer.device, *scriptingSystem, *materialSystem, *skyboxSystem}; 
-        saveDataManager.loadData("/saveFiles/default.xml", assetSystem);
+        saveDataManager.loadData("/saveFiles/Default.xml", assetSystem);
+        std::cout << "loaded file \n";
         // saveDataManager.saveData(fileName, assetSystem.getAllEntities())
 
         ECS::Entity backplane = assetSystem.CreateEntity();
@@ -89,6 +91,7 @@ namespace engine {
         ECS::Entity spotlight = assetSystem.CreateEntity();
         assetSystem.AddComponent<ECS::Transform>(spotlight, ECS::Transform{glm::vec3(-4.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(pitch, yaw, 0.0)});
         assetSystem.AddComponent<ECS::SpotLight>(spotlight, ECS::SpotLight{renderer.device, renderer.window, glm::vec3{1.0f, 0.0f, 0.0f}, 500.0f, glm::vec2{800, 600}, spotLightSystem->getRenderPass(), spotLightSystem->getSampler(), spotLightSystem->getSetLayout()});
+        assetSystem.AddComponent<ECS::PointLight>(spotlight, ECS::PointLight{glm::vec3{1.0f}, 10.0f, 10.0f});
         assetSystem.AddComponent<ECS::Camera>(spotlight, ECS::Camera{0.1, 500.0});
         assetSystem.AddComponent<ECS::Script>(spotlight, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain});
 
@@ -123,7 +126,7 @@ namespace engine {
         spotLightSystem->cleanup(assetSystem);
     }
 
-    void engine::updateGameState(float deltaTime) {
+    void engine::updateGameState(float deltaTime, Window& window) {
         //proccess user input =======================================================
         
         scriptingSystem->update(deltaTime, assetSystem);
@@ -136,10 +139,11 @@ namespace engine {
             // screenshotTool.takeScreenshot(srcImage, "testScreenshot.jpg", renderer.device, renderer.window.getExtent());
         }
 
+
         //update camera from user input
         ECS::Transform& viewerTransform = assetSystem.GetComponent<ECS::Transform>(viewerObject);
         ECS::Camera& viewerCamera = assetSystem.GetComponent<ECS::Camera>(viewerObject);
-        //cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerTransform);
+        editor::moveInPlaneXZ(window, viewerTransform, deltaTime, 2.5f, 3.0f);
         viewerCamera.viewMatrix = setViewYXZ(viewerTransform.translation, viewerTransform.rotation);            
         float aspect = renderer.primaryRenderPass->getAspectRatio();
         viewerCamera.projectionMatrix = setPerspectiveProjection(glm::radians(50.0f), aspect, viewerCamera.nearPlane, viewerCamera.farPlane);
@@ -148,6 +152,7 @@ namespace engine {
 
     void engine::renderGameState(const ECS::Camera& target) {
     if (target.projectionMatrix == glm::mat4{1.0f}) throw std::runtime_error("you didnt init the camera matricies...");       
+    //TODO: Replace with assert.
 
 	auto commandBuffer = renderer.beginFrame();
 	int frameIndex = renderer.getFrameIndex();

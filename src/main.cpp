@@ -22,7 +22,6 @@
 
         Window window{1280, 720, "Hello there"};
         renderer::Renderer renderer{window};
-        std::cout << "made renderer \n";
 
         ECS::AssetSystem assetSystem;
 
@@ -53,7 +52,8 @@
                 float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime-currentTime).count();
                 currentTime = newTime;
 
-                    engine.renderGameState(assetSystem.GetComponent<ECS::Camera>(viewportEntity));
+                engine.updateGameState(frameTime, window);
+                engine.renderGameState(assetSystem.GetComponent<ECS::Camera>(viewportEntity));
 
             }
             vkDeviceWaitIdle(renderer.device.device());

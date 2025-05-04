@@ -9,7 +9,6 @@ namespace renderer {
         if (vkCreateRenderPass(device.device(), info, nullptr, &renderPass) != VK_SUCCESS) {
             throw std::runtime_error("failed to create render pass!");
         }
-        std::cout << "VkCreateRenderPass ran succ \n";
         createImageResources();
         createFrameBuffer();
     }
@@ -29,7 +28,7 @@ namespace renderer {
             vkDestroyImage(device.device(), image.image, nullptr);
             vkFreeMemory(device.device(), image.memory, nullptr);
         }
-	vkDestroyFramebuffer(device.device(), frameBuffer, nullptr);
+        vkDestroyFramebuffer(device.device(), frameBuffer, nullptr);
         vkDestroyRenderPass(device.device(), renderPass, nullptr);
     }
 
@@ -56,7 +55,6 @@ namespace renderer {
             imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
             imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-            //checks if image is depth or color
             if(info->pAttachments[i].format == depthFormat) {
                 imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
             }

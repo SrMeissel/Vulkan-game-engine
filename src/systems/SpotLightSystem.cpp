@@ -4,13 +4,13 @@
 #include <stdexcept>
 
 namespace engine {
-    SpotLightSystem::SpotLightSystem(renderer::Device& device, renderer::RenderPass* renderPass, VkDescriptorSetLayout globalSetLayout): device{device} {
+    SpotLightSystem::SpotLightSystem(renderer::Renderer& renderer) : renderer{renderer} {
         //create shadowmap renderpass ===============================================
-        VkFormat depthFormat = device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+        VkFormat depthFormat = renderer.device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
         static VkAttachmentDescription attachmentDescription = {};
         attachmentDescription.format = depthFormat;
-        attachmentDescription.samples = device.msaaSamples;
+        attachmentDescription.samples = renderer.device.msaaSamples;
         attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -45,22 +45,22 @@ namespace engine {
         renderPassInfo->dependencyCount = 1;
         renderPassInfo->pDependencies = &dependency;
 
-        vkCreateRenderPass(device.device(), renderPassInfo, nullptr, &shadowPass);
+        vkCreateRenderPass(renderer.device.device(), renderPassInfo, nullptr, &shadowPass);
 
         //init camera buffer descriptor set ===========================================
 
-        shadowUBO = std::make_unique<renderer::Buffer>(device, sizeof(PointLightUBO), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+        shadowUBO = std::make_unique<renderer::Buffer>(renderer.device, sizeof(PointLightUBO), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
         shadowUBO->map();
 
-        lightUBO = std::make_unique<renderer::Buffer>(device, sizeof(PointLightUBO), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+        lightUBO = std::make_unique<renderer::Buffer>(renderer.device, sizeof(PointLightUBO), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
         lightUBO->map();
 
-        UBOPool = renderer::DescriptorPool::Builder(device)
+        UBOPool = renderer::DescriptorPool::Builder(renderer.device)
         .addPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 3) // <==================
         .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2)
         .build();
 
-        UBOSetLayout = renderer::DescriptorSetLayout::Builder(device)
+        UBOSetLayout = renderer::DescriptorSetLayout::Builder(renderer.device)
         .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
         .build();
 
@@ -90,14 +90,14 @@ namespace engine {
         pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
         pipelineLayoutInfo.pushConstantRangeCount = 1;
         pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-        if(vkCreatePipelineLayout(device.device(), &pipelineLayoutInfo, nullptr, &shadowPipelineLayout) != VK_SUCCESS) {
+        if(vkCreatePipelineLayout(renderer.device.device(), &pipelineLayoutInfo, nullptr, &shadowPipelineLayout) != VK_SUCCESS) {
             throw std::runtime_error("failed to create pipeline layout");
         }
 
         //create shadow Pipeline ==================================================
 
         renderer::PipelineConfigInfo shadowPipelineConfig{};
-        renderer::Pipeline::defaultPipelineConfigInfo(shadowPipelineConfig, device);
+        renderer::Pipeline::defaultPipelineConfigInfo(shadowPipelineConfig, renderer.device);
         shadowPipelineConfig.renderPass = shadowPass;
         shadowPipelineConfig.subpass = 0;
 
@@ -105,7 +105,7 @@ namespace engine {
 
         std::vector<std::string> files = {(std::string)SOURCE_PATH + "/shaders/shadow.vert.spv", (std::string)SOURCE_PATH + "/shaders/shadow.frag.spv"};
         std::vector<VkShaderStageFlagBits> flags = { VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_FRAGMENT_BIT};
-        shadowPipeline = std::make_unique<renderer::Pipeline>(device, files, flags, shadowPipelineConfig);
+        shadowPipeline = std::make_unique<renderer::Pipeline>(renderer.device, files, flags, shadowPipelineConfig);
 
         //create light Pipeline Layout ==================================================
         //can reuse info objects from other pipeline, i hope.
@@ -116,7 +116,7 @@ namespace engine {
 
         std::vector<VkDescriptorSetLayout> lightDescriptorSetLayouts{UBOSetLayout->getDescriptorSetLayout()};
 
-        inputSetLayout = renderer::DescriptorSetLayout::Builder(device)
+        inputSetLayout = renderer::DescriptorSetLayout::Builder(renderer.device)
         .addBinding(0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT)
         .addBinding(1, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT)
         .addBinding(2, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -124,7 +124,7 @@ namespace engine {
         lightDescriptorSetLayouts.push_back(inputSetLayout->getDescriptorSetLayout());
 
 
-        lightSetLayout = renderer::DescriptorSetLayout::Builder(device)
+        lightSetLayout = renderer::DescriptorSetLayout::Builder(renderer.device)
         .addBinding(0, VK_DESCRIPTOR_TYPE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
         .addBinding(1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
         .build();
@@ -135,15 +135,15 @@ namespace engine {
         pipelineLayoutInfo.pSetLayouts = lightDescriptorSetLayouts.data();
         pipelineLayoutInfo.pushConstantRangeCount = 1;
         pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-        if(vkCreatePipelineLayout(device.device(), &pipelineLayoutInfo, nullptr, &lightPipelineLayout) != VK_SUCCESS) {
+        if(vkCreatePipelineLayout(renderer.device.device(), &pipelineLayoutInfo, nullptr, &lightPipelineLayout) != VK_SUCCESS) {
             throw std::runtime_error("failed to create pipeline layout");
         }
         
         //create light Pipeline ==================================================
 
         renderer::PipelineConfigInfo lightPipelineConfig{};
-        renderer::Pipeline::defaultPipelineConfigInfo(lightPipelineConfig, device);
-        lightPipelineConfig.renderPass = renderPass->renderPass;
+        renderer::Pipeline::defaultPipelineConfigInfo(lightPipelineConfig, renderer.device);
+        lightPipelineConfig.renderPass = renderer.primaryRenderPass->renderPass;
         lightPipelineConfig.subpass = 1;
 
         lightPipelineConfig.depthStencilInfo.depthTestEnable = VK_FALSE;
@@ -165,11 +165,11 @@ namespace engine {
 
         files = {(std::string)SOURCE_PATH +"/shaders/spotLight.vert.spv", (std::string)SOURCE_PATH + "/shaders/spotLight.frag.spv"};
         flags = { VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_FRAGMENT_BIT};
-        lightPipeline = std::make_unique<renderer::Pipeline>(device, files, flags, lightPipelineConfig);
+        lightPipeline = std::make_unique<renderer::Pipeline>(renderer.device, files, flags, lightPipelineConfig);
 
         //create Sampler ==================================================
         VkPhysicalDeviceProperties properties{};
-        vkGetPhysicalDeviceProperties(device.physicalDevice, &properties);
+        vkGetPhysicalDeviceProperties(renderer.device.physicalDevice, &properties);
 
         VkSamplerCreateInfo samplerInfo{};
         samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -189,29 +189,31 @@ namespace engine {
         samplerInfo.minLod = 0.0f;
         samplerInfo.maxLod = 0.0f;
 
-        if (vkCreateSampler(device.device(), &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
+        if (vkCreateSampler(renderer.device.device(), &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
             throw std::runtime_error("failed to create texture sampler!");
         }
 
-        // create input attachment set ==========================================
-        
+        recreateDescriptorSets();
+    }
+
+    void SpotLightSystem::recreateDescriptorSets() {
+
         descriptors[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        descriptors[0].imageView = renderPass->images[0].imageView;
+        descriptors[0].imageView = renderer.primaryRenderPass->images[0].imageView;
         descriptors[0].sampler = VK_NULL_HANDLE;
 
         descriptors[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        descriptors[1].imageView = renderPass->images[1].imageView;
+        descriptors[1].imageView = renderer.primaryRenderPass->images[1].imageView;
         descriptors[1].sampler = VK_NULL_HANDLE;
 
         descriptors[2].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        descriptors[2].imageView = renderPass->images[2].imageView;
+        descriptors[2].imageView = renderer.primaryRenderPass->images[2].imageView;
         descriptors[2].sampler = VK_NULL_HANDLE;
 
         renderer::DescriptorWriter inputWriter(*inputSetLayout, *UBOPool);
 
         if(inputWriter.writeImages(0, descriptors.data(), 3).build(inputSet) == false)
             std::cout << "\n failed to write set \n";
-
     }
 
     void SpotLightSystem::RenderShadows(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assets, ECS::System& renderables) {
@@ -311,6 +313,7 @@ namespace engine {
     }
 
     void SpotLightSystem::RenderLight(VkCommandBuffer commandBuffer, const ECS::Camera& viewerCamera, ECS::AssetSystem& assets) {
+        if(renderer.primaryRenderPass->resized == true) recreateDescriptorSets();
         lightPipeline->bind(commandBuffer);
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lightPipelineLayout, 1, 1, &inputSet, 0, nullptr);
 
@@ -349,11 +352,11 @@ namespace engine {
         for(auto& entity : entities) {
             ECS::SpotLight& spotLight = assetManager.GetComponent<ECS::SpotLight>(entity);
 
-            vkDestroyImageView(device.device(), spotLight.shadowMap.imageView, nullptr);
-            vkDestroyImage(device.device(), spotLight.shadowMap.image, nullptr);
-            vkFreeMemory(device.device(), spotLight.shadowMap.memory, nullptr);
+            vkDestroyImageView(renderer.device.device(), spotLight.shadowMap.imageView, nullptr);
+            vkDestroyImage(renderer.device.device(), spotLight.shadowMap.image, nullptr);
+            vkFreeMemory(renderer.device.device(), spotLight.shadowMap.memory, nullptr);
 
-            vkDestroyFramebuffer(device.device(), spotLight.frameBuffer, nullptr);
+            vkDestroyFramebuffer(renderer.device.device(), spotLight.frameBuffer, nullptr);
 
         }
     }

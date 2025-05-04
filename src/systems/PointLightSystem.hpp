@@ -4,7 +4,8 @@
 #include "ECS/Components.hpp"
 #include "Pipeline/pipeline.hpp"
 #include "Pipeline/deviceManager.hpp"
-#include "../Pipeline/RenderPass.hpp"
+#include "Pipeline/RenderPass.hpp"
+#include "Pipeline/Renderer.hpp"
 #include <descriptorManager.hpp>
 
 #include <glm/glm.hpp>
@@ -14,9 +15,9 @@
 namespace engine {
     class PointLightSystem : public ECS::System {
     public:
-        PointLightSystem(renderer::Device& device, renderer::RenderPass* renderPass, VkDescriptorSetLayout globalSetLayout);
+        PointLightSystem(renderer::Renderer& renderer);
         ~PointLightSystem() { 
-            vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); 
+            vkDestroyPipelineLayout(renderer.device.device(), pipelineLayout, nullptr); 
         }
 
         void Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager);
@@ -29,7 +30,9 @@ namespace engine {
             float radius;
         };
 
-        renderer::Device &device;
+        void recreateDescriptorSets();
+
+        renderer::Renderer& renderer;
 
         std::unique_ptr<renderer::Pipeline> pipeline;
         VkPipelineLayout pipelineLayout;

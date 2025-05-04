@@ -38,8 +38,6 @@ namespace ECS {
             void loadData(std::string fileName, AssetSystem& assetSystem) {
                 tinyxml2::XMLDocument doc;
 
-                std::cout << "loading file: " << ((std::string)SOURCE_PATH + fileName).c_str() << "\n";
-                
                 FILE* file = fopen(((std::string)SOURCE_PATH + fileName).c_str(), "rb");
                 if (file == NULL) {
                     std::cout << "file bad \n";
@@ -47,15 +45,13 @@ namespace ECS {
                 }
 
                 if(doc.LoadFile(file) != 0) {
-                    std::cout << "load succ \n";
-                    //throw std::runtime_error("load succ");
+                    throw std::runtime_error("load sucked");
                 }
 
                 tinyxml2::XMLElement* pRoot = doc.FirstChildElement("Collection");
                 tinyxml2::XMLElement* pEntity = pRoot->FirstChildElement("Entity");
 
                 while(pEntity) {
-                    std::cout << "loading component \n";
                     Entity entity = assetSystem.CreateEntity();
                     tinyxml2::XMLElement* pComponent = pEntity->FirstChildElement();
 
@@ -90,12 +86,14 @@ namespace ECS {
                             assetSystem.AddComponent(entity, Script{pComponent->GetText(), scriptingSystem.assembly, scriptingSystem.appDomain });
 
                         } else if (strcmp(componentName, "Material") == 0) {
+                            std::cout << "creating Material \n";
                             const char* albedoPath;
                             pComponent->QueryStringAttribute("albedoPath", &albedoPath);
                             const char* normalPath;
                             pComponent->QueryStringAttribute("normalPath", &normalPath);
                             
                             assetSystem.AddComponent(entity, Importer::loadMaterial(albedoPath, normalPath, device, materialSystem.getSampler(), materialSystem.getMaterialSetLayout()));
+                            std::cout << "material Made \n";
                             
                         } else if (strcmp(componentName, "PointLight") == 0) {
                             PointLight pointLight;
@@ -121,7 +119,7 @@ namespace ECS {
                             assetSystem.AddComponent(entity, skybox);
                         }
                         else {
-                            std::cout << "Component not found" << std::endl;
+                            std::cout << "Component not found" << "\n";
                         }
 
                         pComponent = pComponent->NextSiblingElement();
@@ -130,7 +128,6 @@ namespace ECS {
                 }
 
                 if (fclose(file) != 0) {
-                    std::cout << "close bad \n";
                     throw std::runtime_error("close bad");
                 }
             }

@@ -68,8 +68,7 @@ class Renderer {
 	void createCommandBuffers();
 	void freeCommandBuffers();
 	void recreateSwapChain();
-	void resizeRenderPasses() {}; // if renderpass uses window extent that needs to be resizes with the window
-
+	void resizeRenderPasses(); 
 	std::unique_ptr<SwapChain> swapchain;
 	std::vector<VkCommandBuffer> commandBuffers;
 

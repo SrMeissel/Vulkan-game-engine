@@ -56,7 +56,6 @@ VkResult SwapChain::acquireNextImage(uint32_t *imageIndex) {
 }
 
 void SwapChain::copyImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkExtent2D extent, int imageIndex) {
-    // std::cout << "copying image to swapchain \n";
    device.insertImageMemoryBarrier(
     commandBuffer,
     swapChainImages[imageIndex],
@@ -241,7 +240,6 @@ void SwapChain::createSwapChain() {
 
   //set images to present mode layout
 
-  std::cout << "changing initial layout of swapchain image \n";
   auto commandBuffer = device.beginSingleTimeCommands();
   for(auto image : swapChainImages) {
     device.insertImageMemoryBarrier(

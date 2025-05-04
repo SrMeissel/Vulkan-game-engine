@@ -25,14 +25,10 @@ namespace engine {
         appDomain = mono_domain_create_appdomain("MyAppDomain", nullptr);
         mono_domain_set(appDomain, true);
 
-	std::cout << "about to make assembly \n";
         assembly = LoadAssembly((std::string)SOURCE_PATH + "/Scripts/EngineScripting/bin/Debug/EngineScripting.dll");
-        if(assembly == nullptr) std::cout << "Failed to load assembly!" << std::endl;
-
-	std::cout << "assembly made \n";
+        if(assembly == nullptr) throw std::runtime_error("Bad Script Assembly");
 
         mono_add_internal_call("GameEngine.EngineCore::DoSomething", reinterpret_cast<const void*>(&DoSomething));
-	std::cout << "added call \n";
 
     }
 
