@@ -4,6 +4,8 @@
 #include <GLFW/glfw3.h>
 #include <string>
 
+struct HWND;
+
 class Window{
     public:
         Window(int w, int l, std::string name);
@@ -24,6 +26,8 @@ class Window{
         GLFWwindow* getGLFWwindow() const {return window;}
 
         void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
+
+        HWND getHandle();
 
     private:
         static void frameBufferResizeCallback(GLFWwindow *window, int width, int height);

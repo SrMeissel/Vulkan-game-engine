@@ -14,11 +14,11 @@
 #include <cassert>
 #include <map>
 
-namespace renderer {
-
 enum class DefinedRenderPasses {
    Primary 
 };
+
+using namespace renderer;
 
 class Renderer {
     public:
@@ -129,6 +129,3 @@ struct Exhibit {
     private:
     Gallery& gallery;
 };
-
-
-}
