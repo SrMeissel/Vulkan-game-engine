@@ -12,8 +12,11 @@ extern "C" {
 
 typedef void* WindowHandle;
 
-WindowHandle createEngine();
+WindowHandle createEngine(int width, int height);
 
+bool runFrame();
+
+void destroyEngine();
 
 #ifdef __cplusplus
 }
