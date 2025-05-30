@@ -11,15 +11,15 @@
 #include <chrono>
 
 static Window* window = nullptr;  
-static renderer::Renderer* renderer = nullptr;
+static renderer::Renderer* Renderer = nullptr;
 static ECS::AssetSystem* assetSystem = nullptr;
-static engine::engine* engine = nullptr;
+static engine::engine* Engine = nullptr;
 
-WindowHandle createEngine(int width, int height) {
+HWND createEngine(int width, int height) {
     window = new Window{width, height, "Hello there"};
-    renderer = new renderer::Renderer{*window};
+    Renderer = new renderer::Renderer{*window};
     assetSystem = new ECS::AssetSystem;
-    engine = new engine::engine{*renderer, *assetSystem};
+    Engine = new engine::engine{*Renderer, *assetSystem};
 
     //TODO: refactor =====================================================
 	ECS::Entity viewportEntity = assetSystem->CreateEntity();
@@ -29,26 +29,26 @@ WindowHandle createEngine(int width, int height) {
     // moveInPlaneXZ(window, viewportTransform, dt, 2.5f, 3.0f);
     
     viewportCamera.viewMatrix = engine::setViewYXZ(viewportTransform.translation, viewportTransform.rotation);            
-    float aspect = renderer->getAspectRatio();
+    float aspect = Renderer->getAspectRatio();
     viewportCamera.projectionMatrix = engine::setPerspectiveProjection(glm::radians(50.0f), aspect, viewportCamera.nearPlane, viewportCamera.farPlane);
     viewportCamera.inverseViewMatrix = glm::inverse(viewportCamera.viewMatrix);
 
-    engine->viewerObject = viewportEntity;
+    Engine->viewerObject = viewportEntity;
     //=========================================================================    
 
     return glfwGetWin32Window(window->getGLFWwindow());
 }
 
 void destroyEngine() {
-    delete engine;
+    delete Engine;
     delete assetSystem;
-    delete renderer;
+    delete Renderer;
     delete window;
 }
 
 bool runFrame() {
     static auto currentTime = std::chrono::high_resolution_clock::now();
-    if(!renderer->window.shouldClose()){
+    if(!Renderer->window.shouldClose()){
         glfwPollEvents();
 
         //get passed time
@@ -56,8 +56,8 @@ bool runFrame() {
         float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime-currentTime).count();
         currentTime = newTime;
 
-        engine->updateGameState(frameTime, *window);
-        engine->renderGameState(assetSystem->GetComponent<ECS::Camera>(engine->viewerObject));
+        Engine->updateGameState(frameTime, *window);
+        Engine->renderGameState(assetSystem->GetComponent<ECS::Camera>(Engine->viewerObject));
         return true;
     }
     else {

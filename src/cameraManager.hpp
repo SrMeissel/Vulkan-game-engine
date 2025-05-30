@@ -5,26 +5,26 @@
 #include <glm/glm.hpp>
 
 namespace engine {
-    static glm::mat4 setOrthographicProjection(float left, float right, float top, float bottom, float near, float far) {
+    static glm::mat4 setOrthographicProjection(float left, float right, float top, float bottom, float Near, float Far) {
     glm::mat4 projectionMatrix{1.0f};
     projectionMatrix[0][0] = 2.f / (right - left);
     projectionMatrix[1][1] = 2.f / (bottom - top);
-    projectionMatrix[2][2] = 1.f / (far - near);
+    projectionMatrix[2][2] = 1.f / (Far - Near);
     projectionMatrix[3][0] = -(right + left) / (right - left);
     projectionMatrix[3][1] = -(bottom + top) / (bottom - top);
-    projectionMatrix[3][2] = -near / (far - near);
+    projectionMatrix[3][2] = -Near / (Far - Near);
     return projectionMatrix;
     }
     
-    static glm::mat4 setPerspectiveProjection(float fovy, float aspect, float near, float far) {
+    static glm::mat4 setPerspectiveProjection(float fovy, float aspect, float Near, float Far) {
     assert(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
     const float tanHalfFovy = tan(fovy / 2.f);
     glm::mat4 projectionMatrix{0.0f};
     projectionMatrix[0][0] = 1.f / (aspect * tanHalfFovy);
     projectionMatrix[1][1] = 1.f / (tanHalfFovy);
-    projectionMatrix[2][2] = far / (far - near);
+    projectionMatrix[2][2] = Far / (Far - Near);
     projectionMatrix[2][3] = 1.f;
-    projectionMatrix[3][2] = -(far * near) / (far - near); 
+    projectionMatrix[3][2] = -(Far * Near) / (Far - Near); 
     return projectionMatrix;
     }
 

@@ -1,25 +1,13 @@
 #ifndef ENGINE_API
 #define ENGINE_API
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+struct HWND__;
+typedef struct HWND__* HWND;
 
-// typedef struct Window Window;
-// typedef struct Renderer Renderer;
-// typedef struct AssetSystem AssetSystem;
-// typedef struct Engine Engine;
-
-typedef void* WindowHandle;
-
-WindowHandle createEngine(int width, int height);
+HWND createEngine(int width, int height);
 
 bool runFrame();
 
 void destroyEngine();
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

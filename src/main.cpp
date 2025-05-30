@@ -38,7 +38,7 @@
     viewportCamera.projectionMatrix = engine::setPerspectiveProjection(glm::radians(50.0f), aspect, viewportCamera.nearPlane, viewportCamera.farPlane);
     viewportCamera.inverseViewMatrix = glm::inverse(viewportCamera.viewMatrix);
 
-    engine.setViewerObject(viewportEntity);
+    engine.viewerObject = viewportEntity;
 
         try{
             auto currentTime = std::chrono::high_resolution_clock::now();

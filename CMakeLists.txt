@@ -96,7 +96,8 @@ add_custom_command(TARGET engine POST_BUILD
 #===============================================================
 
 target_include_directories(engine PUBLIC
-    ${PROJECT_SOURCE_DIR}/src  
+    "${PROJECT_SOURCE_DIR}/src"  
+    "${PROJECT_SOURCE_DIR}/include"
     "${Mono_DIR}/include/mono-2.0"
 )
 
@@ -113,12 +114,13 @@ target_sources(engine PRIVATE
 "${PROJECT_SOURCE_DIR}/libs/imgui/imgui_impl_glfw.cpp"
 )
 
-target_link_libraries(engine glfw)
-target_link_libraries(engine Vulkan::Vulkan)
-target_link_libraries(engine assimp::assimp)
+target_link_libraries(engine PUBLIC glfw)
+target_include_directories(engine PUBLIC ${GLFW_INCLUDE_DIRS})
+target_link_libraries(engine PUBLIC Vulkan::Vulkan)
+target_link_libraries(engine PUBLIC assimp::assimp)
 if(WIN32)
-    target_link_libraries(engine "C:/Program Files/Mono/lib/mono-2.0-sgen.lib")
+    target_link_libraries(engine PUBLIC "C:/Program Files/Mono/lib/mono-2.0-sgen.lib")
 endif()
 if(UNIX)
-    target_link_libraries(engine "/usr/lib/libmonosgen-2.0.a")
+    target_link_libraries(engine PUBLIC "/usr/lib/libmonosgen-2.0.a")
 endif()
