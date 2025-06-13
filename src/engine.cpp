@@ -132,8 +132,8 @@ namespace engine {
         scriptingSystem->update(deltaTime, assetSystem);
 
         //take screenshot
-        int stateKeyP = glfwGetKey(renderer.window.getGLFWwindow(), GLFW_KEY_P);
-        if(stateKeyP == GLFW_PRESS) {
+        bool stateKeyP = renderer.window.isKeyDown();
+        if(stateKeyP == true) {
             // std::vector<VkImage> images = renderer.getSwapchainImages();
             // VkImage srcImage = images[renderer.getCurrentImageIndex()]; 
             // screenshotTool.takeScreenshot(srcImage, "testScreenshot.jpg", renderer.device, renderer.window.getExtent());

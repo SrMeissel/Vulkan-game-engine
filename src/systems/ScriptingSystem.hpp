@@ -26,7 +26,7 @@ namespace engine {
         void update(float deltaTime, ECS::AssetSystem& assetManager);
 
         static bool DoSomething(ScriptingSystem* system, int key) {
-            if(glfwGetKey(system->window.getGLFWwindow(), key) == GLFW_PRESS) {
+            if(system->window.isKeyDown() == true) {
                 return true;
             }
             return false;

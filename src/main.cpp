@@ -20,7 +20,7 @@
     int main(int argc, char** argv) {
 	std::cout << "Source Path: " << SOURCE_PATH << "\n";
 
-        Window window{1280, 720, "Hello there"};
+        Window_GLFW window{1280, 720, "Hello there"};
         renderer::Renderer renderer{window};
 
         ECS::AssetSystem assetSystem;

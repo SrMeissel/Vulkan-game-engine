@@ -18,5 +18,5 @@ namespace editor {
         lookDown = GLFW_KEY_DOWN
     };
 
-    void moveInPlaneXZ(const Window& engineWindow, ECS::Transform& cameraTransform, float dt, float moveSpeed, float lookSpeed);
+    void moveInPlaneXZ(Window& engineWindow, ECS::Transform& cameraTransform, float dt, float moveSpeed, float lookSpeed);
 }

@@ -1,10 +1,10 @@
 #include "CameraControl.hpp"
 
 namespace editor {
-    void moveInPlaneXZ(const Window& engineWindow, ECS::Transform& cameraTransform, float dt, float moveSpeed, float lookSpeed) {
+    void moveInPlaneXZ(Window& engineWindow, ECS::Transform& cameraTransform, float dt, float moveSpeed, float lookSpeed) {
         glm::vec3 rotate{0};
 
-        auto window = engineWindow.getGLFWwindow();
+        auto window = (GLFWwindow*)engineWindow.getWindowHandle(); // THIS IS BAD 
 
         if(glfwGetKey(window, keyBindings::lookRight) == GLFW_PRESS) rotate.y += 1.0f;
         if(glfwGetKey(window, keyBindings::lookLeft) == GLFW_PRESS) rotate.y -= 1.0f;

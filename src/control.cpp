@@ -16,7 +16,7 @@ static ECS::AssetSystem* assetSystem = nullptr;
 static engine::engine* Engine = nullptr;
 
 HWND createEngine(int width, int height) {
-    window = new Window{width, height, "Hello there"};
+    window = new Window_GLFW{width, height, "Hello there"};
     Renderer = new renderer::Renderer{*window};
     assetSystem = new ECS::AssetSystem;
     Engine = new engine::engine{*Renderer, *assetSystem};
@@ -36,7 +36,7 @@ HWND createEngine(int width, int height) {
     Engine->viewerObject = viewportEntity;
     //=========================================================================    
 
-    return glfwGetWin32Window(window->getGLFWwindow());
+    return NULL; //glfwGetWin32Window(window->getGLFWwindow());
 }
 
 void destroyEngine() {
