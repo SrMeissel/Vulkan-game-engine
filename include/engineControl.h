@@ -4,9 +4,11 @@
 struct HWND__;
 typedef struct HWND__* HWND;
 
-HWND createEngine(int width, int height);
+void createEngine(int width, int height, HWND handle);
 
 bool runFrame();
+
+void resize(int width, int height);
 
 void destroyEngine();
 

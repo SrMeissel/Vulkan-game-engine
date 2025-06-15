@@ -4,12 +4,10 @@ namespace editor {
     void moveInPlaneXZ(Window& engineWindow, ECS::Transform& cameraTransform, float dt, float moveSpeed, float lookSpeed) {
         glm::vec3 rotate{0};
 
-        auto window = (GLFWwindow*)engineWindow.getWindowHandle(); // THIS IS BAD 
-
-        if(glfwGetKey(window, keyBindings::lookRight) == GLFW_PRESS) rotate.y += 1.0f;
-        if(glfwGetKey(window, keyBindings::lookLeft) == GLFW_PRESS) rotate.y -= 1.0f;
-        if(glfwGetKey(window, keyBindings::lookUp) == GLFW_PRESS) rotate.x += 1.0f;
-        if(glfwGetKey(window, keyBindings::lookDown) == GLFW_PRESS) rotate.x -= 1.0f;
+        if(engineWindow.isKeyDown()) rotate.y += 1.0f;
+        if(engineWindow.isKeyDown()) rotate.y -= 1.0f;
+        if(engineWindow.isKeyDown()) rotate.x += 1.0f;
+        if(engineWindow.isKeyDown()) rotate.x -= 1.0f;
 
 
         if(glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon()){
@@ -27,12 +25,12 @@ namespace editor {
         const glm::vec3 upDir{0.0f, -1.0f, 0.0f};
 
         glm::vec3 moveDir{0.0f};
-        if(glfwGetKey(window, keyBindings::moveForward) == GLFW_PRESS) moveDir += forwardDir;
-        if(glfwGetKey(window, keyBindings::moveBackward) == GLFW_PRESS) moveDir -= forwardDir;
-        if(glfwGetKey(window, keyBindings::moveRight) == GLFW_PRESS) moveDir += rightDir;
-        if(glfwGetKey(window, keyBindings::moveLeft) == GLFW_PRESS) moveDir -= rightDir;
-        if(glfwGetKey(window, keyBindings::moveUp) == GLFW_PRESS) moveDir += upDir;
-        if(glfwGetKey(window, keyBindings::moveDown) == GLFW_PRESS) moveDir -= upDir;
+        if(engineWindow.isKeyDown()) moveDir += forwardDir;
+        if(engineWindow.isKeyDown()) moveDir -= forwardDir;
+        if(engineWindow.isKeyDown()) moveDir += rightDir;
+        if(engineWindow.isKeyDown()) moveDir -= rightDir;
+        if(engineWindow.isKeyDown()) moveDir += upDir;
+        if(engineWindow.isKeyDown()) moveDir -= upDir;
 
         if(glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon()){
             cameraTransform.translation += moveSpeed * dt * glm::normalize(moveDir);

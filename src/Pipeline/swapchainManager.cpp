@@ -6,6 +6,15 @@
 #include <limits>
 #include <stdexcept>
 
+//some windows bullshit.
+#ifdef max
+#undef max
+#endif
+
+#ifdef min
+#undef min
+#endif
+
 namespace renderer {
 
 SwapChain::SwapChain(Device &deviceRef, VkExtent2D extent)

@@ -1,6 +1,5 @@
 #include "windowManager.hpp"
 
-
 #include <stdexcept>
 
 Window_GLFW::Window_GLFW(int w, int h, std::string name) : width{w}, height{h}, windowName{name} {
@@ -35,6 +34,24 @@ void Window_GLFW::frameBufferResizeCallback(GLFWwindow *window, int width, int h
     newWindow->height = height;
 }
 
- bool Window_GLFW::isKeyDown() {
+//TODO: Finish.
+bool Window_GLFW::isKeyDown() {
     return false;
- }
+}
+
+Window_win::Window_win(int w, int h, HWND handle) : width{w}, height{h}, handle{handle} {
+    instance_win = (HINSTANCE)GetWindowLongPtr(handle, GWLP_HINSTANCE);
+
+    AllocConsole();
+    FILE* stream;
+    freopen_s(&stream, "CONOUT$", "w", stdout);
+    freopen_s(&stream, "CONOUT$", "w", stderr);
+}
+
+void Window_win::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface) {
+    VkWin32SurfaceCreateInfoKHR createInfo = {};
+    createInfo.sType     = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+    createInfo.hwnd      = handle;
+    createInfo.hinstance = instance_win;
+    vkCreateWin32SurfaceKHR(instance, &createInfo, nullptr, surface);
+}

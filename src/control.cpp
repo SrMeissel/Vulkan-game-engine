@@ -15,8 +15,9 @@ static renderer::Renderer* Renderer = nullptr;
 static ECS::AssetSystem* assetSystem = nullptr;
 static engine::engine* Engine = nullptr;
 
-HWND createEngine(int width, int height) {
-    window = new Window_GLFW{width, height, "Hello there"};
+void createEngine(int width, int height, HWND handle) {
+    if(handle == NULL) window = new Window_GLFW{width, height, "Hello there"};
+    if(handle != NULL) window = new Window_win{width, height, handle};
     Renderer = new renderer::Renderer{*window};
     assetSystem = new ECS::AssetSystem;
     Engine = new engine::engine{*Renderer, *assetSystem};
@@ -35,8 +36,12 @@ HWND createEngine(int width, int height) {
 
     Engine->viewerObject = viewportEntity;
     //=========================================================================    
+    
+    //return NULL; //glfwGetWin32Window(window->getGLFWwindow());
+}
 
-    return NULL; //glfwGetWin32Window(window->getGLFWwindow());
+void resize(int width, int height) {
+    window->resizeWindow(width, height);
 }
 
 void destroyEngine() {
@@ -47,9 +52,21 @@ void destroyEngine() {
 }
 
 bool runFrame() {
+    std::cout << "will I draw? \n";
+
     static auto currentTime = std::chrono::high_resolution_clock::now();
     if(!Renderer->window.shouldClose()){
-        glfwPollEvents();
+        //glfwPollEvents();
+        std::cout << "about to draw \n";
+
+        // MSG msg;
+        // while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+        // if (msg.message == WM_QUIT) {
+        //     window->shouldClose();
+        // };
+        // TranslateMessage(&msg);
+        // DispatchMessage(&msg);
+        // }
 
         //get passed time
         auto newTime = std::chrono::high_resolution_clock::now();
@@ -58,6 +75,8 @@ bool runFrame() {
 
         Engine->updateGameState(frameTime, *window);
         Engine->renderGameState(assetSystem->GetComponent<ECS::Camera>(Engine->viewerObject));
+        vkDeviceWaitIdle(Renderer->device.device());
+        std::cout << "finished drawing \n";
         return true;
     }
     else {

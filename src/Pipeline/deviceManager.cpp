@@ -87,6 +87,8 @@ void Device::createInstance() {
   createInfo.pApplicationInfo = &appInfo;
 
   auto extensions = getRequiredExtensions();
+  extensions.push_back("VK_KHR_surface");
+  extensions.push_back("VK_KHR_win32_surface"); // only needed when using win32
   createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
   createInfo.ppEnabledExtensionNames = extensions.data();
 

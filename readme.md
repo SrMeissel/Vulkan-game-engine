@@ -73,6 +73,7 @@ Sources:
 - <https://advances.realtimerendering.com/s2019/index.htm>
 - <https://onlinelibrary.wiley.com/doi/10.1111/cgf.15010>
 Schneegans, S., Meyran, T., Ginkel, I., Zachmann, G. and Gerndt, A. (2024), Physically Based Real-Time Rendering of Atmospheres using Mie Theory. Computer Graphics Forum, 43: e15010. https://doi.org/10.1111/cgf.15010
+- <https://stackoverflow.com/questions/4007589/multithreading-an-opengl-winapi-application>
 
 ### Vulkan resources
 
