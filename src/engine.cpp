@@ -153,6 +153,7 @@ namespace engine {
     void engine::renderGameState(const ECS::Camera& target) {
     if (target.projectionMatrix == glm::mat4{1.0f}) throw std::runtime_error("you didnt init the camera matricies...");       
     //TODO: Replace with assert.
+    //printMat4(target.projectionMatrix);
 
 	auto commandBuffer = renderer.beginFrame();
 	int frameIndex = renderer.getFrameIndex();

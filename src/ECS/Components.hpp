@@ -14,6 +14,15 @@
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
 
+//windows BULLSHIT!!!!!!
+#ifdef near
+#undef near
+#endif
+
+#ifdef far
+#undef far
+#endif
+
 namespace ECS {
 
     struct Component {

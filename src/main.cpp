@@ -17,6 +17,16 @@
 
 #ifndef EDITOR
 
+void printMat4(const glm::mat4& mat) {
+    for (int row = 0; row < 4; ++row) {
+        std::cout << "[ ";
+        for (int col = 0; col < 4; ++col) {
+            std::cout << mat[col][row] << " ";
+        }
+        std::cout << "]\n";
+    }
+}
+
     int main(int argc, char** argv) {
 	std::cout << "Source Path: " << SOURCE_PATH << "\n";
 
@@ -35,8 +45,12 @@
     
     viewportCamera.viewMatrix = engine::setViewYXZ(viewportTransform.translation, viewportTransform.rotation);            
     float aspect = renderer.getAspectRatio();
+    std::cout << aspect;
     viewportCamera.projectionMatrix = engine::setPerspectiveProjection(glm::radians(50.0f), aspect, viewportCamera.nearPlane, viewportCamera.farPlane);
     viewportCamera.inverseViewMatrix = glm::inverse(viewportCamera.viewMatrix);
+    printMat4(viewportCamera.viewMatrix);
+    printMat4(viewportCamera.projectionMatrix);
+
 
     engine.viewerObject = viewportEntity;
 
