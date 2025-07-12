@@ -289,7 +289,7 @@ namespace renderer {
         }
 
         isFrameStarted = false;
-        currentFrameIndex = (currentFrameIndex + 1) % SwapChain::MAX_FRAMES_IN_FLIGHT;
+        currentFrameIndex = (currentFrameIndex + 1) % SwapChain::MAX_FRAMES_IN_FLIGHT; // TODO: figure out why I do this twice
     }
 
     void Renderer::endRenderPass(VkCommandBuffer commandBuffer) {

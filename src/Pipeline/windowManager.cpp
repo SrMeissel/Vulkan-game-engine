@@ -35,7 +35,7 @@ void Window_GLFW::frameBufferResizeCallback(GLFWwindow *window, int width, int h
 }
 
 //TODO: Finish.
-bool Window_GLFW::isKeyDown() {
+bool Window_GLFW::isKeyDown(Key key) {
     return false;
 }
 
@@ -55,3 +55,15 @@ void Window_win::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface)
     createInfo.hinstance = instance_win;
     vkCreateWin32SurfaceKHR(instance, &createInfo, nullptr, surface);
 }
+
+bool Window_win::isKeyDown(Key key) {
+    return keyState.test(static_cast<size_t>(key));
+};
+
+void Window_win::setKeyDown(Key key) {
+    keyState.set(static_cast<size_t>(key), true);
+    
+};
+void Window_win::setKeyUp(Key key) {
+    keyState.set(static_cast<size_t>(key), false);
+};

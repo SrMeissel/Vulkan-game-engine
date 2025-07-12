@@ -132,12 +132,12 @@ namespace engine {
         scriptingSystem->update(deltaTime, assetSystem);
 
         //take screenshot
-        bool stateKeyP = renderer.window.isKeyDown();
-        if(stateKeyP == true) {
-            // std::vector<VkImage> images = renderer.getSwapchainImages();
-            // VkImage srcImage = images[renderer.getCurrentImageIndex()]; 
-            // screenshotTool.takeScreenshot(srcImage, "testScreenshot.jpg", renderer.device, renderer.window.getExtent());
-        }
+        // bool stateKeyP = renderer.window.isKeyDown(Key::KEY_P);
+        // if(stateKeyP == true) {
+        //     // std::vector<VkImage> images = renderer.getSwapchainImages();
+        //     // VkImage srcImage = images[renderer.getCurrentImageIndex()]; 
+        //     // screenshotTool.takeScreenshot(srcImage, "testScreenshot.jpg", renderer.device, renderer.window.getExtent());
+        // }
 
 
         //update camera from user input

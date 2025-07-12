@@ -1,5 +1,8 @@
 #pragma once
 
+#include "keyMap.h"
+#include <bitset>
+
 #define VK_USE_PLATFORM_WIN32_KHR
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -8,6 +11,8 @@
 #include <GLFW/glfw3.h>
 #include <string>
 
+#include <vulkan/vulkan.h>
+
 struct Window {
     virtual ~Window() {}
     virtual void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface) = 0;
@@ -15,7 +20,10 @@ struct Window {
     virtual void resizeWindow(int w, int h) = 0;
     virtual void resetWindowResizedFlag() = 0;
     virtual bool shouldClose() = 0;
-    virtual bool isKeyDown() = 0;
+
+    virtual void setKeyDown(Key key) = 0;
+    virtual void setKeyUp(Key key) = 0;
+    virtual bool isKeyDown(Key key) = 0;
 
     //virtual void* getWindowHandle() = 0;
     virtual VkExtent2D getExtent() = 0;
@@ -43,7 +51,10 @@ class Window_GLFW final : public Window {
         }
 
         virtual void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface) override;
-        virtual bool isKeyDown() override;
+        virtual bool isKeyDown(Key key) override;
+
+        virtual void setKeyDown(Key key) override {};
+        virtual void setKeyUp(Key key) override {};
 
     private:
         static void frameBufferResizeCallback(GLFWwindow *window, int width, int height);
@@ -71,7 +82,9 @@ class Window_win final : public Window {
             width = w;
             height = h;
         }
-        void resetWindowResizedFlag() override { }
+        void resetWindowResizedFlag() override {
+            frameBufferResized = false;
+         }
 
         bool shouldClose() override {
             return false;
@@ -81,13 +94,15 @@ class Window_win final : public Window {
             return {static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
         }
 
-        virtual bool isKeyDown() override {
-            return false;
-        }
+        bool isKeyDown(Key key) override;
+        void setKeyDown(Key key) override;
+        void setKeyUp(Key key) override;
 
     private:
         HWND handle;
         HINSTANCE instance_win = NULL;
+
+        std::bitset<static_cast<size_t>(Key::KeyCount)> keyState;
 
         int width;
         int height;
