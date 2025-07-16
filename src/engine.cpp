@@ -72,10 +72,8 @@ namespace engine {
         skyboxSigniture.set(assetSystem.GetComponentType<ECS::SkyBox>());
         assetSystem.SetSystemSignature<SkyboxSystem>(skyboxSigniture);
 
-        ECS::SaveDataManager saveDataManager{renderer.device, *scriptingSystem, *materialSystem, *skyboxSystem}; 
-        saveDataManager.loadData("/saveFiles/Default.xml", assetSystem);
-        std::cout << "loaded file \n";
-        // saveDataManager.saveData(fileName, assetSystem.getAllEntities())
+        saveDataManager = new ECS::SaveDataManager{renderer.device, *scriptingSystem, *materialSystem, *skyboxSystem}; 
+
 
         ECS::Entity backplane = assetSystem.CreateEntity();
         assetSystem.AddComponent<ECS::Transform>(backplane, ECS::Transform{glm::vec3(0.0f, 0.0f, 25.0f), glm::vec3(40.0f, 1.0f, 40.0f), glm::vec3{glm::radians(90.0f), 0.0f, 0.0f}});

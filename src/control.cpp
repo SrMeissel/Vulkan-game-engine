@@ -78,3 +78,20 @@ void buttonState(Key key, bool state) {
         window->setKeyUp(key);
     }
 }
+
+#ifdef Entity
+#undef Entity
+#endif
+
+void unloadData() {
+    std::vector<ECS::Entity> collection{};
+    for(auto pair : assetSystem->getAllEntities()){
+        if(pair.first != Engine->viewerObject)
+            collection.push_back(pair.first);
+    }
+    Engine->saveDataManager->unloadData(collection, *assetSystem);
+}
+
+void loadCollection(std::string fileName) {
+    Engine->saveDataManager->loadData(fileName, *assetSystem);
+}

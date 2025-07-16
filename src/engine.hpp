@@ -36,7 +36,9 @@ namespace engine {
             void updateGameState(float deltaTime, Window& window);
             void renderGameState(const ECS::Camera& target);
 
-            ECS::Entity viewerObject; 
+            ECS::Entity viewerObject; //is this even used?
+
+            ECS::SaveDataManager* saveDataManager = nullptr;
         private:
             VkRenderPassCreateInfo* configureRenderPass();
             VkFormat chooseSwapSurfaceFormat();
