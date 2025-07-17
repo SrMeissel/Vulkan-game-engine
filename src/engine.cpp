@@ -75,23 +75,23 @@ namespace engine {
         saveDataManager = new ECS::SaveDataManager{renderer.device, *scriptingSystem, *materialSystem, *skyboxSystem}; 
 
 
-        ECS::Entity backplane = assetSystem.CreateEntity();
-        assetSystem.AddComponent<ECS::Transform>(backplane, ECS::Transform{glm::vec3(0.0f, 0.0f, 25.0f), glm::vec3(40.0f, 1.0f, 40.0f), glm::vec3{glm::radians(90.0f), 0.0f, 0.0f}});
-        assetSystem.AddComponent<ECS::Renderable>(backplane, Importer::loadMesh("/models/quad.obj", renderer.device));
+        // ECS::Entity backplane = assetSystem.CreateEntity();
+        // assetSystem.AddComponent<ECS::Transform>(backplane, ECS::Transform{glm::vec3(0.0f, 0.0f, 25.0f), glm::vec3(40.0f, 1.0f, 40.0f), glm::vec3{glm::radians(90.0f), 0.0f, 0.0f}});
+        // assetSystem.AddComponent<ECS::Renderable>(backplane, Importer::loadMesh("/models/quad.obj", renderer.device));
 
-        //<Translation x="0" y="-1.5" z="-3"/>
-        //glm::vec3(-4.0f, -3.5f, -12.0f)
+        // //<Translation x="0" y="-1.5" z="-3"/>
+        // //glm::vec3(-4.0f, -3.5f, -12.0f)
 
-        glm::vec3 direction = glm::normalize(glm::vec3(0.0, -1.5, -3) - glm::vec3(-4.0, -3.5, -12.0));
-        float yaw = atan2(direction.z, direction.x);
-        float pitch = atan2(direction.y, sqrt((direction.x * direction.x) + (direction.z * direction.z)));
+        // glm::vec3 direction = glm::normalize(glm::vec3(0.0, -1.5, -3) - glm::vec3(-4.0, -3.5, -12.0));
+        // float yaw = atan2(direction.z, direction.x);
+        // float pitch = atan2(direction.y, sqrt((direction.x * direction.x) + (direction.z * direction.z)));
 
-        ECS::Entity spotlight = assetSystem.CreateEntity();
-        assetSystem.AddComponent<ECS::Transform>(spotlight, ECS::Transform{glm::vec3(-4.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(pitch, yaw, 0.0)});
-        assetSystem.AddComponent<ECS::SpotLight>(spotlight, ECS::SpotLight{renderer.device, renderer.window, glm::vec3{1.0f, 0.0f, 0.0f}, 500.0f, glm::vec2{800, 600}, spotLightSystem->getRenderPass(), spotLightSystem->getSampler(), spotLightSystem->getSetLayout()});
-        assetSystem.AddComponent<ECS::PointLight>(spotlight, ECS::PointLight{glm::vec3{1.0f}, 10.0f, 10.0f});
-        assetSystem.AddComponent<ECS::Camera>(spotlight, ECS::Camera{0.1, 500.0});
-        assetSystem.AddComponent<ECS::Script>(spotlight, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain});
+        // ECS::Entity spotlight = assetSystem.CreateEntity();
+        // assetSystem.AddComponent<ECS::Transform>(spotlight, ECS::Transform{glm::vec3(-4.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(pitch, yaw, 0.0)});
+        // assetSystem.AddComponent<ECS::SpotLight>(spotlight, ECS::SpotLight{renderer.device, renderer.window, glm::vec3{1.0f, 0.0f, 0.0f}, 500.0f, glm::vec2{800, 600}, spotLightSystem->getRenderPass(), spotLightSystem->getSampler(), spotLightSystem->getSetLayout()});
+        // assetSystem.AddComponent<ECS::PointLight>(spotlight, ECS::PointLight{glm::vec3{1.0f}, 10.0f, 10.0f});
+        // assetSystem.AddComponent<ECS::Camera>(spotlight, ECS::Camera{0.1, 500.0});
+        // assetSystem.AddComponent<ECS::Script>(spotlight, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain});
 
         //=======================================================================
 
