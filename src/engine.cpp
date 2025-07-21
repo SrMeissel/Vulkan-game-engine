@@ -72,7 +72,7 @@ namespace engine {
         skyboxSigniture.set(assetSystem.GetComponentType<ECS::SkyBox>());
         assetSystem.SetSystemSignature<SkyboxSystem>(skyboxSigniture);
 
-        saveDataManager = new ECS::SaveDataManager{renderer.device, *scriptingSystem, *materialSystem, *skyboxSystem}; 
+        saveDataManager = new ECS::SaveDataManager{renderer, *scriptingSystem, *materialSystem, *skyboxSystem}; 
 
 
         // ECS::Entity backplane = assetSystem.CreateEntity();

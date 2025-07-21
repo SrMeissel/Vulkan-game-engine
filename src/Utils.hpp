@@ -36,21 +36,50 @@ namespace renderer {
     };
 
     struct AllocatedImage {
+        AllocatedImage() = default;
 
+        AllocatedImage(const AllocatedImage&) = delete;   // no copy
+        AllocatedImage& operator=(const AllocatedImage&) = default;
+
+        //move constructor
+        AllocatedImage(AllocatedImage&& source) noexcept : 
+            path(std::move(source.path)),
+            image(source.image),
+            imageView(source.imageView),
+            memory(source.memory),
+            imageExtent(source.imageExtent),
+            imageFormat(source.imageFormat),
+            device(source.device)
+        {
+            source.image = VK_NULL_HANDLE;
+            source.imageView = VK_NULL_HANDLE;
+            source.memory = VK_NULL_HANDLE;
+            source.device = VK_NULL_HANDLE;
+        }
+        
         std::string path;
 
         VkImage image;
         VkImageView imageView;
-
         VkDeviceMemory memory;
         VkExtent3D imageExtent;
         VkFormat imageFormat;
+        VkDevice device;
+
+        ~AllocatedImage() {
+            if(device != VK_NULL_HANDLE) {
+                vkDestroyImageView(device, imageView, nullptr);
+                vkDestroyImage(device, image, nullptr);
+                vkFreeMemory(device, memory, nullptr);
+            }
+        }
     };
 
     // I hope I don't regret this
-    struct CubeMap : public AllocatedImage {
-        std::string tags; // the base filepath for all images should be the same, but these tags differentiate each face :)
-    };
+    // struct CubeMap {
+    //     ImageResource image;
+    //     std::string tags; // the base filepath for all images should be the same, but these tags differentiate each face :)
+    // };
 
     //vulkan generic functions =====================================================================
 

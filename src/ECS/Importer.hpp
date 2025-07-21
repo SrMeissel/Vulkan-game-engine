@@ -14,6 +14,7 @@
 #include "Components.hpp"
 #include "../bufferManager.hpp"
 #include "../Utils.hpp"
+#include "../pipeline/Renderer.hpp"
 
 namespace Importer {
 
@@ -21,6 +22,8 @@ namespace Importer {
         
         renderer::AllocatedImage image{};
         image.path = (std::string)SOURCE_PATH + filepath;
+        image.device = device.device();
+        image.imageFormat = format;
         
         //create image ========================================================================================
         int texWidth, texHeight, texChannels;
@@ -53,6 +56,7 @@ namespace Importer {
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
         device.createImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image.image, image.memory);
+        image.imageExtent = {(uint32_t)texWidth, (uint32_t)texHeight, 1};
         
         device.transitionImageLayout(image.image, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         device.copyBufferToImage(stagingBuffer.getBuffer(), image.image, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 1);
@@ -79,10 +83,13 @@ namespace Importer {
         return image;
     };
 
-    static renderer::CubeMap loadCubeMap(const std::string filepath, std::vector<std::string> tags, renderer::Device& device, VkFormat format) {
+    static renderer::AllocatedImage loadCubeMap(const std::string filepath, std::vector<std::string> tags, renderer::Device& device, VkFormat format) {
         assert(tags.size() == 6 && "not all cube faces are filled, dumbass" );
 
-        renderer::CubeMap cubeMap{};
+        renderer::AllocatedImage cubeMap{};
+        cubeMap.path = filepath;
+        cubeMap.device = device.device();
+        cubeMap.imageFormat = format;
 
         size_t index = filepath.find_last_of('.');
         std::string fileName = SOURCE_PATH + filepath.substr(0, index);
@@ -131,6 +138,8 @@ namespace Importer {
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;    
         imageInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;    
         device.createImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, cubeMap.image, cubeMap.memory);
+        
+        cubeMap.imageExtent = {(uint32_t)texWidth, (uint32_t)texHeight, 1};
 
         //this is a custom version of the Device::transitionImageLayout function =================================================================
             VkCommandBuffer commandBuffer = device.beginSingleTimeCommands();
@@ -228,45 +237,49 @@ namespace Importer {
 
     }
 
-    static ECS::SkyBox loadSkyBox(const std::string filepath, std::vector<std::string> tags, renderer::Device& device, VkSampler sampler , std::unique_ptr<renderer::DescriptorSetLayout>& skyboxSetLayout) {
+    //this is just a cubemap with descriptor info.
+    static ECS::SkyBox loadSkyBox(const std::string filepath, std::vector<std::string> tags, renderer::Renderer& renderer, std::unique_ptr<renderer::DescriptorSetLayout>& skyboxSetLayout) {
         ECS::SkyBox skybox;
-        skybox.Path = filepath;
+        skybox.skyBoxImage = filepath;
         skybox.tags = tags;
 
-        skybox.skyBoxImage = loadCubeMap(filepath, tags, device, VK_FORMAT_R8G8B8A8_SRGB);
-        skybox.descriptorPool = renderer::DescriptorPool::Builder(device).setMaxSets(3)
+        renderer::AllocatedImage& skyboxImage = renderer.imageGallery.createExhibit(skybox.skyBoxImage, loadCubeMap(filepath, tags, renderer.device, VK_FORMAT_R8G8B8A8_SRGB));
+        skybox.descriptorPool = renderer::DescriptorPool::Builder(renderer.device).setMaxSets(3)
         .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
         .build();
 
         renderer::DescriptorWriter writer(*skyboxSetLayout, *skybox.descriptorPool);
         skybox.imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        skybox.imageInfo.imageView = skybox.skyBoxImage.imageView;
-        skybox.imageInfo.sampler = sampler;
+        skybox.imageInfo.imageView = skyboxImage.imageView;
+        skybox.imageInfo.sampler = renderer.defaultSampler;
         if(writer.writeImage(0, &skybox.imageInfo, 1).build(skybox.descriptorSet) == false) std::cout << "\n failed to write set \n";
 
         return skybox;
     }
 
-    static ECS::Material loadMaterial(std::string albedoPath, std::string normalPath, renderer::Device& device, VkSampler sampler, std::unique_ptr<renderer::DescriptorSetLayout>& materialSetLayout) {
+    static ECS::Material loadMaterial(std::string albedoPath, std::string normalPath, renderer::Renderer& renderer, std::unique_ptr<renderer::DescriptorSetLayout>& materialSetLayout) {
             ECS::Material material{};
 
-            material.albedo = Importer::loadJPGImage(albedoPath, device, VK_FORMAT_R8G8B8A8_SRGB);
-            material.normal = Importer::loadJPGImage(normalPath, device, VK_FORMAT_R8G8B8A8_UNORM);
+            material.albedo = albedoPath;
+            material.normal = normalPath;
 
-            material.descriptorPool = renderer::DescriptorPool::Builder(device).setMaxSets(3)
+            renderer::AllocatedImage& albedo = renderer.imageGallery.createExhibit(material.albedo, loadJPGImage(material.albedo, renderer.device, VK_FORMAT_R8G8B8A8_SRGB));
+            renderer::AllocatedImage& normal = renderer.imageGallery.createExhibit(material.normal, loadJPGImage(material.normal, renderer.device, VK_FORMAT_R8G8B8A8_UNORM));
+
+            material.descriptorPool = renderer::DescriptorPool::Builder(renderer.device).setMaxSets(3)
             .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 2)
             .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLER, 1)
             .build();
 
             material.albedoImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            material.albedoImageInfo.imageView = material.albedo.imageView;
-            material.albedoImageInfo.sampler = sampler;
+            material.albedoImageInfo.imageView = albedo.imageView;
+            material.albedoImageInfo.sampler = renderer.defaultSampler;
 
             material.normalImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            material.normalImageInfo.imageView = material.normal.imageView;
-            material.normalImageInfo.sampler = sampler;
+            material.normalImageInfo.imageView = normal.imageView;
+            material.normalImageInfo.sampler = renderer.defaultSampler;
 
-            material.samplerInfo.sampler = sampler;
+            material.samplerInfo.sampler = renderer.defaultSampler;
 
             renderer::DescriptorWriter writer(*materialSetLayout, *material.descriptorPool);
 

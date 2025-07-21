@@ -8,6 +8,13 @@
 #include <type_traits>
 
 namespace ECS {
+    inline uint64_t generateEntityID() {
+        uint64_t time = std::chrono::steady_clock::now().time_since_epoch().count();
+        static std::mt19937 rng(std::random_device{}());
+        uint32_t id = rng();
+        return (time << 32) | id;
+    }
+
     class AssetSystem {
     public:
     //not just constructor? seems like a constructor to me.

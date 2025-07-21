@@ -13,21 +13,21 @@ namespace renderer {
         createFrameBuffer();
     }
 
-    RenderPass::RenderPass(Device& device, VkRenderPassCreateInfo* info, std::vector<AllocatedImage> images, VkExtent2D customExtent) :
-    device{device}, info{info}, images{images}, extent{customExtent} {
+    // RenderPass::RenderPass(Device& device, VkRenderPassCreateInfo* info, std::vector<AllocatedImage> images, VkExtent2D customExtent) :
+    // device{device}, info{info}, images{images}, extent{customExtent} {
        
-        if (vkCreateRenderPass(device.device(), info, nullptr, &renderPass) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create render pass!");
-        }
-        createFrameBuffer();
-    }
+    //     if (vkCreateRenderPass(device.device(), info, nullptr, &renderPass) != VK_SUCCESS) {
+    //         throw std::runtime_error("failed to create render pass!");
+    //     }
+    //     createFrameBuffer();
+    // }
 
     RenderPass::~RenderPass() {
-        for (auto image : images) {
-            vkDestroyImageView(device.device(), image.imageView, nullptr);
-            vkDestroyImage(device.device(), image.image, nullptr);
-            vkFreeMemory(device.device(), image.memory, nullptr);
-        }
+        // for (auto& image : images) {
+        //     vkDestroyImageView(device.device(), image.imageView, nullptr);
+        //     vkDestroyImage(device.device(), image.image, nullptr);
+        //     vkFreeMemory(device.device(), image.memory, nullptr);
+        // }
         vkDestroyFramebuffer(device.device(), frameBuffer, nullptr);
         vkDestroyRenderPass(device.device(), renderPass, nullptr);
     }
@@ -38,6 +38,7 @@ namespace renderer {
         VkFormat depthFormat = device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
         for(int i = 0; i < info->attachmentCount; i++) {
+            images[i].device = device.device();
             //create image =============================================================================================
             VkImageCreateInfo imageInfo{};
 

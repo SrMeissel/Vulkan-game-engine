@@ -25,6 +25,8 @@
 
 namespace ECS {
 
+    using ImageResource = std::string;
+
     struct Component {
         virtual ~Component() = default;
         virtual tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) = 0;
@@ -53,8 +55,10 @@ namespace ECS {
     struct Material : public Component {
         Material() = default;
 
-        renderer::AllocatedImage albedo;
-        renderer::AllocatedImage normal;
+        //renderer::AllocatedImage albedo;
+        ImageResource albedo;
+        ImageResource normal;
+        //renderer::AllocatedImage normal;
 
         VkDescriptorImageInfo albedoImageInfo;
         VkDescriptorImageInfo normalImageInfo;
@@ -66,8 +70,8 @@ namespace ECS {
 
         tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
             tinyxml2::XMLElement* material = doc.NewElement("Material");
-            material->SetAttribute("albedoPath", albedo.path.c_str());
-            material->SetAttribute("normalPath", normal.path.c_str());
+            material->SetAttribute("albedoPath", albedo.c_str());
+            material->SetAttribute("normalPath", normal.c_str());
             return material;
         }
     };
@@ -75,12 +79,9 @@ namespace ECS {
     struct SkyBox : public Component {
         // https://satellitnorden.wordpress.com/2018/01/23/vulkan-adventures-cube-map-tutorial/
         SkyBox() = default;
-        SkyBox(std::string path) : Path(path) {}
 
-        std::string Path;
         std::vector<std::string> tags;
-
-        renderer::CubeMap skyBoxImage;
+        ImageResource skyBoxImage{};
 
         VkDescriptorImageInfo imageInfo;
         std::shared_ptr<renderer::DescriptorPool> descriptorPool;
@@ -88,7 +89,7 @@ namespace ECS {
 
         tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
             tinyxml2::XMLElement* skyBox = doc.NewElement("SkyBox");
-            skyBox->SetText(Path.c_str());
+            skyBox->SetText(skyBoxImage.c_str());
             skyBox->SetAttribute("Right", tags[0].c_str());
             skyBox->SetAttribute("Left", tags[1].c_str());
             skyBox->SetAttribute("Up", tags[2].c_str());
@@ -99,7 +100,7 @@ namespace ECS {
         }
     };
 
-    struct PointLight : public Component {
+    struct PointLight : public Component {  
         PointLight() = default;
         PointLight(glm::vec3 color, float intensity, float radius) : color(color), intensity(intensity), radius(radius) {}
 
@@ -123,6 +124,7 @@ namespace ECS {
         SpotLight(renderer::Device& device, Window& window, glm::vec3 color, float intensity, glm::vec2 resolution, VkRenderPass pass, VkSampler sampler, std::unique_ptr<renderer::DescriptorSetLayout>& setLayout) : 
         color{color}, intensity{intensity}, resolution{resolution}, aspect{static_cast<float>(resolution.x) / static_cast<float>(resolution.y)} {
 
+            shadowMap.device = device.device();
             // create images ===========================================================================
 
             VkFormat depthFormat = device.findSupportedFormat({VK_FORMAT_D32_SFLOAT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
@@ -216,6 +218,8 @@ namespace ECS {
         float aspect;
 
         renderer::AllocatedImage shadowMap{};
+        //ImageResource shadowMap;
+
         VkFramebuffer frameBuffer;
 
         VkDescriptorImageInfo descriptorImageInfo;
@@ -236,6 +240,9 @@ namespace ECS {
         glm::vec3 translation{};
         glm::vec3 scale{1.0f, 1.0f, 1.0f};
         glm::vec3 rotation{};
+        
+        uint64_t uniqueID;
+        std::string name = nullptr; //TODO: implement for editor use only 
 
         // Matrix corrsponds to Translate * Ry * Rx * Rz * Scale
         // Rotations correspond to Tait-bryan angles of Y(1), X(2), Z(3)
@@ -298,9 +305,11 @@ namespace ECS {
             };
         }
 
+        //TODO: Ponder why i used this-> ???
         tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
             tinyxml2::XMLElement* transform = doc.NewElement("Transform");
-            
+            transform->SetAttribute("ID", this->uniqueID);
+
             tinyxml2::XMLElement* translation = doc.NewElement("Translation");
             translation->SetAttribute("x", this->translation.x);
             translation->SetAttribute("y", this->translation.y);

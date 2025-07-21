@@ -84,7 +84,7 @@ namespace engine {
             ECS::Material& material = assetManager.GetComponent<ECS::Material>(entity);
     
             //push constants ==================================================
-        PushConstant push{};
+            PushConstant push{};
             push.modelMatrix = transform.mat4();
             push.normalMatrix = transform.normalMatrix();
             vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstant), &push);
@@ -111,18 +111,18 @@ namespace engine {
     }
 
     void MaterialSystem::cleanup(ECS::AssetSystem& assetManager) {
-        for(auto& entity : entities) {
-            ECS::Material& material = assetManager.GetComponent<ECS::Material>(entity);
-            vkDestroyImageView(device.device(), material.albedo.imageView, nullptr);
-            vkDestroyImage(device.device(), material.albedo.image, nullptr);
-            vkFreeMemory(device.device(), material.albedo.memory, nullptr);
+        // for(auto& entity : entities) {
+        //     ECS::Material& material = assetManager.GetComponent<ECS::Material>(entity);
+        //     vkDestroyImageView(device.device(), material.albedo.imageView, nullptr);
+        //     vkDestroyImage(device.device(), material.albedo.image, nullptr);
+        //     vkFreeMemory(device.device(), material.albedo.memory, nullptr);
 
-            vkDestroyImageView(device.device(), material.normal.imageView, nullptr);
-            vkDestroyImage(device.device(), material.normal.image, nullptr);
-            vkFreeMemory(device.device(), material.normal.memory, nullptr);
+        //     vkDestroyImageView(device.device(), material.normal.imageView, nullptr);
+        //     vkDestroyImage(device.device(), material.normal.image, nullptr);
+        //     vkFreeMemory(device.device(), material.normal.memory, nullptr);
 
-            //dont need to destroy descriptor things since the abstraction takes care of it already :)
-            //already destroying the descriptor set layout and sampler in the destructor
-        }
+        //     //dont need to destroy descriptor things since the abstraction takes care of it already :)
+        //     //already destroying the descriptor set layout and sampler in the destructor
+        // }
     }
 }

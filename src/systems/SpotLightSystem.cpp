@@ -349,15 +349,15 @@ namespace engine {
     }
 
     void SpotLightSystem::cleanup(ECS::AssetSystem& assetManager) {
-        for(auto& entity : entities) {
-            ECS::SpotLight& spotLight = assetManager.GetComponent<ECS::SpotLight>(entity);
+        // for(auto& entity : entities) {
+        //     ECS::SpotLight& spotLight = assetManager.GetComponent<ECS::SpotLight>(entity);
 
-            vkDestroyImageView(renderer.device.device(), spotLight.shadowMap.imageView, nullptr);
-            vkDestroyImage(renderer.device.device(), spotLight.shadowMap.image, nullptr);
-            vkFreeMemory(renderer.device.device(), spotLight.shadowMap.memory, nullptr);
+        //     vkDestroyImageView(renderer.device.device(), spotLight.shadowMap.imageView, nullptr);
+        //     vkDestroyImage(renderer.device.device(), spotLight.shadowMap.image, nullptr);
+        //     vkFreeMemory(renderer.device.device(), spotLight.shadowMap.memory, nullptr);
 
-            vkDestroyFramebuffer(renderer.device.device(), spotLight.frameBuffer, nullptr);
+        //     vkDestroyFramebuffer(renderer.device.device(), spotLight.frameBuffer, nullptr);
 
-        }
+        // }
     }
 }

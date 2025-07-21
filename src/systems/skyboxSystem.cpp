@@ -120,14 +120,14 @@ namespace engine {
     }
 
     void SkyboxSystem::cleanup(ECS::AssetSystem& assetManager) {
-        for(auto& entity : entities) {
-            ECS::SkyBox& skybox = assetManager.GetComponent<ECS::SkyBox>(entity);
-            vkDestroyImageView(device.device(), skybox.skyBoxImage.imageView, nullptr);
-            vkDestroyImage(device.device(), skybox.skyBoxImage.image, nullptr);
-            vkFreeMemory(device.device(), skybox.skyBoxImage.memory, nullptr);
+        // for(auto& entity : entities) {
+        //     ECS::SkyBox& skybox = assetManager.GetComponent<ECS::SkyBox>(entity);
+        //     vkDestroyImageView(device.device(), skybox.skyBoxImage.imageView, nullptr);
+        //     vkDestroyImage(device.device(), skybox.skyBoxImage.image, nullptr);
+        //     vkFreeMemory(device.device(), skybox.skyBoxImage.memory, nullptr);
 
-            //dont need to destroy descriptor things since the abstraction takes care of it already :)
-            //already destroying the descriptor set layout and sampler in the destructor
-        }
+        //     //dont need to destroy descriptor things since the abstraction takes care of it already :)
+        //     //already destroying the descriptor set layout and sampler in the destructor
+        // }
     }
 }

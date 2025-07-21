@@ -9,7 +9,7 @@ namespace renderer {
     class RenderPass {
         public:
             RenderPass(Device& device, VkRenderPassCreateInfo* info, VkExtent2D extent);
-            RenderPass(Device& device, VkRenderPassCreateInfo* info, std::vector<AllocatedImage> images, VkExtent2D extent);
+            //RenderPass(Device& device, VkRenderPassCreateInfo* info, std::vector<AllocatedImage> images, VkExtent2D extent);
             ~RenderPass();
 
             // Not copyable or movable
