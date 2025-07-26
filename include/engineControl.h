@@ -13,7 +13,7 @@ bool runFrame();
 void resize(int width, int height);
 
 void loadCollection(std::string);
-void unloadData();
+void unloadData(std::string);
 
 void destroyEngine();
 

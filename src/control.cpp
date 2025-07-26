@@ -25,7 +25,7 @@ void createEngine(int width, int height, HWND handle) {
     //TODO: refactor =====================================================
 	ECS::Entity viewportEntity = assetSystem->CreateEntity();
 	ECS::Transform& viewportTransform = assetSystem->AddComponent(viewportEntity, ECS::Transform{glm::vec3(0.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
-	ECS::Camera& viewportCamera = assetSystem->AddComponent(viewportEntity, ECS::Camera{0.1, 5000});
+	ECS::Camera& viewportCamera = assetSystem->AddComponent(viewportEntity, ECS::Camera{0.1f, 5000.0f});
 
     // moveInPlaneXZ(window, viewportTransform, dt, 2.5f, 3.0f);
     
@@ -83,13 +83,8 @@ void buttonState(Key key, bool state) {
 #undef Entity
 #endif
 
-void unloadData() {
-    std::vector<ECS::Entity> collection{};
-    for(auto pair : assetSystem->getAllEntities()){
-        if(pair.first != Engine->viewerObject)
-            collection.push_back(pair.first);
-    }
-    Engine->saveDataManager->unloadData(collection, *assetSystem);
+void unloadData(std::string fileName) {
+    Engine->saveDataManager->unloadData(fileName, *assetSystem);
 }
 
 void loadCollection(std::string fileName) {

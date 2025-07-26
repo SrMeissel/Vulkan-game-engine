@@ -1,5 +1,5 @@
 <Collection>
-    <Entity>
+    <Entity ID="13722764936989654141">
         <Transform>
             <Translation x="0.1" y="0" z="0"/>
             <Rotation x="0" y="0" z="0"/>
@@ -8,7 +8,7 @@
         <Renderable>/models/colored_cube.obj</Renderable>
         <Script>Rotate</Script>
     </Entity>
-    <Entity>
+    <Entity ID="18017732231858171459">
         <Transform>
             <Translation x="-1" y="-0.5" z="2.5"/>
             <Rotation x="0" y="0" z="0"/>
@@ -17,7 +17,7 @@
         <Renderable>/models/sphere.obj</Renderable>
         <Script>TransformExpirement</Script>
     </Entity>
-    <Entity>
+    <Entity ID="3865955454639481950">
         <Transform>
             <Translation x="0" y="0.5" z="0"/>
             <Rotation x="0" y="0" z="0"/>
@@ -25,7 +25,7 @@
         </Transform>
         <Renderable>/models/quad.obj</Renderable>
     </Entity>
-    <Entity>
+    <Entity ID="8160922750937019754">
         <Transform>
             <Translation x="0" y="-1" z="-4"/>
             <Rotation x="0" y="0" z="0"/>

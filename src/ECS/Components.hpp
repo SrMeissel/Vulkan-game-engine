@@ -241,8 +241,8 @@ namespace ECS {
         glm::vec3 scale{1.0f, 1.0f, 1.0f};
         glm::vec3 rotation{};
         
-        uint64_t uniqueID;
-        std::string name = nullptr; //TODO: implement for editor use only 
+        uint64_t uniqueID{};
+        std::string name{}; //TODO: implement for editor use only 
 
         // Matrix corrsponds to Translate * Ry * Rx * Rz * Scale
         // Rotations correspond to Tait-bryan angles of Y(1), X(2), Z(3)

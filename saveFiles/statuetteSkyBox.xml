@@ -1,5 +1,5 @@
 <Collection>
-    <Entity>
+    <Entity ID="6944333964629246467">
         <Transform>
             <Translation x="0" y="0" z="0"/>
             <Rotation x="0" y="0" z="0"/>
@@ -7,7 +7,7 @@
         </Transform>
         <Renderable>/models/smooth_vase.obj</Renderable>
     </Entity>
-    <Entity>
+    <Entity ID="1239301261355473217">
         <Transform>
             <Translation x="-7" y="0" z="-7"/>
             <Rotation x="0" y="0" z="0"/>
@@ -15,7 +15,7 @@
         </Transform>
         <Renderable>/models/colored_cube.obj</Renderable>
     </Entity>
-    <Entity>
+    <Entity ID="5534268557118335846">
         <Transform>
             <Translation x="-1" y="-1" z="2.5"/>
             <Rotation x="0" y="0" z="0"/>
@@ -24,7 +24,7 @@
         <Renderable>/models/sphere.obj</Renderable>
         <Script>TransformExpirement</Script>
     </Entity>
-    <Entity>
+    <Entity ID="9829235855305314450">
         <Transform>
             <Translation x="0" y="0" z="0"/>
             <Rotation x="0" y="0" z="0"/>
@@ -32,7 +32,7 @@
         </Transform>
         <Renderable>/models/quad.obj</Renderable>
     </Entity>
-    <Entity>
+    <Entity ID="4124203149444272552">
         <Transform>
             <Translation x="10" y="0" z="5"/>
             <Rotation x="0" y="0" z="0"/>
@@ -41,7 +41,7 @@
         <Renderable>/textures/Experimental/Castle Column_scout/Castle Column_LOD0__scout.gltf</Renderable>
         <Material albedoPath="/textures/Experimental/Castle Column_scout/Albedo_4K__scout.jpg" normalPath="/textures/Experimental/Castle Column_scout/Normal_4K_LOD0_scout.jpg"/>
     </Entity>
-    <Entity>
+    <Entity ID="8419170446465244024">
         <Transform>
             <Translation x="-10" y="0" z="5"/>
             <Rotation x="0" y="0" z="0"/>
@@ -50,7 +50,7 @@
         <Renderable>/textures/Experimental/Castle Column_scout/Castle Column_LOD0__scout.gltf</Renderable>
         <Material albedoPath="/textures/Experimental/Castle Column_scout/Albedo_4K__scout.jpg" normalPath="/textures/Experimental/Castle Column_scout/Normal_4K_LOD0_scout.jpg"/>
     </Entity>
-    <Entity>
+    <Entity ID="2714137743533929856">
         <Transform>
             <Translation x="0" y="0" z="10"/>
             <Rotation x="0" y="0" z="0"/>
@@ -59,7 +59,7 @@
         <Renderable>/textures/Experimental/Decorative Stone Relief Sculpture_umkmaahfa/Decorative Stone Relief Sculpture_LOD0__umkmaahfa.gltf</Renderable>
         <Material albedoPath="/textures/Experimental/Decorative Stone Relief Sculpture_umkmaahfa/Albedo_4K__umkmaahfa.jpg" normalPath="/textures/Experimental/Decorative Stone Relief Sculpture_umkmaahfa/Normal_4K_LOD0_umkmaahfa.jpg"/>
     </Entity>
-    <Entity>
+    <Entity ID="7009105037650692067">
         <Transform>
             <Translation x="0" y="0" z="-3"/>
             <Rotation x="0" y="0" z="0"/>
@@ -68,7 +68,7 @@
         <Renderable>/textures/Experimental/Japanese Stone Plinth_veuiaauga/Japanese Stone Plinth_LOD0__veuiaauga.gltf</Renderable>
         <Material albedoPath="/textures/Experimental/Japanese Stone Plinth_veuiaauga/Albedo_4K__veuiaauga.jpg" normalPath="/textures/Experimental/Japanese Stone Plinth_veuiaauga/Normal_4K_LOD0_veuiaauga.jpg"/>
     </Entity>
-    <Entity>
+    <Entity ID="1304072332056581453">
         <Transform>
             <Translation x="0" y="-1.5" z="-3"/>
             <Rotation x="0" y="0" z="0"/>
@@ -77,7 +77,7 @@
         <Renderable>/textures/Experimental/Female Bust Statuette_ugsicgxva/Female Bust Statuette_LOD0__ugsicgxva.gltf</Renderable>
         <Material albedoPath="/textures/Experimental/Female Bust Statuette_ugsicgxva/Albedo_4K__ugsicgxva.jpg" normalPath="/textures/Experimental/Female Bust Statuette_ugsicgxva/Normal_4K_LOD0_ugsicgxva.jpg"/>
     </Entity>
-    <Entity>
+    <Entity ID="5599039630218697917">
         <Transform>
             <Translation x="0" y="-1" z="-4"/>
             <Rotation x="0" y="0" z="0"/>
@@ -85,8 +85,8 @@
         </Transform>
         <PointLight R="1" G="0.95999998" B="0.50999999" intensity="5" radius="4"/>
     </Entity>
-    <Entity>
-        <Transform>
+    <Entity ID="5625089893350878954">
+        <Transform>s
             <Translation x="0" y="0" z="0"/>
             <Rotation x="0" y="0" z="0"/>
             <Scale x="1" y="1" z="1"/>

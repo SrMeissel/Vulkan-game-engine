@@ -38,7 +38,7 @@ ${PROJECT_SOURCE_DIR}/src/*.h
 ${PROJECT_SOURCE_DIR}/libs/tinyXML/*.cpp
 )
 
-option(IS_STATIC_LIB "build as lib" OFF)
+option(IS_STATIC_LIB "build as lib" ON)
 option(IS_CONSOLE_APP "show terminal" ON)
 
 # NOTE: My libs are built for debug, not release. at the very least, Assimp does not like the difference :(

@@ -32,52 +32,28 @@ namespace ECS {
                 doc.InsertFirstChild(pRoot);
 
                 for(auto& pair : savedComponents) {
-
-                    //look for existing ID
-                    if(uniqueIds.find(pair.first) == uniqueIds.end()) {     
-                        uniqueIds.insert({pair.first, generateEntityID()});
-                    }
-
                     tinyxml2::XMLElement* pElement = doc.NewElement("Entity");
-                    //pElement->SetAttribute("ID", uniqueIds.find(pair.first)->second); //add ID to save file
-
+                    //TODO: add ID attribute :)
                     for(auto& component : pair.second) {
                         tinyxml2::XMLElement* pComponent = component->save(doc);
                         pElement->InsertEndChild(pComponent);
                     }
                     pRoot->InsertEndChild(pElement);
                 }
-
                 doc.SaveFile(((std::string)SOURCE_PATH + fileName).c_str());
             }
             void loadData(std::string fileName, AssetSystem& assetSystem) {
                 tinyxml2::XMLDocument doc;
-
-                //FILE* file = fopen(((std::string)SOURCE_PATH + fileName).c_str(), "rb");
-                FILE* file = fopen(fileName.c_str(), "rb");
-                if (file == NULL) {
-                    std::cout << "file bad \n";
-                    throw std::runtime_error("file bad");
-                }
-
-                if(doc.LoadFile(file) != 0) {
-                    throw std::runtime_error("load sucked");
-                }
+                openXML(fileName, doc);
 
                 tinyxml2::XMLElement* pRoot = doc.FirstChildElement("Collection");
                 tinyxml2::XMLElement* pEntity = pRoot->FirstChildElement("Entity");
                 while(pEntity) {
-                    Entity entity = assetSystem.CreateEntity();
-                    // tinyxml2::XMLError result = pEntity->QueryUnsigned64Attribute("ID", &id);
-                    // if (result == tinyxml2::XML_SUCCESS) {
-                    //     uniqueIds.insert({entity, id});
-                    // } else {
-                    //     uniqueIds.insert({entity, generateEntityID()});
-                    // }
-                    std::cout << "new Entity being loaded \n";
+                    Entity entity = 0;
+                    pEntity->QueryUnsigned64Attribute("ID", &entity);
+                    entity = assetSystem.CreateEntity(entity); //ensures entity is valid.
 
                     tinyxml2::XMLElement* pComponent = pEntity->FirstChildElement();
-
                     while(pComponent) {
                         const char* componentName = pComponent->Name();
 
@@ -100,15 +76,6 @@ namespace ECS {
                             pScale->QueryFloatAttribute("y", &transform.scale.y);
                             pScale->QueryFloatAttribute("z", &transform.scale.z);
 
-                            uint64_t id;
-                            tinyxml2::XMLError result = pComponent->QueryUnsigned64Attribute("ID", &id);
-                            if (result == tinyxml2::XML_SUCCESS) {
-                                transform.uniqueID = id;
-                            } else {
-                                std::cout << "entity does not have a unique ID, yikes \n";
-                                transform.uniqueID = id;
-                            }
-
                             assetSystem.AddComponent(entity, transform);
                             
                         } else if (strcmp(componentName, "Renderable") == 0) {
@@ -118,17 +85,17 @@ namespace ECS {
                             assetSystem.AddComponent(entity, Script{pComponent->GetText(), scriptingSystem.assembly, scriptingSystem.appDomain });
 
                         } else if (strcmp(componentName, "Material") == 0) {
-                            std::cout << "creating Material \n";
+                            std::cout << "Creating Material... ";
                             const char* albedoPath;
                             pComponent->QueryStringAttribute("albedoPath", &albedoPath);
                             const char* normalPath;
                             pComponent->QueryStringAttribute("normalPath", &normalPath);
                             
                             assetSystem.AddComponent(entity, Importer::loadMaterial(albedoPath, normalPath, renderer, materialSystem.getMaterialSetLayout()));
-                            std::cout << "material Made \n";
+                            std::cout << "Material Made \n";
                             
                         } else if (strcmp(componentName, "PointLight") == 0) {
-                            std::cout << "creating Poinlight \n";
+                            std::cout << "Creating Pointlight... ";
                             PointLight pointLight;
                             pComponent->QueryFloatAttribute("R", &pointLight.color.r);
                             pComponent->QueryFloatAttribute("G", &pointLight.color.g);
@@ -140,7 +107,7 @@ namespace ECS {
                             std::cout << "Pointlight Made \n";
 
                         } else if (strcmp(componentName, "SkyBox") == 0) {
-                            std::cout << "creating SkyBox \n";
+                            std::cout << "Creating SkyBox... ";
                             std::vector<std::string> tags;
                             tags.push_back(pComponent->Attribute("Right"));
                             tags.push_back(pComponent->Attribute("Left"));
@@ -151,31 +118,52 @@ namespace ECS {
 
                             SkyBox skybox = Importer::loadSkyBox(pComponent->GetText(), tags, renderer, skyboxSystem.getSetLayout());
                             assetSystem.AddComponent(entity, skybox);
-                            std::cout << "SkyBox made \n";
+                            std::cout << "SkyBox Made \n";
                         }
                         else {
-                            std::cout << "Component not found" << "\n";
+                            std::cout << "Component not found: " << componentName << "\n";
                         }
-
                         pComponent = pComponent->NextSiblingElement();
                     }
                     pEntity = pEntity->NextSiblingElement();
                 }
+                doc.Clear();
+            }
 
+            void unloadData(std::string fileName, AssetSystem& assetSystem) {
+                if(fileName.empty()) return;
+                tinyxml2::XMLDocument doc;
+                openXML(fileName, doc);
+
+                tinyxml2::XMLElement* pRoot = doc.FirstChildElement("Collection");
+                tinyxml2::XMLElement* pEntity = pRoot->FirstChildElement("Entity");
+                while(pEntity) {
+                    Entity entity = 0;
+                    pEntity->QueryUnsigned64Attribute("ID", &entity);
+                    assetSystem.DestroyEntity(entity);
+                    pEntity = pEntity->NextSiblingElement();
+                }
+            }
+            
+        private:
+            void openXML(std::string fileName,  tinyxml2::XMLDocument& doc) {
+
+                //FILE* file = fopen(((std::string)SOURCE_PATH + fileName).c_str(), "rb");
+                FILE* file = fopen(fileName.c_str(), "rb");
+                if (file == NULL) {
+                    std::cout << "file bad \n";
+                    throw std::runtime_error("file bad");
+                }
+                if(doc.LoadFile(file) != 0) {
+                    std::cout << "load sucked \n";
+                    throw std::runtime_error("load sucked");
+                }
                 if (fclose(file) != 0) {
+                    std::cout << "close bad \n";
                     throw std::runtime_error("close bad");
                 }
             }
 
-            //TODO: right now Im going to make the unload EVERYTHING, but I want to unload specific entities from a file
-            void unloadData(std::vector<Entity> entities, AssetSystem& assetSystem) {
-                for(Entity thing : entities) {
-                    assetSystem.DestroyEntity(thing);
-                }
-            }
-
-                    std::unordered_map<Entity, uint32_t> uniqueIds;
-        private:
             renderer::Renderer& renderer;
             engine::ScriptingSystem& scriptingSystem;
             engine::MaterialSystem& materialSystem;

@@ -135,9 +135,8 @@ namespace renderer {
 
         globalPool = DescriptorPool::Builder(device)
 	.setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
-	.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+	.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, static_cast<uint32_t>(SwapChain::MAX_FRAMES_IN_FLIGHT))
 	.build();
-
         //init UBO
          for(int i=0; i < uboBuffers.size(); i++) {
             uboBuffers[i] = std::make_unique<Buffer>(device, sizeof(GlobalUbo), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);

@@ -6,6 +6,8 @@
 #include "Components.hpp"
 
 #include <type_traits>
+#include <random>
+#include <chrono>
 
 namespace ECS {
     inline uint64_t generateEntityID() {
@@ -36,14 +38,12 @@ namespace ECS {
 
     // Entity functions ===========================================================
 
-    Entity CreateEntity() {
-		Entity entity = entityManager->CreateEntity();
-		
+    Entity CreateEntity(Entity entity = 0) {
+		if(entity == 0) entity = generateEntityID();
+		entityManager->CreateEntity();
 		std::vector<Component*> components;
-        savedComponents.insert({entity, components});
-		
+        savedComponents.insert({entity, components});		
 		return entity;
-		
 	}
 
 	void DestroyEntity(Entity entity) {
@@ -77,7 +77,6 @@ namespace ECS {
 		auto signature = entityManager->GetSignature(entity); // make everyone aware that you did the thing
 		signature.set(componentManager->GetComponentType<T>(), true);
 		entityManager->SetSignature(entity, signature);
-
 		systemManager->EntitySignatureChanged(entity, signature);
 
 		return placedComponent;
@@ -107,11 +106,6 @@ namespace ECS {
 	ComponentType GetComponentType() {
 		return componentManager->GetComponentType<T>();
 	}
-
-	// template<typename T>
-	// bool HasComponent(Entity entity) {
-	// 	return componentManager->HasComponent<T>(entity);
-	// }
 
     // System functions ===========================================================
 
