@@ -26,6 +26,7 @@ namespace ECS {
         public:
             SaveDataManager(renderer::Renderer& renderer, engine::ScriptingSystem& scriptingSystem, engine::MaterialSystem& materialSystem, engine::SkyboxSystem& skyboxSystem) : renderer(renderer), scriptingSystem(scriptingSystem), materialSystem(materialSystem), skyboxSystem{skyboxSystem} {};
 
+            //TODO: make sure this saves entities with their ID
             void saveData(const char* fileName, std::unordered_map<Entity, std::vector<Component*>>& savedComponents){
                 tinyxml2::XMLDocument doc;
                 tinyxml2::XMLNode* pRoot = doc.NewElement("Collection");
@@ -33,7 +34,6 @@ namespace ECS {
 
                 for(auto& pair : savedComponents) {
                     tinyxml2::XMLElement* pElement = doc.NewElement("Entity");
-                    //TODO: add ID attribute :)
                     for(auto& component : pair.second) {
                         tinyxml2::XMLElement* pComponent = component->save(doc);
                         pElement->InsertEndChild(pComponent);
@@ -147,8 +147,6 @@ namespace ECS {
             
         private:
             void openXML(std::string fileName,  tinyxml2::XMLDocument& doc) {
-
-                //FILE* file = fopen(((std::string)SOURCE_PATH + fileName).c_str(), "rb");
                 FILE* file = fopen(fileName.c_str(), "rb");
                 if (file == NULL) {
                     std::cout << "file bad \n";

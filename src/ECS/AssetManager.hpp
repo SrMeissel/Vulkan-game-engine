@@ -19,7 +19,6 @@ namespace ECS {
 
     class AssetSystem {
     public:
-    //not just constructor? seems like a constructor to me.
 
 	AssetSystem() {
 		componentManager = std::make_unique<ComponentManager>();
@@ -52,14 +51,6 @@ namespace ECS {
 		systemManager->EntityDestroyed(entity); // good motto.
 		savedComponents.erase(entity);
 	}
-
-	// std::vector<Entity> getAllEntities() {
-	// 	return entityManager->getAllEntities();
-	// }
-
-	// Signature GetEntitySignature(Entity entity) {
-	// 	return entityManager->GetSignature(entity);
-	// }
 
     // Component functions ===========================================================
 

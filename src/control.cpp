@@ -20,6 +20,14 @@ void createEngine(int width, int height, HWND handle) {
     window = new Window_win{width, height, handle};
     Renderer = new renderer::Renderer{*window};
     assetSystem = new ECS::AssetSystem;
+	assetSystem->RegisterComponent<ECS::Transform>();
+	assetSystem->RegisterComponent<ECS::Camera>();
+	assetSystem->RegisterComponent<ECS::Renderable>();
+	assetSystem->RegisterComponent<ECS::Material>();
+	assetSystem->RegisterComponent<ECS::Script>();
+	assetSystem->RegisterComponent<ECS::PointLight>();
+	assetSystem->RegisterComponent<ECS::SpotLight>();
+	assetSystem->RegisterComponent<ECS::SkyBox>();        
     Engine = new engine::engine{*Renderer, *assetSystem};
 
     //TODO: refactor =====================================================

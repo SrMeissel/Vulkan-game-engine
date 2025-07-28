@@ -34,6 +34,14 @@ void printMat4(const glm::mat4& mat) {
         renderer::Renderer renderer{window};
 
         ECS::AssetSystem assetSystem;
+		assetSystem.RegisterComponent<ECS::Transform>();
+		assetSystem.RegisterComponent<ECS::Camera>();
+		assetSystem.RegisterComponent<ECS::Renderable>();
+		assetSystem.RegisterComponent<ECS::Material>();
+		assetSystem.RegisterComponent<ECS::Script>();
+		assetSystem.RegisterComponent<ECS::PointLight>();
+		assetSystem.RegisterComponent<ECS::SpotLight>();
+		assetSystem.RegisterComponent<ECS::SkyBox>();        
 
         engine::engine engine{renderer, assetSystem};
 

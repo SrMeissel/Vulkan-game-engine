@@ -241,7 +241,6 @@ namespace ECS {
         glm::vec3 scale{1.0f, 1.0f, 1.0f};
         glm::vec3 rotation{};
         
-        uint64_t uniqueID{};
         std::string name{}; //TODO: implement for editor use only 
 
         // Matrix corrsponds to Translate * Ry * Rx * Rz * Scale
@@ -305,10 +304,9 @@ namespace ECS {
             };
         }
 
-        //TODO: Ponder why i used this-> ???
+        //TODO: Ponder why i used "this->" ???
         tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) override {
             tinyxml2::XMLElement* transform = doc.NewElement("Transform");
-            transform->SetAttribute("ID", this->uniqueID);
 
             tinyxml2::XMLElement* translation = doc.NewElement("Translation");
             translation->SetAttribute("x", this->translation.x);
