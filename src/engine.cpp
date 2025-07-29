@@ -32,6 +32,8 @@ namespace engine {
         //I need a list of all renderable objects for shadows. This makes me want to detach the entity list from systems, It would be a lot more simple.
         renderables = assetSystem.RegisterSystem<Renderables>();
 
+        std::cout << "about to create system signatures\n";
+
         ECS::Signature renderablesSignature;
         renderablesSignature.set(assetSystem.GetComponentType<ECS::Renderable>());
         renderablesSignature.set(assetSystem.GetComponentType<ECS::Transform>());
@@ -71,6 +73,8 @@ namespace engine {
         pointLightSignature.set(assetSystem.GetComponentType<ECS::Transform>());
         skyboxSigniture.set(assetSystem.GetComponentType<ECS::SkyBox>());
         assetSystem.SetSystemSignature<SkyboxSystem>(skyboxSigniture);
+
+        std::cout << "already created system signatures\n";
 
         saveDataManager = new ECS::SaveDataManager{renderer, *scriptingSystem, *materialSystem, *skyboxSystem}; 
 

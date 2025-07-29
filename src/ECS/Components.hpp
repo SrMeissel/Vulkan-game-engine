@@ -55,10 +55,8 @@ namespace ECS {
     struct Material : public Component {
         Material() = default;
 
-        //renderer::AllocatedImage albedo;
         ImageResource albedo;
         ImageResource normal;
-        //renderer::AllocatedImage normal;
 
         VkDescriptorImageInfo albedoImageInfo;
         VkDescriptorImageInfo normalImageInfo;

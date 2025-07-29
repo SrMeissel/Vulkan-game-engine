@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <functional>
 
 #include "EntityManager.hpp"
 
@@ -13,9 +14,9 @@ namespace ECS {
 
     template<typename T>
     class ComponentArray : public ComponentArrayParent {
-    using Deleter = std::function<void(T&)>;
-    
     public:
+        ComponentArray(std::function<void(const T&)> cleaner) : cleaner{cleaner} {};
+
         T& InsertData(Entity entity, T component) {
     		assert(entityToIndex.find(entity) == entityToIndex.end() && "Component added to same entity more than once.");
 
@@ -31,7 +32,7 @@ namespace ECS {
         void RemoveData(Entity entity) {
             assert(entityToIndex.find(entity) != entityToIndex.end() && "Removing non-existent component.");
 
-            deleter(componentArray[entityToIndex[entity]]);
+            cleaner(componentArray[entityToIndex[entity]]);
 
             //instead of deleting any information, the data at the end of the array is moved to the stale spot
             size_t indexOfRemovedEntity = entityToIndex[entity];
@@ -61,12 +62,12 @@ namespace ECS {
 
     private:
         std::array<T, MAX_ENTITIES> componentArray;
-        size_t arraySize;
+        size_t arraySize{0};
 
         std::unordered_map<Entity, size_t> entityToIndex;
         std::unordered_map<size_t, Entity> indexToEntity;
 
-        Deleter deleter;
+        std::function<void(const T&)> cleaner;
     };
 
 }

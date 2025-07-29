@@ -15,14 +15,14 @@ namespace ECS {
     public:
         //this is a better solution than the current static GameObject ID function
         template<typename T>
-        void RegisterComponent() { 
+        void RegisterComponent(std::function<void(const T&)> cleaner) { 
             const char* typeName = typeid(T).name();
 
             assert(componentTypes.find(typeName) == componentTypes.end() && "Registering component type more than once.");
 
             //creates and stores the component ID and it's component array
             componentTypes.insert({typeName, nextComponentType});
-            componentArrays.insert({typeName, std::make_shared<ComponentArray<T>>()});
+            componentArrays.insert({typeName, std::make_shared<ComponentArray<T>>(cleaner)});
 
             // Increment the value so that the next component registered will be different
             ++nextComponentType;

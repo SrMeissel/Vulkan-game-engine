@@ -24,15 +24,6 @@ namespace ECS {
 		componentManager = std::make_unique<ComponentManager>();
 		entityManager = std::make_unique<EntityManager>();
 		systemManager = std::make_unique<SystemManager>();
-
-		RegisterComponent<Transform>();
-		RegisterComponent<Camera>();
-		RegisterComponent<Renderable>();
-		RegisterComponent<Material>();
-		RegisterComponent<Script>();
-		RegisterComponent<PointLight>();
-		RegisterComponent<SpotLight>();
-		RegisterComponent<SkyBox>();
 	}
 
     // Entity functions ===========================================================
@@ -55,9 +46,9 @@ namespace ECS {
     // Component functions ===========================================================
 
     template<typename T>
-	void RegisterComponent() {
+	void RegisterComponent(std::function<void(const T&)> cleaner = [](const T&){std::cout << "empty cleaner called \n";}) {
 		static_assert(std::is_base_of<Component, T>::value, "T must be derived from Component");
-		componentManager->RegisterComponent<T>();
+		componentManager->RegisterComponent<T>(cleaner);
 	}
 
     template<typename T>
