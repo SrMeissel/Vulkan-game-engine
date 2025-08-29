@@ -56,7 +56,7 @@ namespace engine {
         lightUBO->map();
 
         UBOPool = renderer::DescriptorPool::Builder(renderer.device)
-        .addPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 3) // <==================
+        .addPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 6) // <==================
         .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2)
         .build();
 
