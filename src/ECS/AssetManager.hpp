@@ -46,7 +46,7 @@ namespace ECS {
     // Component functions ===========================================================
 
     template<typename T>
-	void RegisterComponent(std::function<void(const T&)> cleaner = [](const T&){std::cout << "empty cleaner called \n";}) {
+	void RegisterComponent(std::function<void(const T&)> cleaner = [](const T&){}) {
 		static_assert(std::is_base_of<Component, T>::value, "T must be derived from Component");
 		componentManager->RegisterComponent<T>(cleaner);
 	}
