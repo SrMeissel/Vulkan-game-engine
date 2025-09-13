@@ -23,7 +23,7 @@ void createEngine(int width, int height, HWND handle) {
 	assetSystem->RegisterComponent<ECS::Transform>();
 	assetSystem->RegisterComponent<ECS::Camera>();
 	assetSystem->RegisterComponent<ECS::Renderable>();
-	assetSystem->RegisterComponent<ECS::Material>();
+	assetSystem->RegisterComponent<ECS::Material>([](const ECS::Material& mat){Renderer->imageGallery.removeExhibit(mat.albedo); Renderer->imageGallery.removeExhibit(mat.normal);});
 	assetSystem->RegisterComponent<ECS::Script>();
 	assetSystem->RegisterComponent<ECS::PointLight>();
 	assetSystem->RegisterComponent<ECS::SpotLight>();

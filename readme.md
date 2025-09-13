@@ -28,7 +28,7 @@ Sources:
 - <https://www.realtimerendering.com/intersections.html>
 - <https://www.youtube.com/watch?v=eED4bSkYCB8&t=62s>
 
-- I discovered Nvidia Physx, but I dont think I can implement it without completely transitioning to visual studio and I dont want to do that. However I think I can use it's documentation to help me out:
+- I discovered Nvidia Physx, but I rather try making my own. However I think I can use it's documentation to help me out:
 
   - <https://gameworksdocs.nvidia.com/PhysX/4.0/documentation/PhysXGuide/Manual/Index.html>
   - <http://blog.virtualmethodstudio.com/2017/11/physics-101-3-solvers/>
@@ -88,7 +88,7 @@ built in variables for frag shaders:
 - stb - <https://github.com/nothings/stb>
 - glm - <https://github.com/g-truc/glm>
 - tinyobjloader - <https://github.com/tinyobjloader/tinyobjloader>
-- imgui - <https://github.com/ocornut/imgui.git>
+- imgui(legacy) - <https://github.com/ocornut/imgui.git>
 - Mono - <https://www.mono-project.com/>
 - Assimp 5.4.2 <https://github.com/assimp/assimp>
 

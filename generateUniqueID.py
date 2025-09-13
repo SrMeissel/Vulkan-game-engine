@@ -1,3 +1,5 @@
+# this program is meant to provide a simple way to retroactively give ID's to old entities.
+
 import time
 import random
 import sys 
