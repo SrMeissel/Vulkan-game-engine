@@ -213,7 +213,7 @@ namespace engine {
         renderer::DescriptorWriter inputWriter(*inputSetLayout, *UBOPool);
 
         if(inputWriter.writeImages(0, descriptors.data(), 3).build(inputSet) == false)
-            std::cout << "\n failed to write set \n";
+            std::cout << "\n failed to write spotlight set \n";
     }
 
     void SpotLightSystem::RenderShadows(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assets, ECS::System& renderables) {

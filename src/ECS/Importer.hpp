@@ -252,7 +252,7 @@ namespace Importer {
         skybox.imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         skybox.imageInfo.imageView = skyboxImage.imageView;
         skybox.imageInfo.sampler = renderer.defaultSampler;
-        if(writer.writeImage(0, &skybox.imageInfo, 1).build(skybox.descriptorSet) == false) std::cout << "\n failed to write set \n";
+        if(writer.writeImage(0, &skybox.imageInfo, 1).build(skybox.descriptorSet) == false) std::cout << "\n failed to write skybox set \n";
 
         return skybox;
     }
@@ -283,7 +283,7 @@ namespace Importer {
 
             renderer::DescriptorWriter writer(*materialSetLayout, *material.descriptorPool);
 
-            if(writer.writeImage(0, &material.samplerInfo, 1).writeImage(1,&material.albedoImageInfo, 1).writeImage(2,&material.normalImageInfo, 1).build(material.descriptorSet) == false) std::cout << "\n failed to write set \n";
+            if(writer.writeImage(0, &material.samplerInfo, 1).writeImage(1,&material.albedoImageInfo, 1).writeImage(2,&material.normalImageInfo, 1).build(material.descriptorSet) == false) std::cout << "\n failed to write material set \n";
 
             return material;
         }

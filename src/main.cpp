@@ -62,6 +62,8 @@ void printMat4(const glm::mat4& mat) {
 
     engine.viewerObject = viewportEntity;
 
+    engine.saveDataManager->loadData("C:/Users/mizer/dev/Vulkan-game-engine/saveFiles/default.xml", assetSystem);
+
         try{
             auto currentTime = std::chrono::high_resolution_clock::now();
             //bool firstLoopPerFrame = true; not sure how to implement this one

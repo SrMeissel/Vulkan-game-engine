@@ -82,7 +82,7 @@ namespace engine {
         renderer::DescriptorWriter writer(*setLayout, *descriptorPool);
 
         if(writer.writeImages(0, descriptors.data(), 3).build(descriptorSet) == false)
-            std::cout << "\n failed to write set \n";
+            std::cout << "\n failed to write pointlight set \n";
     }
 
     void PointLightSystem::Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assets) {

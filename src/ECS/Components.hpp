@@ -206,7 +206,7 @@ namespace ECS {
             samplerInfo.sampler = sampler;
 
             renderer::DescriptorWriter writer(*setLayout, *descriptorPool);
-            if(writer.writeImage(0, &samplerInfo, 1).writeImage(1,&descriptorImageInfo, 1).build(descriptorSet) == false) std::cout << "\n failed to write set \n";
+            if(writer.writeImage(0, &samplerInfo, 1).writeImage(1,&descriptorImageInfo, 1).build(descriptorSet) == false) std::cout << "\n failed to write spotlight component set \n";
 
         }
 
