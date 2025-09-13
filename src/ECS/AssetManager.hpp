@@ -37,9 +37,9 @@ namespace ECS {
 	}
 
 	void DestroyEntity(Entity entity) {
-		entityManager->DestroyEntity(entity); // do the thing 
-		componentManager->EntityDestroyed(entity); // deal with the repercussions
-		systemManager->EntityDestroyed(entity); // good motto.
+		entityManager->DestroyEntity(entity);
+		componentManager->EntityDestroyed(entity);
+		systemManager->EntityDestroyed(entity);
 		savedComponents.erase(entity);
 	}
 
@@ -53,10 +53,10 @@ namespace ECS {
 
     template<typename T>
 	T& AddComponent(Entity entity, T component) {
-		T& placedComponent = componentManager->AddComponent<T>(entity, component); // do the thing
+		T& placedComponent = componentManager->AddComponent<T>(entity, component);
 		savedComponents[entity].push_back(&placedComponent);
 
-		auto signature = entityManager->GetSignature(entity); // make everyone aware that you did the thing
+		auto signature = entityManager->GetSignature(entity);
 		signature.set(componentManager->GetComponentType<T>(), true);
 		entityManager->SetSignature(entity, signature);
 		systemManager->EntitySignatureChanged(entity, signature);
@@ -108,8 +108,14 @@ namespace ECS {
 
 	// SaveData functions ===========================================================
 
-	std::unordered_map<Entity, std::vector<Component*>>& getAllEntities() {
-		return savedComponents;
+	std::vector<Entity> getAllEntities() {
+
+		std::vector<Entity> Entities;
+		Entities.reserve(savedComponents.size());
+		for(auto pair : savedComponents) {
+			Entities.push_back(pair.first);
+		}
+		return Entities;
 	}
 
     private:
@@ -117,7 +123,6 @@ namespace ECS {
         std::unique_ptr<EntityManager> entityManager;
         std::unique_ptr<SystemManager> systemManager;
 
-		//uses inheritence and virtual functions, is slow but will not be needed each frame, so its ok :)
 		std::unordered_map<Entity, std::vector<Component*>> savedComponents;
     };
 }

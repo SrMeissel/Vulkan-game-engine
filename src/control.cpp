@@ -35,17 +35,12 @@ void createEngine(int width, int height, HWND handle) {
 	ECS::Transform& viewportTransform = assetSystem->AddComponent(viewportEntity, ECS::Transform{glm::vec3(0.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
 	ECS::Camera& viewportCamera = assetSystem->AddComponent(viewportEntity, ECS::Camera{0.1f, 5000.0f});
 
-    std::cout << "created camera entity\n";
-
-    // moveInPlaneXZ(window, viewportTransform, dt, 2.5f, 3.0f);
-    
     viewportCamera.viewMatrix = engine::setViewYXZ(viewportTransform.translation, viewportTransform.rotation);            
     float aspect = Renderer->getAspectRatio();
     viewportCamera.projectionMatrix = engine::setPerspectiveProjection(glm::radians(50.0f), aspect, viewportCamera.nearPlane, viewportCamera.farPlane);
     viewportCamera.inverseViewMatrix = glm::inverse(viewportCamera.viewMatrix);
 
     Engine->viewerObject = viewportEntity;
-    //=========================================================================
 }
 
 void resize(int width, int height) {
@@ -99,4 +94,8 @@ void unloadData(std::string fileName) {
 
 void loadCollection(std::string fileName) {
     Engine->saveDataManager->loadData(fileName, *assetSystem);
+}
+
+std::vector<uint64_t> getAllEntities() {
+    return assetSystem->getAllEntities();
 }
