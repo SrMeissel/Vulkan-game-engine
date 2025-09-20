@@ -1,7 +1,6 @@
 #pragma once
 
 #include "keyMap.h"
-#include <bitset>
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #define WIN32_LEAN_AND_MEAN
@@ -10,6 +9,7 @@
 #define GLFW_INCLUDE_VULKAN 
 #include <GLFW/glfw3.h>
 #include <string>
+#include <bitset>
 
 #include <vulkan/vulkan.h>
 

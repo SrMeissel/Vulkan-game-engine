@@ -2,10 +2,6 @@
 
 #include "windowManager.hpp"
 
-// std lib headers
-#include <string>
-#include <vector>
-
 namespace renderer {
 
 struct SwapChainSupportDetails {

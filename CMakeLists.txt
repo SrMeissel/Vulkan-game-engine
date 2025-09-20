@@ -10,6 +10,7 @@ message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C Compiler: ${CMAKE_C_COMPILER}")
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    message(STATUS "Generating Compile_Commands")
     set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 endif()
 
@@ -43,7 +44,7 @@ option(IS_CONSOLE_APP "show terminal" ON)
 
 # NOTE: My libs are built for debug, not release. at the very least, Assimp does not like the difference :(
 if(IS_STATIC_LIB)
-    message("Building as static library")
+    message(STATUS "Building as static library")
     add_library(engine STATIC ${SOURCES})
     target_compile_definitions(engine PRIVATE EDITOR)
 else()
@@ -98,21 +99,22 @@ add_custom_command(TARGET engine POST_BUILD
 target_include_directories(engine PUBLIC
     "${PROJECT_SOURCE_DIR}/src"  
     "${PROJECT_SOURCE_DIR}/include"
+    "${PROJECT_SOURCE_DIR}/libs"
     "${Mono_DIR}/include/mono-2.0"
 )
 
-target_sources(engine PRIVATE
-"${PROJECT_SOURCE_DIR}/libs/imgui/imgui.h"
-"${PROJECT_SOURCE_DIR}/libs/imgui/imgui.cpp"
+# target_sources(engine PRIVATE
+# "${PROJECT_SOURCE_DIR}/libs/imgui/imgui.h"
+# "${PROJECT_SOURCE_DIR}/libs/imgui/imgui.cpp"
 
-"${PROJECT_SOURCE_DIR}/libs/imgui/imgui_demo.cpp"
-"${PROJECT_SOURCE_DIR}/libs/imgui/imgui_draw.cpp"
-"${PROJECT_SOURCE_DIR}/libs/imgui/imgui_widgets.cpp"
-"${PROJECT_SOURCE_DIR}/libs/imgui/imgui_tables.cpp"
+# "${PROJECT_SOURCE_DIR}/libs/imgui/imgui_demo.cpp"
+# "${PROJECT_SOURCE_DIR}/libs/imgui/imgui_draw.cpp"
+# "${PROJECT_SOURCE_DIR}/libs/imgui/imgui_widgets.cpp"
+# "${PROJECT_SOURCE_DIR}/libs/imgui/imgui_tables.cpp"
 
-"${PROJECT_SOURCE_DIR}/libs/imgui/imgui_impl_vulkan.cpp"
-"${PROJECT_SOURCE_DIR}/libs/imgui/imgui_impl_glfw.cpp"
-)
+# "${PROJECT_SOURCE_DIR}/libs/imgui/imgui_impl_vulkan.cpp"
+# "${PROJECT_SOURCE_DIR}/libs/imgui/imgui_impl_glfw.cpp"
+# )
 
 target_link_libraries(engine PUBLIC glfw)
 target_include_directories(engine PUBLIC ${GLFW_INCLUDE_DIRS})
