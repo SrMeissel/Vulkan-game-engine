@@ -88,7 +88,6 @@ built in variables for frag shaders:
 - stb - <https://github.com/nothings/stb>
 - glm - <https://github.com/g-truc/glm>
 - tinyobjloader - <https://github.com/tinyobjloader/tinyobjloader>
-- imgui(legacy) - <https://github.com/ocornut/imgui.git>
 - Mono - <https://www.mono-project.com/>
 - Assimp 5.4.2 <https://github.com/assimp/assimp>
 

@@ -3,8 +3,6 @@
 #include "deviceManager.hpp"
 #include "Utils.hpp"
 
-#include <vector>
-
 namespace renderer {
     class RenderPass {
         public:
@@ -12,8 +10,6 @@ namespace renderer {
             //RenderPass(Device& device, VkRenderPassCreateInfo* info, std::vector<AllocatedImage> images, VkExtent2D extent);
             ~RenderPass();
 
-            // Not copyable or movable
-	    // for some reason im sure
             RenderPass(const RenderPass &) = delete;
             RenderPass& operator=(const RenderPass &) = delete;
             RenderPass(RenderPass &&) = delete;

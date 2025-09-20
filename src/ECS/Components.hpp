@@ -2,7 +2,7 @@
 
 #include "bufferManager.hpp"
 #include "Utils.hpp"
-#include "../../libs/tinyXML/tinyxml2.h"
+#include "tinyXML/tinyxml2.h"
 #include <descriptorManager.hpp>
 
 #include <glm/glm.hpp>
