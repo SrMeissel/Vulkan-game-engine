@@ -3,7 +3,6 @@
 #include <set>
 #include <unordered_map>
 #include <memory>
-#include <typeinfo>
 
 #include "EntityManager.hpp"
 
@@ -15,6 +14,8 @@ namespace ECS {
     public:
         std::set<Entity> entities;
     };
+
+	using System_t = std::set<Entity>;
 
     //this is very similar to component array
     class SystemManager {

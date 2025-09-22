@@ -1,6 +1,6 @@
 #pragma once
 
-#include <../libs/stb/stb_image.h>
+#include <stb/stb_image.h>
 
 #include "assimp/scene.h"
 #include "assimp/Importer.hpp"
@@ -8,13 +8,12 @@
 
 #include <stdexcept>
 #include <iostream>
-#include <unordered_map>
 #include <vector>
 
 #include "Components.hpp"
-#include "../bufferManager.hpp"
-#include "../Utils.hpp"
-#include "../pipeline/Renderer.hpp"
+#include "bufferManager.hpp"
+#include "Utils.hpp"
+#include "Pipeline/Renderer.hpp"
 
 namespace Importer {
 

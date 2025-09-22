@@ -2,26 +2,20 @@
 
 #include "Components.hpp"
 #include "AssetManager.hpp"
-#include "../systems/MaterialSystem.hpp"
-#include "../../libs/tinyXML/tinyxml2.h"
+#include "tinyXML/tinyxml2.h"
 #include "Importer.hpp"
-#include "../Pipeline/deviceManager.hpp"
 
+#include "systems/MaterialSystem.hpp"
+#include "systems/ScriptingSystem.hpp"
+#include "systems/skyboxSystem.hpp"
+
+#include <stdio.h>
 #include <vector>
 #include <unordered_map>
 #include <iostream>
-#include <chrono>
-#include <random>
-
 // https://shilohjames.wordpress.com/2014/04/27/tinyxml2-tutorial/
 
 namespace ECS {
-
-    // struct EntityID {
-    //     Entity entity;
-    //     uint64_t id;
-    // };
-
     class SaveDataManager {
         public:
             SaveDataManager(renderer::Renderer& renderer, engine::ScriptingSystem& scriptingSystem, engine::MaterialSystem& materialSystem, engine::SkyboxSystem& skyboxSystem) : renderer(renderer), scriptingSystem(scriptingSystem), materialSystem(materialSystem), skyboxSystem{skyboxSystem} {};
@@ -147,7 +141,8 @@ namespace ECS {
             
         private:
             void openXML(std::string fileName,  tinyxml2::XMLDocument& doc) {
-                FILE* file = fopen(fileName.c_str(), "rb");
+                FILE* file = NULL;
+                fopen_s(&file, fileName.c_str(), "rb");
                 if (file == NULL) {
                     std::cout << "file bad \n";
                     throw std::runtime_error("file bad");

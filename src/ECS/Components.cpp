@@ -1,5 +1,8 @@
 #include "Components.hpp"
 
+#include <stdexcept>
+#include <iostream>
+
 //windows BULLSHIT!!!!!!
 #ifdef near
 #undef near

@@ -103,19 +103,6 @@ target_include_directories(engine PUBLIC
     "${Mono_DIR}/include/mono-2.0"
 )
 
-# target_sources(engine PRIVATE
-# "${PROJECT_SOURCE_DIR}/libs/imgui/imgui.h"
-# "${PROJECT_SOURCE_DIR}/libs/imgui/imgui.cpp"
-
-# "${PROJECT_SOURCE_DIR}/libs/imgui/imgui_demo.cpp"
-# "${PROJECT_SOURCE_DIR}/libs/imgui/imgui_draw.cpp"
-# "${PROJECT_SOURCE_DIR}/libs/imgui/imgui_widgets.cpp"
-# "${PROJECT_SOURCE_DIR}/libs/imgui/imgui_tables.cpp"
-
-# "${PROJECT_SOURCE_DIR}/libs/imgui/imgui_impl_vulkan.cpp"
-# "${PROJECT_SOURCE_DIR}/libs/imgui/imgui_impl_glfw.cpp"
-# )
-
 target_link_libraries(engine PUBLIC glfw)
 target_include_directories(engine PUBLIC ${GLFW_INCLUDE_DIRS})
 target_link_libraries(engine PUBLIC Vulkan::Vulkan)
