@@ -7,58 +7,38 @@
 #include "EntityManager.hpp"
 
 namespace ECS {
-    
-    //base class to be used by all systems
-    // I'm not a great fan of having to inherit for each system but we'll see, this seems simple enough
-    class System {
-    public:
-        std::set<Entity> entities;
-    };
-
-	using System_t = std::set<Entity>;
+    	using System = std::set<Entity>;
 
     //this is very similar to component array
     class SystemManager {
     public:
-		//I just used copilot for the first time to modify this function, its awesome
-        template<typename T, typename... Args>
-        std::shared_ptr<T> RegisterSystem(Args&&... args) {
-            const char* typeName = typeid(T).name();
 
-            assert(systems.find(typeName) == systems.end() && "Registering system more than once.");
+        std::shared_ptr<System> RegisterSystem(std::string name) {
+            assert(systems.find(name) == systems.end() && "Registering system more than once.");
 
-            // Create a pointer to the system and return it so it can be used externally
-            auto system = std::make_shared<T>(std::forward<Args>(args)...);
-            //why is this different than everything else, VScode doesnt like it
-            systems.insert({typeName, system});
+            auto system = std::make_shared<System>();
+            systems.insert({name, system});
             return system;
         }
 
-    template<typename T>
-	void SetSignature(Signature signature) {
-		const char* typeName = typeid(T).name();
+	void SetSignature(Signature signature, std::string name) {
+		assert(systems.find(name) != systems.end() && "System used before registered.");
 
-		assert(systems.find(typeName) != systems.end() && "System used before registered.");
-
-		signatures.insert({typeName, signature});
+		signatures.insert({name, signature});
 	}
 
-	template<typename T>
-	void SetAntiSignature(Signature signature) {
-		const char* typeName = typeid(T).name();
-		
-		assert(systems.find(typeName) != systems.end() && "System used before registered.");
+	void SetAntiSignature(Signature signature, std::string name) {
+		assert(systems.find(name) != systems.end() && "System used before registered.");
 
-		antiSignatures.insert({typeName, signature});
+		antiSignatures.insert({name, signature});
 	}
     
     void EntityDestroyed(Entity entity) {
-		// entities is a set so no check needed. thats cool
 		for (auto const& pair : systems)
 		{
 			auto const& system = pair.second;
 
-			system->entities.erase(entity);
+			system->erase(entity);
 		}
 	}
 
@@ -75,20 +55,19 @@ namespace ECS {
             //this is a cool bit of bitwise op's. the entity AND the signiture return the signiture if the entity contains all bits of the signiture :)
 			if (((entitySignature & systemSignature) == systemSignature) && ((entitySignature & antiSignature) == 0))
 			{
-				system->entities.insert(entity);
+				system->insert(entity);
 			}
 			// Entity signature does not match system signature - erase from set
 			else
 			{
-				system->entities.erase(entity);
+				system->erase(entity);
 			}
 		}
 	}
 
-
     private:        
-        std::unordered_map<const char*, Signature> signatures{};
-		std::unordered_map<const char*, Signature> antiSignatures{};
-        std::unordered_map<const char*, std::shared_ptr<System>> systems{};
+        std::unordered_map<std::string, Signature> signatures{};
+		std::unordered_map<std::string, Signature> antiSignatures{};
+        std::unordered_map<std::string, std::shared_ptr<System>> systems{};
     };
 }

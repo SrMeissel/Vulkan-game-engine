@@ -1,10 +1,13 @@
 #include "omniShadowSystem.hpp"
+#include "ECS/AssetManager.hpp"
 
-#include <iostream>
 #include <stdexcept>
 
 namespace engine {
-    OmniShadowSystem::OmniShadowSystem(renderer::Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout): device{device} {
+    OmniShadowSystem::OmniShadowSystem(renderer::Device& device, ECS::AssetSystem& assetManager, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout): device{device} {
+
+        //When I look back into this system(if I do), I will need to register it with the ECS system properly.
+
         //create Pipeline Layout ==================================================
 
         VkPushConstantRange pushConstantRange {};
@@ -40,7 +43,7 @@ namespace engine {
     }
 
     void OmniShadowSystem::Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assets, PointLightSystem& pointLightSystem) {
-        for(auto& pointlightEntity : pointLightSystem.entities ) {
+        for(auto& pointlightEntity : *pointLightSystem.entities ) {
             ECS::PointLight& pointLight = assets.GetComponent<ECS::PointLight>(pointlightEntity);
 
             //begin renderpass ==================================================
@@ -52,7 +55,7 @@ namespace engine {
             //pipeline->bind(commandBuffer);
             vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &globalUBOSet, 0, nullptr);
 
-            for(auto const& entity : entities) {
+            for(auto const& entity : *entities) {
 
                 //get components ==================================================
 

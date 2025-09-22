@@ -1,6 +1,6 @@
 #include "skyboxSystem.hpp"
+#include "ECS/AssetManager.hpp"
 
-#include <iostream>
 #include <stdexcept>
 
 // https://www.youtube.com/watch?v=iRepdTM8oqI
@@ -10,7 +10,15 @@
 // this was awesome
 
 namespace engine {
-    SkyboxSystem::SkyboxSystem(renderer::Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout): device{device} {
+    SkyboxSystem::SkyboxSystem(renderer::Device& device, ECS::AssetSystem& assetManager, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout): device{device} {
+        
+        entities = assetManager.RegisterSystem(systemName);
+       
+        ECS::Signature skyboxSigniture;
+        skyboxSigniture.set(assetManager.GetComponentType<ECS::Transform>());
+        skyboxSigniture.set(assetManager.GetComponentType<ECS::SkyBox>());
+        assetManager.SetSystemSignature(skyboxSigniture, systemName);
+
         //create Pipeline Layout ==================================================
 
         VkPushConstantRange pushConstantRange {};
@@ -91,10 +99,10 @@ namespace engine {
     }
 
     void SkyboxSystem::Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assets) {
-        assert(entities.size() <= 1 && "Why are there more than one skybox?");
+        assert(entities->size() <= 1 && "Why are there more than one skybox?");
         //maybe I could make multiple skymaps add to each other, but why?
 
-        for(auto& entity : entities) {
+        for(auto& entity : *entities) {
 
             pipeline->bind(commandBuffer);
             
@@ -117,17 +125,5 @@ namespace engine {
             vkCmdDraw(commandBuffer, 3, 1, 0, 0);
         }
         
-    }
-
-    void SkyboxSystem::cleanup(ECS::AssetSystem& assetManager) {
-        // for(auto& entity : entities) {
-        //     ECS::SkyBox& skybox = assetManager.GetComponent<ECS::SkyBox>(entity);
-        //     vkDestroyImageView(device.device(), skybox.skyBoxImage.imageView, nullptr);
-        //     vkDestroyImage(device.device(), skybox.skyBoxImage.image, nullptr);
-        //     vkFreeMemory(device.device(), skybox.skyBoxImage.memory, nullptr);
-
-        //     //dont need to destroy descriptor things since the abstraction takes care of it already :)
-        //     //already destroying the descriptor set layout and sampler in the destructor
-        // }
     }
 }

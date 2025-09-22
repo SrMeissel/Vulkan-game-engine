@@ -1,10 +1,21 @@
 #include "meshSystem.hpp"
+#include "ECS/AssetManager.hpp"
 
-#include <iostream>
 #include <stdexcept>
 
 namespace engine {
-    MeshSystem::MeshSystem(renderer::Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout): device{device} {
+    MeshSystem::MeshSystem(renderer::Device& device, ECS::AssetSystem& assetManager, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout): device{device} {
+
+        entities = assetManager.RegisterSystem(systemName);
+
+        ECS::Signature meshSignature;
+        meshSignature.set(assetManager.GetComponentType<ECS::Transform>());
+        meshSignature.set(assetManager.GetComponentType<ECS::Renderable>());
+        assetManager.SetSystemSignature(meshSignature, systemName);
+        ECS::Signature meshAntiSignature;
+        meshAntiSignature.set(assetManager.GetComponentType<ECS::Material>());
+        assetManager.SetSystemAntiSignature(meshAntiSignature, systemName);
+
         //create Pipeline Layout ==================================================
 
         VkPushConstantRange pushConstantRange {};
@@ -42,7 +53,7 @@ namespace engine {
         pipeline->bind(commandBuffer);
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &globalUBOSet, 0, nullptr);
 
-        for(auto const& entity : entities) {
+        for(auto const& entity : *entities) {
 
             //get components ==================================================
 

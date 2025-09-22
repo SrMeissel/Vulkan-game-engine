@@ -1,10 +1,7 @@
 #pragma once
 
 #include "ECS/AssetManager.hpp"
-#include "ECS/Components.hpp"
 #include "Pipeline/pipeline.hpp"
-#include "Pipeline/deviceManager.hpp"
-#include "Pipeline/RenderPass.hpp"
 #include "Pipeline/Renderer.hpp"
 #include <descriptorManager.hpp>
 
@@ -13,15 +10,18 @@
 // http://www.cemyuksel.com/research/pointlightattenuation/
 
 namespace engine {
-    class PointLightSystem : public ECS::System {
+    class PointLightSystem {
     public:
-        PointLightSystem(renderer::Renderer& renderer);
+        PointLightSystem(renderer::Renderer& renderer, ECS::AssetSystem& assetManager);
         ~PointLightSystem() { 
             vkDestroyPipelineLayout(renderer.device.device(), pipelineLayout, nullptr); 
         }
 
         void Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager);
 
+        std::shared_ptr<ECS::System> entities;
+
+        const std::string systemName{"PointLight"};
     private:
         struct PushConstant {
             glm::vec4 position;
@@ -42,5 +42,6 @@ namespace engine {
         std::unique_ptr<renderer::DescriptorSetLayout> setLayout;
         std::array<VkDescriptorSetLayout, 1> setLayoutData{};
         std::array<VkDescriptorImageInfo, 3> descriptors{};
+
     };
 }

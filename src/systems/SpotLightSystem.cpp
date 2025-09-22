@@ -1,10 +1,25 @@
 #include "SpotLightSystem.hpp"
 
+#include "ECS/AssetManager.hpp"
+#include "cameraManager.hpp"
 #include <iostream>
 #include <stdexcept>
 
 namespace engine {
-    SpotLightSystem::SpotLightSystem(renderer::Renderer& renderer) : renderer{renderer} {
+    SpotLightSystem::SpotLightSystem(renderer::Renderer& renderer, ECS::AssetSystem& assetManager) : renderer{renderer} {
+
+        renderables = assetManager.RegisterSystem(renderablesSystemName);
+        ECS::Signature renderablesSignature;
+        renderablesSignature.set(assetManager.GetComponentType<ECS::Renderable>());
+        renderablesSignature.set(assetManager.GetComponentType<ECS::Transform>());
+        assetManager.SetSystemSignature(renderablesSignature, renderablesSystemName);
+
+        entities = assetManager.RegisterSystem(systemName);
+        ECS::Signature spotlightSignature;
+        spotlightSignature.set(assetManager.GetComponentType<ECS::Transform>());
+        spotlightSignature.set(assetManager.GetComponentType<ECS::SpotLight>());
+        assetManager.SetSystemSignature(spotlightSignature, systemName);
+
         //create shadowmap renderpass ===============================================
         VkFormat depthFormat = renderer.device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
@@ -216,8 +231,8 @@ namespace engine {
             std::cout << "\n failed to write spotlight set \n";
     }
 
-    void SpotLightSystem::RenderShadows(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assets, ECS::System& renderables) {
-        for(auto const& Entity : entities) {
+    void SpotLightSystem::RenderShadows(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assets) {
+        for(auto const& Entity : *entities) {
             ECS::Transform& transform = assets.GetComponent<ECS::Transform>(Entity);
             ECS::SpotLight& spotlight = assets.GetComponent<ECS::SpotLight>(Entity);
             ECS::Camera& camera = assets.GetComponent<ECS::Camera>(Entity);
@@ -276,7 +291,7 @@ namespace engine {
 
             vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowPipelineLayout, 0, 1, &shadowUBOSet, 0, nullptr);
 
-            for(auto const& meshEntity : renderables.entities) {
+            for(auto const& meshEntity : *renderables) {
 
                 //get components ==================================================
 
@@ -317,7 +332,7 @@ namespace engine {
         lightPipeline->bind(commandBuffer);
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lightPipelineLayout, 1, 1, &inputSet, 0, nullptr);
 
-        for(const auto& Entity : entities) {
+        for(const auto& Entity : *entities) {
             ECS::Transform& transform = assets.GetComponent<ECS::Transform>(Entity);
             ECS::SpotLight& spotlight = assets.GetComponent<ECS::SpotLight>(Entity);
             ECS::Camera& camera = assets.GetComponent<ECS::Camera>(Entity);
@@ -346,18 +361,5 @@ namespace engine {
             vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 
         }
-    }
-
-    void SpotLightSystem::cleanup(ECS::AssetSystem& assetManager) {
-        // for(auto& entity : entities) {
-        //     ECS::SpotLight& spotLight = assetManager.GetComponent<ECS::SpotLight>(entity);
-
-        //     vkDestroyImageView(renderer.device.device(), spotLight.shadowMap.imageView, nullptr);
-        //     vkDestroyImage(renderer.device.device(), spotLight.shadowMap.image, nullptr);
-        //     vkFreeMemory(renderer.device.device(), spotLight.shadowMap.memory, nullptr);
-
-        //     vkDestroyFramebuffer(renderer.device.device(), spotLight.frameBuffer, nullptr);
-
-        // }
     }
 }

@@ -1,9 +1,18 @@
 #include "PointLightSystem.hpp"
+#include "ECS/AssetManager.hpp"
 
 #include <stdexcept>
 
 namespace engine {
-    PointLightSystem::PointLightSystem(renderer::Renderer& renderer) : renderer{renderer} {
+    PointLightSystem::PointLightSystem(renderer::Renderer& renderer, ECS::AssetSystem& assetManager) : renderer{renderer} {
+
+        entities = assetManager.RegisterSystem(systemName);
+
+        ECS::Signature pointLightSignature;
+        pointLightSignature.set(assetManager.GetComponentType<ECS::Transform>());
+        pointLightSignature.set(assetManager.GetComponentType<ECS::PointLight>());
+        assetManager.SetSystemSignature(pointLightSignature, systemName);
+
         //create Pipeline Layout ==================================================
 
         VkPushConstantRange pushConstantRange {};
@@ -92,7 +101,7 @@ namespace engine {
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &globalUBOSet, 0, nullptr);
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &descriptorSet, 0, nullptr);
 
-        for(auto const& entity : entities) {
+        for(auto const& entity : *entities) {
             ECS::Transform& transform = assets.GetComponent<ECS::Transform>(entity);
             ECS::PointLight& pointLight = assets.GetComponent<ECS::PointLight>(entity); 
 

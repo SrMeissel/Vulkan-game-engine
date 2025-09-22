@@ -91,19 +91,16 @@ namespace ECS {
 
     // System functions ===========================================================
 
-	template<typename T, typename... Args>
-	std::shared_ptr<T> RegisterSystem(Args&&... args) {
-		return systemManager->RegisterSystem<T>(std::forward<Args>(args)...);
+	std::shared_ptr<System> RegisterSystem(std::string name) {
+		return systemManager->RegisterSystem(name);
 	}
 
-	template<typename T>
-	void SetSystemSignature(Signature signature) {
-		systemManager->SetSignature<T>(signature);
+	void SetSystemSignature(Signature signature, std::string name) {
+		systemManager->SetSignature(signature, name);
 	}
 
-	template<typename T>
-	void SetSystemAntiSignature(Signature signature) {
-		systemManager->SetAntiSignature<T>(signature);
+	void SetSystemAntiSignature(Signature signature, std::string name) {
+		systemManager->SetAntiSignature(signature, name);
 	}
 
 	// SaveData functions ===========================================================

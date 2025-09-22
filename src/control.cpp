@@ -1,3 +1,4 @@
+#include "cameraManager.hpp"
 #include "engineControl.h"
 #include "keyMap.h"
 

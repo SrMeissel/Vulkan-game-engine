@@ -1,10 +1,19 @@
 #include "MaterialSystem.hpp"
+#include "ECS/Components.hpp"
 
 #include <stdexcept>
-#include <iostream>
 
 namespace engine {
-    MaterialSystem::MaterialSystem(renderer::Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout): device{device} {
+    MaterialSystem::MaterialSystem(renderer::Device& device, ECS::AssetSystem& assetManager, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout): device{device} {
+
+        entities = assetManager.RegisterSystem(systemName);
+
+        ECS::Signature materialSignature;
+        materialSignature.set(assetManager.GetComponentType<ECS::Transform>());
+        materialSignature.set(assetManager.GetComponentType<ECS::Renderable>());
+        materialSignature.set(assetManager.GetComponentType<ECS::Material>());
+        assetManager.SetSystemSignature(materialSignature, systemName);
+
         //create Pipeline Layout ==================================================
 
         VkPushConstantRange pushConstantRange {};
@@ -75,7 +84,7 @@ namespace engine {
         pipeline->bind(commandBuffer);
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &globalUBOSet, 0, nullptr);
 
-        for(auto const& entity : entities) {    
+        for(auto const& entity : *entities) {    
 
             //get components ==================================================
     
@@ -108,21 +117,5 @@ namespace engine {
                 vkCmdDraw(commandBuffer, mesh.vertexCount, 1, 0, 0);
             }
         }
-    }
-
-    void MaterialSystem::cleanup(ECS::AssetSystem& assetManager) {
-        // for(auto& entity : entities) {
-        //     ECS::Material& material = assetManager.GetComponent<ECS::Material>(entity);
-        //     vkDestroyImageView(device.device(), material.albedo.imageView, nullptr);
-        //     vkDestroyImage(device.device(), material.albedo.image, nullptr);
-        //     vkFreeMemory(device.device(), material.albedo.memory, nullptr);
-
-        //     vkDestroyImageView(device.device(), material.normal.imageView, nullptr);
-        //     vkDestroyImage(device.device(), material.normal.image, nullptr);
-        //     vkFreeMemory(device.device(), material.normal.memory, nullptr);
-
-        //     //dont need to destroy descriptor things since the abstraction takes care of it already :)
-        //     //already destroying the descriptor set layout and sampler in the destructor
-        // }
     }
 }

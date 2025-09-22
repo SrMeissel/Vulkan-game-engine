@@ -1,6 +1,8 @@
 #include "ScriptingSystem.hpp"
 #include <fstream>
 #include <cstdlib>
+#include <iostream>
+
 
 #ifdef _WIN32
 #define MONO_ASSEMBLIES "C:/Program Files/mono/lib/mono/4.5"
@@ -14,11 +16,16 @@
 //https://github.com/dotnet/runtime/discussions/79309
 
 namespace engine {
-    ScriptingSystem::ScriptingSystem(Window& window) : window{window} {
-        std::cout << "Initializing Mono runtime..." << std::endl;
+    ScriptingSystem::ScriptingSystem(Window& window, ECS::AssetSystem& assetManager) : window{window} {
     
-        //_putenv_s("MONO_GC_PARAMS", "nursery-size=64m");
+        entities = assetManager.RegisterSystem(systemName);
 
+        ECS::Signature scriptSignature;
+        scriptSignature.set(assetManager.GetComponentType<ECS::Transform>());
+        scriptSignature.set(assetManager.GetComponentType<ECS::Script>());
+        assetManager.SetSystemSignature(scriptSignature, systemName); 
+
+        //=====================================================================
         mono_set_assemblies_path(MONO_ASSEMBLIES);
         domain = mono_jit_init("engine");
 
@@ -37,7 +44,7 @@ namespace engine {
     }
 
     void ScriptingSystem::update(float deltaTime, ECS::AssetSystem& assetManager) {
-        for(auto const& entity : entities) {
+        for(auto const& entity : *entities) {
             //get components ==================================================
             ECS::Transform& transform = assetManager.GetComponent<ECS::Transform>(entity);
             ECS::Script& script = assetManager.GetComponent<ECS::Script>(entity);

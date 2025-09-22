@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ECS/AssetManager.hpp"
-#include "ECS/Components.hpp"
 #include "Pipeline/pipeline.hpp"
 #include "Pipeline/deviceManager.hpp"
 
@@ -10,9 +9,9 @@
 #include <glm/glm.hpp>
 
 namespace engine {
-    class OmniShadowSystem : public ECS::System {
+    class OmniShadowSystem {
     public:
-        OmniShadowSystem(renderer::Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
+        OmniShadowSystem(renderer::Device& device, ECS::AssetSystem& assetManager, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
         ~OmniShadowSystem() { vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); }
 
         void Render(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager, PointLightSystem& pointLightSystem);
@@ -27,5 +26,7 @@ namespace engine {
 
         std::unique_ptr<renderer::Pipeline> pipeline;
         VkPipelineLayout pipelineLayout;
+
+        std::shared_ptr<ECS::System> entities;
     };
 }

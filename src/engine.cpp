@@ -15,65 +15,18 @@
 
 namespace engine {
 
-    engine::engine(renderer::Renderer& renderer, ECS::AssetSystem& assetSystem) : renderer{renderer}, assetSystem{assetSystem} {
-        //Initialize render systems ======================================
-        //TODO: I should start adding TODO's around my project.
+    engine::engine(renderer::Renderer& renderer, ECS::AssetSystem& assetSystem) : 
+        renderer{renderer}, assetSystem{assetSystem},
+        meshSystem(renderer.device, assetSystem, renderer.primaryRenderPass->renderPass, renderer.globalSetLayout->getDescriptorSetLayout()),
+        materialSystem(renderer.device, assetSystem, renderer.primaryRenderPass->renderPass, renderer.globalSetLayout->getDescriptorSetLayout()),
+        scriptingSystem(renderer.window, assetSystem),
+        pointLightSystem(renderer, assetSystem),
+        spotLightSystem(renderer, assetSystem),
+        skyboxSystem(renderer.device, assetSystem, renderer.primaryRenderPass->renderPass, renderer.globalSetLayout->getDescriptorSetLayout())
+        {
 
-        meshSystem = assetSystem.RegisterSystem<MeshSystem>(renderer.device, renderer.primaryRenderPass->renderPass, renderer.globalSetLayout->getDescriptorSetLayout());
-        materialSystem = assetSystem.RegisterSystem<MaterialSystem>(renderer.device, renderer.primaryRenderPass->renderPass, renderer.globalSetLayout->getDescriptorSetLayout());
-        scriptingSystem = assetSystem.RegisterSystem<ScriptingSystem>(renderer.window);
-        pointLightSystem = assetSystem.RegisterSystem<PointLightSystem>(renderer);
-        spotLightSystem = assetSystem.RegisterSystem<SpotLightSystem>(renderer);
-        skyboxSystem = assetSystem.RegisterSystem<SkyboxSystem>(renderer.device, renderer.primaryRenderPass->renderPass, renderer.globalSetLayout->getDescriptorSetLayout());
 
-        //I need a list of all renderable objects for shadows. This makes me want to detach the entity list from systems, It would be a lot more simple.
-        renderables = assetSystem.RegisterSystem<Renderables>();
-
-        std::cout << "about to create system signatures\n";
-
-        ECS::Signature renderablesSignature;
-        renderablesSignature.set(assetSystem.GetComponentType<ECS::Renderable>());
-        renderablesSignature.set(assetSystem.GetComponentType<ECS::Transform>());
-        assetSystem.SetSystemSignature<Renderables>(renderablesSignature);
-
-        ECS::Signature meshSignature;
-        meshSignature.set(assetSystem.GetComponentType<ECS::Transform>());
-        meshSignature.set(assetSystem.GetComponentType<ECS::Renderable>());
-        assetSystem.SetSystemSignature<MeshSystem>(meshSignature);
-
-        ECS::Signature meshAntiSignature;
-        meshAntiSignature.set(assetSystem.GetComponentType<ECS::Material>());
-        assetSystem.SetSystemAntiSignature<MeshSystem>(meshAntiSignature);
-
-        ECS::Signature materialSignature;
-        materialSignature.set(assetSystem.GetComponentType<ECS::Transform>());
-        materialSignature.set(assetSystem.GetComponentType<ECS::Renderable>());
-        materialSignature.set(assetSystem.GetComponentType<ECS::Material>());
-        assetSystem.SetSystemSignature<MaterialSystem>(materialSignature);
-
-        ECS::Signature scriptSignature;
-        scriptSignature.set(assetSystem.GetComponentType<ECS::Transform>());
-        scriptSignature.set(assetSystem.GetComponentType<ECS::Script>());
-        assetSystem.SetSystemSignature<ScriptingSystem>(scriptSignature);
-
-        ECS::Signature pointLightSignature;
-        pointLightSignature.set(assetSystem.GetComponentType<ECS::Transform>());
-        pointLightSignature.set(assetSystem.GetComponentType<ECS::PointLight>());
-        assetSystem.SetSystemSignature<PointLightSystem>(pointLightSignature);
-
-        ECS::Signature spotlightSignature;
-        spotlightSignature.set(assetSystem.GetComponentType<ECS::Transform>());
-        spotlightSignature.set(assetSystem.GetComponentType<ECS::SpotLight>());
-        assetSystem.SetSystemSignature<SpotLightSystem>(spotlightSignature);
-
-        ECS::Signature skyboxSigniture;
-        pointLightSignature.set(assetSystem.GetComponentType<ECS::Transform>());
-        skyboxSigniture.set(assetSystem.GetComponentType<ECS::SkyBox>());
-        assetSystem.SetSystemSignature<SkyboxSystem>(skyboxSigniture);
-
-        std::cout << "already created system signatures\n";
-
-        saveDataManager = new ECS::SaveDataManager{renderer, *scriptingSystem, *materialSystem, *skyboxSystem}; 
+        saveDataManager = new ECS::SaveDataManager{renderer, scriptingSystem, materialSystem, skyboxSystem}; 
 
 
         // ECS::Entity backplane = assetSystem.CreateEntity();
@@ -114,21 +67,10 @@ namespace engine {
         // viewerCamera.inverseViewMatrix = glm::inverse(viewerCamera.viewMatrix);
 
     }
-
-    engine::~engine() {
-        //DESTROY EVERYTHING ==================================================================================================
-        //I don't know how.
-        //nvm im a genius
-
-        materialSystem->cleanup(assetSystem);
-        skyboxSystem->cleanup(assetSystem);
-        spotLightSystem->cleanup(assetSystem);
-    }
-
     void engine::updateGameState(float deltaTime, Window& window) {
         //proccess user input =======================================================
         
-        scriptingSystem->update(deltaTime, assetSystem);
+        scriptingSystem.update(deltaTime, assetSystem);
 
         //take screenshot
         // bool stateKeyP = renderer.window.isKeyDown(Key::KEY_P);
@@ -168,18 +110,18 @@ namespace engine {
 
         //render =====================================================
 
-        spotLightSystem->RenderShadows(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem, *renderables);
+        spotLightSystem.RenderShadows(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
 
         renderer.beginRenderPass(commandBuffer, renderer::DefinedRenderPasses::Primary);
 
-        meshSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
-        materialSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
+        meshSystem.Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
+        materialSystem.Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
 
         vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
 
-        pointLightSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
-        spotLightSystem->RenderLight(commandBuffer, target, assetSystem);
-        skyboxSystem->Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
+        pointLightSystem.Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
+        spotLightSystem.RenderLight(commandBuffer, target, assetSystem);
+        skyboxSystem.Render(commandBuffer, renderer.globalDescriptorSets[frameIndex], assetSystem);
 
 
         renderer.endRenderPass(commandBuffer);

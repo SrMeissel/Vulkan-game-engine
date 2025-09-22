@@ -3,13 +3,8 @@
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
 
-#include <iostream>
-
 #include "ECS/AssetManager.hpp"
-#include "ECS/Components.hpp"
-
 #include "Pipeline/windowManager.hpp"
-
 #include "keyMap.h"
 
 // https://www.mono-project.com/docs/advanced/embedding/
@@ -17,9 +12,9 @@
 // https://nilssondev.com/mono-guide/book/
 
 namespace engine {
-    class ScriptingSystem : public ECS::System{
+    class ScriptingSystem{
     public:
-        ScriptingSystem(Window& window);
+        ScriptingSystem(Window& window, ECS::AssetSystem& AssetManager);
         ~ScriptingSystem();
 
         MonoAssembly* LoadAssembly(const std::string& assemblyPath);
@@ -44,5 +39,9 @@ namespace engine {
         MonoDomain* domain;
         MonoDomain* appDomain;
         MonoAssembly* assembly;
+
+        const std::string systemName{"Script"};
+    private:
+        std::shared_ptr<ECS::System> entities;
     };
 }

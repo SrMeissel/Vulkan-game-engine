@@ -11,17 +11,13 @@
 #include "Pipeline/pipeline.hpp"
 #include "Pipeline/deviceManager.hpp"
 #include "Pipeline/Renderer.hpp"
-#include "cameraManager.hpp"
-
-#include "meshSystem.hpp"
 
 #include <glm/glm.hpp>
 
-
 namespace engine {
-    class SpotLightSystem : public ECS::System {
+    class SpotLightSystem {
     public:
-        SpotLightSystem(renderer::Renderer& renderer);
+        SpotLightSystem(renderer::Renderer& renderer, ECS::AssetSystem& assetManager);
         ~SpotLightSystem() { 
             vkDestroyPipelineLayout(renderer.device.device(), shadowPipelineLayout, nullptr); 
             vkDestroyPipelineLayout(renderer.device.device(), lightPipelineLayout, nullptr);
@@ -30,15 +26,15 @@ namespace engine {
             vkDestroySampler(renderer.device.device(), sampler, nullptr);    
         }
 
-        void RenderShadows(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManager, ECS::System& renderables);
+        void RenderShadows(VkCommandBuffer commandBuffer, VkDescriptorSet& globalUBOSet, ECS::AssetSystem& assetManagers);
         void RenderLight(VkCommandBuffer commandBuffer, const ECS::Camera& viewerCamera, ECS::AssetSystem& assetManager);
 
         VkRenderPass getRenderPass() {return shadowPass; }
         VkSampler& getSampler() { return sampler; }        
         std::unique_ptr<renderer::DescriptorSetLayout>& getSetLayout() { return lightSetLayout; }
 
-        void cleanup(ECS::AssetSystem& assetManager);
-
+        const std::string systemName{"SpotLight"};
+        const std::string renderablesSystemName{"Renderables"};
     private:
         struct ShadowPushConstant {
             glm::mat4 modelMatrix{1.f};
@@ -87,7 +83,8 @@ namespace engine {
         std::array<VkDescriptorImageInfo, 3> descriptors{};
         VkDescriptorSet inputSet;
 
+        std::shared_ptr<ECS::System> entities;
+        std::shared_ptr<ECS::System> renderables;
     };
 
-    class Renderables : public ECS::System {};
 }
