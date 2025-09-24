@@ -1,5 +1,8 @@
-#include "cameraManager.hpp"
+#include "ECS/Components.hpp"
 #include "engineControl.h"
+#include "ComponentTypes.hpp"
+
+#include "cameraManager.hpp"
 #include "keyMap.h"
 
 #include "Pipeline/windowManager.hpp"
@@ -99,4 +102,19 @@ void loadCollection(std::string fileName) {
 
 std::vector<uint64_t> getAllEntities() {
     return assetSystem->getAllEntities();
+}
+
+//========================================================================================================
+//TODO: contemplate the concequences of using static global variables.
+
+TransformComponent getTransformComponent(Entity entity) {
+    const ECS::Transform transformSrc = assetSystem->GetComponent<ECS::Transform>(entity);
+    return {.translation=transformSrc.translation, .rotation=transformSrc.rotation, .scale=transformSrc.scale, .name=transformSrc.name};
+}
+void setTransformComponent(Entity entity, TransformComponent component) {
+    ECS::Transform& transformDst = assetSystem->GetComponent<ECS::Transform>(entity);
+    transformDst.translation = component.translation;
+    transformDst.rotation = component.rotation;
+    transformDst.scale = component.scale;
+    transformDst.name = component.name;
 }

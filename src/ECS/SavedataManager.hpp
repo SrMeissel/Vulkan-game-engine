@@ -55,6 +55,8 @@ namespace ECS {
                         if (strcmp(componentName, "Transform") == 0) {
                             Transform transform;
 
+                            if(pComponent->GetText() != nullptr) transform.name = pComponent->GetText();
+
                             tinyxml2::XMLElement* pTranslation = pComponent->FirstChildElement("Translation");
                             pTranslation->QueryFloatAttribute("x", &transform.translation.x);
                             pTranslation->QueryFloatAttribute("y", &transform.translation.y);

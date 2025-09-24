@@ -205,6 +205,8 @@ namespace ECS {
     tinyxml2::XMLElement* Transform::save(tinyxml2::XMLDocument& doc) {
         tinyxml2::XMLElement* transform = doc.NewElement("Transform");
 
+        if(!this->name.empty()) transform->SetText(this->name.c_str());
+
         tinyxml2::XMLElement* translation = doc.NewElement("Translation");
         translation->SetAttribute("x", this->translation.x);
         translation->SetAttribute("y", this->translation.y);
