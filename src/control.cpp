@@ -109,7 +109,7 @@ std::vector<uint64_t> getAllEntities() {
 
 TransformComponent getTransformComponent(Entity entity) {
     const ECS::Transform transformSrc = assetSystem->GetComponent<ECS::Transform>(entity);
-    return {.translation=transformSrc.translation, .rotation=transformSrc.rotation, .scale=transformSrc.scale, .name=transformSrc.name};
+    return {transformSrc.translation, transformSrc.rotation, transformSrc.scale, transformSrc.name};
 }
 void setTransformComponent(Entity entity, TransformComponent component) {
     ECS::Transform& transformDst = assetSystem->GetComponent<ECS::Transform>(entity);
