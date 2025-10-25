@@ -17,7 +17,7 @@ namespace ECS {
 
     struct Component {
         virtual ~Component() = default;
-        virtual tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) = 0;
+        virtual tinyxml2::XMLElement* save(tinyxml2::XMLDocument& doc) {return nullptr;};
     };
 
     struct Renderable : public Component {

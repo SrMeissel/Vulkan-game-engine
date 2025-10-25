@@ -24,51 +24,9 @@ namespace engine {
         spotLightSystem(renderer, assetSystem),
         skyboxSystem(renderer.device, assetSystem, renderer.primaryRenderPass->renderPass, renderer.globalSetLayout->getDescriptorSetLayout())
         {
-
-
         saveDataManager = new ECS::SaveDataManager{renderer, scriptingSystem, materialSystem, skyboxSystem}; 
-
-
-        // ECS::Entity backplane = assetSystem.CreateEntity();
-        // assetSystem.AddComponent<ECS::Transform>(backplane, ECS::Transform{glm::vec3(0.0f, 0.0f, 25.0f), glm::vec3(40.0f, 1.0f, 40.0f), glm::vec3{glm::radians(90.0f), 0.0f, 0.0f}});
-        // assetSystem.AddComponent<ECS::Renderable>(backplane, Importer::loadMesh("/models/quad.obj", renderer.device));
-
-        // //<Translation x="0" y="-1.5" z="-3"/>
-        // //glm::vec3(-4.0f, -3.5f, -12.0f)
-
-        // glm::vec3 direction = glm::normalize(glm::vec3(0.0, -1.5, -3) - glm::vec3(-4.0, -3.5, -12.0));
-        // float yaw = atan2(direction.z, direction.x);
-        // float pitch = atan2(direction.y, sqrt((direction.x * direction.x) + (direction.z * direction.z)));
-
-        // ECS::Entity spotlight = assetSystem.CreateEntity();
-        // assetSystem.AddComponent<ECS::Transform>(spotlight, ECS::Transform{glm::vec3(-4.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(pitch, yaw, 0.0)});
-        // assetSystem.AddComponent<ECS::SpotLight>(spotlight, ECS::SpotLight{renderer.device, renderer.window, glm::vec3{1.0f, 0.0f, 0.0f}, 500.0f, glm::vec2{800, 600}, spotLightSystem->getRenderPass(), spotLightSystem->getSampler(), spotLightSystem->getSetLayout()});
-        // assetSystem.AddComponent<ECS::PointLight>(spotlight, ECS::PointLight{glm::vec3{1.0f}, 10.0f, 10.0f});
-        // assetSystem.AddComponent<ECS::Camera>(spotlight, ECS::Camera{0.1, 500.0});
-        // assetSystem.AddComponent<ECS::Script>(spotlight, ECS::Script{"TransformExpirement", scriptingSystem->assembly, scriptingSystem->appDomain});
-
-        //=======================================================================
-
-        //Initialize Camera object ===================================
-
-        // viewerObject = assetSystem.CreateEntity();
-        // ECS::Transform& viewerTransform = assetSystem.AddComponent(viewerObject, ECS::Transform{glm::vec3(0.0f, -3.5f, -12.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f)});
-        // ECS::Camera& viewerCamera = assetSystem.AddComponent(viewerObject, ECS::Camera{0.1, 5000});
-        // assetSystem.AddComponent(viewerObject, ECS::Script{"CameraControl", scriptingSystem->assembly, scriptingSystem->appDomain});
-
-        // //ECS::Camera& viewerCamera = assetSystem.GetComponent<ECS::Camera>(viewerObject);
-        // //ECS::Transform& viewerTransform = assetSystem.GetComponent<ECS::Transform>(viewerObject);
-        
-        // //viewerCamera.viewMatrix = setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
-        
-        // viewerCamera.viewMatrix = setViewYXZ(viewerTransform.translation, viewerTransform.rotation);            
-        // float aspect = renderer.getRenderPass(0)->getAspectRatio();
-        // viewerCamera.projectionMatrix = setPerspectiveProjection(glm::radians(50.0f), aspect, viewerCamera.nearPlane, viewerCamera.farPlane);
-        // viewerCamera.inverseViewMatrix = glm::inverse(viewerCamera.viewMatrix);
-
     }
     void engine::updateGameState(float deltaTime, Window& window) {
-        //proccess user input =======================================================
         
         scriptingSystem.update(deltaTime, assetSystem);
 
@@ -129,7 +87,6 @@ namespace engine {
 	renderer.endFrame();
     }
 
-    //this works, vkcreateRenderPass uses pointer. The static keywords are used to prevent the objects from deleteing because their referenced.
     VkRenderPassCreateInfo* engine::configureRenderPass() {
 
         static std::array<VkAttachmentDescription, 5> attachments;
@@ -228,21 +185,6 @@ namespace engine {
             subpasses[1].pDepthStencilAttachment = &depthAttachmentRef;
 
         static std::array<VkSubpassDependency, 1> dependency = {};
-            // dependency[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-            // dependency[0].dstSubpass = 0;
-            // dependency[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-            // dependency[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-            // dependency[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-            // dependency[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-            // dependency[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-            // dependency[1].srcSubpass = 0;
-            // dependency[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-            // dependency[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-            // dependency[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-            // dependency[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-            // dependency[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-            // dependency[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
             dependency[0].srcSubpass = 0;
             dependency[0].dstSubpass = 1;

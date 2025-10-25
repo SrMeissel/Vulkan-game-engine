@@ -25,6 +25,11 @@ void createEngine(int width, int height, HWND handle) {
     Renderer = new renderer::Renderer{*window};
     assetSystem = new ECS::AssetSystem;
 	assetSystem->RegisterComponent<ECS::Transform>();
+    assetSystem->RegisterComplement<TransformComponent>([](Entity entity){
+                    ECS::Transform transform = assetSystem->GetComponent<ECS::Transform>(entity);
+                    TransformComponent* complement = new TransformComponent{transform.translation, transform.rotation, transform.scale, transform.name};
+                    return complement;
+    });
 	assetSystem->RegisterComponent<ECS::Camera>();
 	assetSystem->RegisterComponent<ECS::Renderable>();
 	assetSystem->RegisterComponent<ECS::Material>([](const ECS::Material& mat){Renderer->imageGallery.removeExhibit(mat.albedo); Renderer->imageGallery.removeExhibit(mat.normal);});
@@ -104,17 +109,7 @@ std::vector<uint64_t> getAllEntities() {
     return assetSystem->getAllEntities();
 }
 
-//========================================================================================================
-//TODO: contemplate the concequences of using static global variables.
-
-TransformComponent getTransformComponent(Entity entity) {
-    const ECS::Transform transformSrc = assetSystem->GetComponent<ECS::Transform>(entity);
-    return {transformSrc.translation, transformSrc.rotation, transformSrc.scale, transformSrc.name};
-}
-void setTransformComponent(Entity entity, TransformComponent component) {
-    ECS::Transform& transformDst = assetSystem->GetComponent<ECS::Transform>(entity);
-    transformDst.translation = component.translation;
-    transformDst.rotation = component.rotation;
-    transformDst.scale = component.scale;
-    transformDst.name = component.name;
+template<typename Cmpl>
+Cmpl* getComplement(Entity entity) {
+    return static_cast<Cmpl*>(assetSystem->GetComplement<Cmpl>(entity));
 }

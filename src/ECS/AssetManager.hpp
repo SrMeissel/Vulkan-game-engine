@@ -4,6 +4,7 @@
 #include "ComponentManager.hpp"
 #include "SystemManager.hpp"
 #include "Components.hpp"
+#include "ComplementManager.hpp"
 
 #include <type_traits>
 #include <random>
@@ -22,6 +23,7 @@ namespace ECS {
 
 	AssetSystem() {
 		componentManager = std::make_unique<ComponentManager>();
+		complementManager = std::make_unique<ComplementManager>();
 		entityManager = std::make_unique<EntityManager>();
 		systemManager = std::make_unique<SystemManager>();
 	}
@@ -49,6 +51,11 @@ namespace ECS {
 	void RegisterComponent(std::function<void(const T&)> cleaner = [](const T&){}) {
 		static_assert(std::is_base_of<Component, T>::value, "T must be derived from Component");
 		componentManager->RegisterComponent<T>(cleaner);
+	}
+
+	template<typename Cmpl>
+	void RegisterComplement(std::function<void*(Entity entity)> toComplement) {
+		complementManager->registerComplement<Cmpl>(toComplement);
 	}
 
     template<typename T>
@@ -82,6 +89,15 @@ namespace ECS {
 	template<typename T>
 	T& GetComponent(Entity entity) {
 		return componentManager->GetComponent<T>(entity);
+	}
+
+	template<typename Cmpl>
+	void* GetComplement(Entity entity) {
+		return complementManager->getComplement<Cmpl>(entity);
+	};
+
+	void* GetComplement(Entity entity, ComponentType type) {
+		return complementManager->getComplement(entity, type);
 	}
 
 	template<typename T>
@@ -119,6 +135,7 @@ namespace ECS {
         std::unique_ptr<ComponentManager> componentManager;
         std::unique_ptr<EntityManager> entityManager;
         std::unique_ptr<SystemManager> systemManager;
+		std::unique_ptr<ComplementManager> complementManager;
 
 		std::unordered_map<Entity, std::vector<Component*>> savedComponents;
     };
