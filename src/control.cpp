@@ -9,6 +9,8 @@
 #include "Pipeline/Renderer.hpp"
 #include "engine.hpp"
 #include "ECS/AssetManager.hpp"
+#include <cstdint>
+#include <typeindex>
 
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
@@ -26,10 +28,10 @@ void createEngine(int width, int height, HWND handle) {
     assetSystem = new ECS::AssetSystem;
 	assetSystem->RegisterComponent<ECS::Transform>();
     assetSystem->RegisterComplement<TransformComponent>([](Entity entity){
-                    ECS::Transform transform = assetSystem->GetComponent<ECS::Transform>(entity);
+                    ECS::Transform& transform = assetSystem->GetComponent<ECS::Transform>(entity);
                     TransformComponent* complement = new TransformComponent{transform.translation, transform.rotation, transform.scale, transform.name};
                     return complement;
-    });
+        }, assetSystem->GetComponentType<ECS::Transform>());
 	assetSystem->RegisterComponent<ECS::Camera>();
 	assetSystem->RegisterComponent<ECS::Renderable>();
 	assetSystem->RegisterComponent<ECS::Material>([](const ECS::Material& mat){Renderer->imageGallery.removeExhibit(mat.albedo); Renderer->imageGallery.removeExhibit(mat.normal);});
@@ -109,7 +111,10 @@ std::vector<uint64_t> getAllEntities() {
     return assetSystem->getAllEntities();
 }
 
-template<typename Cmpl>
-Cmpl* getComplement(Entity entity) {
-    return static_cast<Cmpl*>(assetSystem->GetComplement<Cmpl>(entity));
+void* getComplement(uint64_t entity, ECS::ComponentType type) {
+    return assetSystem->GetComplement(entity, type);
+}
+
+ECS::ComponentType findComplement(std::type_index type) {
+    return assetSystem->GetComplementType(type);
 }

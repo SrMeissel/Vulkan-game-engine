@@ -9,6 +9,7 @@
 #include <type_traits>
 #include <random>
 #include <chrono>
+#include <typeindex>
 
 namespace ECS {
     inline uint64_t generateEntityID() {
@@ -54,8 +55,8 @@ namespace ECS {
 	}
 
 	template<typename Cmpl>
-	void RegisterComplement(std::function<void*(Entity entity)> toComplement) {
-		complementManager->registerComplement<Cmpl>(toComplement);
+	void RegisterComplement(std::function<void*(Entity entity)> toComplement, ComponentType type) {
+		complementManager->registerComplement<Cmpl>(toComplement, type);
 	}
 
     template<typename T>
@@ -91,11 +92,6 @@ namespace ECS {
 		return componentManager->GetComponent<T>(entity);
 	}
 
-	template<typename Cmpl>
-	void* GetComplement(Entity entity) {
-		return complementManager->getComplement<Cmpl>(entity);
-	};
-
 	void* GetComplement(Entity entity, ComponentType type) {
 		return complementManager->getComplement(entity, type);
 	}
@@ -103,6 +99,10 @@ namespace ECS {
 	template<typename T>
 	ComponentType GetComponentType() {
 		return componentManager->GetComponentType<T>();
+	}
+
+	ComponentType GetComplementType(std::type_index type) {
+		return complementManager->findComplement(type);
 	}
 
     // System functions ===========================================================

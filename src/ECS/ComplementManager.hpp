@@ -10,25 +10,28 @@
 namespace ECS {
     class ComplementManager {
         public:
+            ComplementManager() {
+                complementBuilder.resize(MAX_COMPONENTS);
+            }
 
             template<typename Cmpl>
             void registerComplement(std::function<void*(Entity)> toComplement, ComponentType type) {
-                complementBuilder.insert({typeid(Cmpl),toComplement});
-                typeRegistry[type] = typeid(Cmpl);
-            }
-
-            template<typename Cmpl>
-            void* getComplement(Entity entity){
-                assert(complementBuilder.count(typeid(Cmpl)) != 0 && "Trying to get a complement that is not registered :)");
-                return complementBuilder[typeid(Cmpl)](entity);
+                complementBuilder[type] = toComplement;
+                complementFinder.insert({typeid(Cmpl), type});
             }
 
             void* getComplement(Entity entity, ComponentType type) {
-                return complementBuilder[typeRegistry[type]](entity);
+                return complementBuilder[type](entity);
             }
 
-            std::unordered_map<std::type_index, std::function<void*(Entity)>> complementBuilder;
-            std::vector<std::type_index> typeRegistry;
+            ComponentType findComplement(std::type_index type) {
+                return complementFinder[type];
+            }
+
+            std::vector<std::function<void*(Entity)>> complementBuilder;
+
+            //edge case, editor need specific component, Ex. Transform.
+            std::unordered_map<std::type_index, ComponentType> complementFinder;
 
             /*
             toComplement Example:
